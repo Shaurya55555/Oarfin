@@ -8,6 +8,10 @@ Oarfin is a real-time disaster alert and management system built around four con
 [![Node.js](https://img.shields.io/badge/Node.js-Express-green.svg)](https://nodejs.org/)
 [![Flutter](https://img.shields.io/badge/Flutter-Dart-blue.svg)](https://flutter.dev/)
 
+**🏆 Runner-Up, HackCrux Hackathon**
+
+**Live:** [Website (Vercel)](https://oarfin-website-nine.vercel.app) · [API Server (Render)](https://oarfin-server.onrender.com)
+
 ## What it does
 
 - **Website** (`website/`) — a live map for authorities showing current disasters worldwide, affected areas, and the number of app users in each affected region. Authorities can mark safe areas, which are pushed to nearby app users, alongside scraped news/context about each disaster.
