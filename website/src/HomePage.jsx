@@ -54,6 +54,10 @@ const T = {
     aboutMissionDesc: 'To reduce disaster-related casualties by providing timely, accurate information and enabling faster coordination between government agencies, first responders, and the public.',
     aboutFeatures: ['Real-time disaster alerts from IMD, NDMA & global sources', 'Interactive incident map with safe spot navigation', 'Emergency shelter locator with live capacity data', 'Resource coordination for relief agencies', 'Multi-language support for wider reach', 'Mobile-first design for field responders'],
     aboutTeam: 'Built as a Bachelor\'s Thesis Project — focused on real-world deployment and impact.',
+    aboutAchievement: 'Runner-Up — HackCrux Hackathon',
+    aboutLiveDeployments: 'Live Deployments',
+    aboutWebsiteLink: 'Website (Vercel)',
+    aboutServerLink: 'API Server (Render)',
     alertsTitle: 'Live Alert Feed',
     alertsDesc: 'All active emergency declarations are monitored in real time. Click any alert to expand details.',
     resourcesTitle: 'Emergency Resources',
@@ -110,6 +114,10 @@ const T = {
     aboutMissionDesc: 'समय पर सटीक जानकारी प्रदान करके और सरकारी एजेंसियों, प्रथम प्रतिक्रियाकर्ताओं और जनता के बीच समन्वय को तेज करके आपदा से संबंधित हताहतों को कम करना।',
     aboutFeatures: ['IMD, NDMA और वैश्विक स्रोतों से रियल-टाइम आपदा अलर्ट', 'सुरक्षित स्थान नेविगेशन के साथ इंटरैक्टिव घटना मानचित्र', 'लाइव क्षमता डेटा के साथ आपातकालीन आश्रय लोकेटर', 'राहत एजेंसियों के लिए संसाधन समन्वय', 'व्यापक पहुंच के लिए बहु-भाषा समर्थन', 'फील्ड प्रतिक्रियाकर्ताओं के लिए मोबाइल-फर्स्ट डिज़ाइन'],
     aboutTeam: 'स्नातक थीसिस परियोजना के रूप में निर्मित — वास्तविक दुनिया की तैनाती पर केंद्रित।',
+    aboutAchievement: 'रनर-अप — हैककृक्स हैकाथॉन',
+    aboutLiveDeployments: 'लाइव डिप्लॉयमेंट',
+    aboutWebsiteLink: 'वेबसाइट (Vercel)',
+    aboutServerLink: 'एपीआई सर्वर (Render)',
     alertsTitle: 'लाइव अलर्ट फीड',
     alertsDesc: 'सभी सक्रिय आपातकालीन घोषणाओं की रियल टाइम में निगरानी की जाती है।',
     resourcesTitle: 'आपातकालीन संसाधन',
@@ -166,6 +174,10 @@ const T = {
     aboutMissionDesc: 'Reducir las víctimas relacionadas con desastres proporcionando información oportuna y precisa y permitiendo una coordinación más rápida.',
     aboutFeatures: ['Alertas de desastres en tiempo real de IMD, NDMA y fuentes globales', 'Mapa interactivo de incidentes con navegación a lugares seguros', 'Localizador de refugios de emergencia con datos de capacidad en vivo', 'Coordinación de recursos para agencias de ayuda', 'Soporte multilingüe para mayor alcance', 'Diseño móvil para respondedores de campo'],
     aboutTeam: 'Construido como Proyecto de Tesis de Licenciatura — enfocado en implementación real.',
+    aboutAchievement: 'Subcampeón — Hackathon HackCrux',
+    aboutLiveDeployments: 'Implementaciones en Vivo',
+    aboutWebsiteLink: 'Sitio web (Vercel)',
+    aboutServerLink: 'Servidor API (Render)',
     alertsTitle: 'Feed de Alertas en Vivo',
     alertsDesc: 'Todas las declaraciones de emergencia activas se monitorean en tiempo real.',
     resourcesTitle: 'Recursos de Emergencia',
@@ -546,9 +558,13 @@ function About({ lang }) {
               <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', lineHeight: 1.7, margin: 0 }}>{t.aboutMissionDesc}</p>
             </div>
             <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>{t.aboutTeam}</p>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.9rem', background: 'rgba(245, 158, 11, 0.12)', border: '1px solid rgba(245, 158, 11, 0.35)', borderRadius: 999, padding: '0.4rem 0.9rem' }}>
+              <i className="fa-solid fa-trophy" style={{ color: '#F59E0B', fontSize: '0.85rem' }}></i>
+              <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-primary)' }}>{t.aboutAchievement}</span>
+            </div>
           </div>
           <div style={{ flex: '1 1 300px' }}>
-            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--card-border)', borderRadius: 12, padding: '1.5rem' }}>
+            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--card-border)', borderRadius: 12, padding: '1.5rem', marginBottom: '1rem' }}>
               <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-primary)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                 <i className="fa-solid fa-circle-check" style={{ color: '#10B981' }}></i> What OARFIN Does
               </div>
@@ -560,6 +576,21 @@ function About({ lang }) {
                   </li>
                 ))}
               </ul>
+            </div>
+            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--card-border)', borderRadius: 12, padding: '1.5rem' }}>
+              <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-primary)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <i className="fa-solid fa-link" style={{ color: 'var(--color-primary)' }}></i> {t.aboutLiveDeployments}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                <a href="https://oarfin-website-nine.vercel.app" target="_blank" rel="noopener noreferrer"
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.88rem', color: 'var(--color-primary)', textDecoration: 'none' }}>
+                  <i className="fa-brands fa-vercel"></i> {t.aboutWebsiteLink}
+                </a>
+                <a href="https://oarfin-server.onrender.com" target="_blank" rel="noopener noreferrer"
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.88rem', color: 'var(--color-primary)', textDecoration: 'none' }}>
+                  <i className="fa-solid fa-server"></i> {t.aboutServerLink}
+                </a>
+              </div>
             </div>
           </div>
         </div>
