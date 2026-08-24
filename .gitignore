@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+package-lock.json
+.pub-cache/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Build outputs
+dist/
+build/
+.vite/
+*.log
+
+# Flutter/Dart
+disaster_alert/.dart_tool/
+disaster_alert/.gradle/
+disaster_alert/build/
+disaster_alert/android/.gradle/
+disaster_alert/android/local.properties
+disaster_alert/**/*.iml
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
