@@ -15,7 +15,6 @@ const DAY_OPTIONS = [1,3,5,7,14,30];
 const safeSpotIcon = new L.Icon({ iconUrl:"https://cdn-icons-png.flaticon.com/512/2776/2776067.png", iconSize:[25,41], iconAnchor:[12,41], popupAnchor:[1,-34], shadowSize:[41,41] });
 const ICON_MAP = { EQ:"https://cdn-icons-png.flaticon.com/512/1840/1840485.png", FL:"https://cdn-icons-png.flaticon.com/512/1840/1840525.png", TC:"https://cdn-icons-png.flaticon.com/512/1840/1840491.png", VO:"https://cdn-icons-png.flaticon.com/512/1840/1840506.png", DR:"https://cdn-icons-png.flaticon.com/512/1840/1840489.png", WF:"https://cdn-icons-png.flaticon.com/512/1840/1840524.png" };
 const getIcon = (t) => ICON_MAP[t] || "https://cdn-icons-png.flaticon.com/512/184/184525.png";
-const SHELTER_ICONS = { shelter:"🏠", hospital:"🏥", clinic:"🩺", nursing_home:"🏡", police:"🚔", fire_station:"🚒", pharmacy:"💊" };
 const CATEGORY_LABELS = { shelter:"Shelters", hospital:"Hospitals", clinic:"Clinics", nursing_home:"Nursing Homes", police:"Police", fire_station:"Fire Stations", pharmacy:"Pharmacies" };
 const CATEGORY_FA = { shelter:"fa-house", hospital:"fa-hospital", clinic:"fa-stethoscope", nursing_home:"fa-bed-pulse", police:"fa-shield-halved", fire_station:"fa-fire-extinguisher", pharmacy:"fa-pills" };
 
@@ -223,7 +222,7 @@ export default function DisasterMap() {
                           const eid=event.properties?.eventid;
                           setClickedTeleportEventId(eid);
                           setUserLocation({lat:markerPos[0],lng:markerPos[1]});
-                          showToast("📍 Location set to "+eventType+" zone");
+                          showToast("Location set to "+eventType+" zone");
                           setTimeout(()=>setClickedTeleportEventId(null),2000);
                         }}
                         style={{width:"100%",padding:"8px",background:clickedTeleportEventId===event.properties?.eventid?"#3730a3":"#4F46E5",color:"white",border:"none",borderRadius:6,cursor:clickedTeleportEventId===event.properties?.eventid?"not-allowed":"pointer",fontSize:"0.82rem",fontWeight:600,display:"flex",alignItems:"center",justifyContent:"center",gap:6,opacity:clickedTeleportEventId===event.properties?.eventid?0.65:1,transition:"all 0.2s"}}
@@ -243,7 +242,7 @@ export default function DisasterMap() {
           {selectedDisaster&&(()=>{ const [lng,lat]=selectedDisaster.geometry.coordinates; return <Circle center={[lat,lng]} radius={shelterRadius*1000} pathOptions={{color:"#005EA2",fillColor:"#005EA2",fillOpacity:0.04,weight:2,dashArray:"8 5"}}/>; })()}
 
           {filteredShelters.map((s,i)=>(
-            <Marker key={`sh-${i}`} position={[s.lat,s.lng]} icon={L.divIcon({className:"",html:`<div style="font-size:20px;filter:drop-shadow(0 1px 3px rgba(0,0,0,0.5))">${SHELTER_ICONS[s.type]||"📍"}</div>`,iconSize:[26,26],iconAnchor:[13,13]})}>
+            <Marker key={`sh-${i}`} position={[s.lat,s.lng]} icon={L.divIcon({className:"",html:`<div style="width:26px;height:26px;border-radius:50%;background:#1E3A5F;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,0.4);border:2px solid #fff"><i class="fa-solid ${CATEGORY_FA[s.type]||'fa-location-dot'}" style="color:#fff;font-size:11px"></i></div>`,iconSize:[26,26],iconAnchor:[13,13]})}>
               <Popup>
                 <div style={{fontFamily:"system-ui",minWidth:160}}>
                   <div style={{fontWeight:700,fontSize:"13px",marginBottom:3}}>{s.name||"Unnamed Facility"}</div>
@@ -361,8 +360,8 @@ export default function DisasterMap() {
                   onClick={()=>setFlyTarget([s.lat,s.lng])}
                 >
                   <div style={{display:"flex",gap:12,alignItems:"flex-start"}}>
-                    <div style={{width:36,height:36,borderRadius:10,background:"var(--bg-section)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:"18px"}}>
-                      {SHELTER_ICONS[s.type]||"📍"}
+                    <div style={{width:36,height:36,borderRadius:10,background:"var(--bg-section)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                      <i className={`fa-solid ${CATEGORY_FA[s.type]||'fa-location-dot'}`} style={{color:"#1E3A5F",fontSize:"15px"}}></i>
                     </div>
                     <div style={{flex:1,minWidth:0}}>
                       <div style={{fontSize:"13px",fontWeight:600,color:"var(--text-primary)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
@@ -375,7 +374,7 @@ export default function DisasterMap() {
                       {s.address&&<div style={{fontSize:"11px",color:"var(--text-muted)",marginTop:2,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{s.address}</div>}
                       <div style={{display:"flex",gap:5,marginTop:6,alignItems:"center",flexWrap:"wrap"}}>
                         <span style={{fontSize:"10px",padding:"2px 8px",borderRadius:10,background:s.source==="FEMA/Red Cross"?"#dcfce7":"#dbeafe",color:s.source==="FEMA/Red Cross"?"#166534":"#1e40af",fontWeight:700}}>
-                          {s.source==="FEMA/Red Cross"?"🔴 FEMA":"🔵 OSM"}
+                          {s.source==="FEMA/Red Cross"?"FEMA":"OSM"}
                         </span>
                         {s.capacity&&<span style={{fontSize:"10px",color:"#64748b",background:"#f1f5f9",padding:"2px 7px",borderRadius:10}}>Cap: {s.capacity}</span>}
                         {s.distance_km!=null&&<span style={{fontSize:"11px",color:"#005EA2",fontWeight:700,marginLeft:"auto"}}>{s.distance_km} km</span>}

@@ -195,19 +195,19 @@ const ALERTS_DATA = [
 ];
 
 const RESOURCES_DATA = [
-  { icon: 'fa-house-chimney-medical', title: 'Emergency Shelters', desc: '420+ shelters mapped across India with live capacity data. Find the nearest open shelter.', color: '#10B981', link: '#' },
-  { icon: 'fa-truck-medical', title: 'Relief Camps', desc: 'Active relief camps with food, water, and medical aid. Updated every 30 minutes by field teams.', color: '#3B82F6', link: '#' },
-  { icon: 'fa-phone-volume', title: 'Helpline Numbers', desc: 'NDMA: 1078 | Police: 100 | Ambulance: 108 | Fire: 101 | Flood Control: 1070', color: '#EF4444', link: '#' },
-  { icon: 'fa-map-location-dot', title: 'Evacuation Routes', desc: 'Real-time road closure data and safe evacuation corridors updated by traffic authorities.', color: '#F59E0B', link: '#' },
-  { icon: 'fa-droplet', title: 'Water & Supplies', desc: 'Locate nearest clean water distribution points and essential supply depots in your area.', color: '#6366F1', link: '#' },
-  { icon: 'fa-hospital', title: 'Medical Facilities', desc: 'Hospitals and medical camps accepting disaster victims. Includes blood bank availability.', color: '#EC4899', link: '#' },
+  { icon: 'fa-house-chimney-medical', title: 'Emergency Shelters', desc: '420+ shelters mapped across India with live capacity data. Find the nearest open shelter.', color: '#1E3A5F', link: '#' },
+  { icon: 'fa-truck-medical', title: 'Relief Camps', desc: 'Active relief camps with food, water, and medical aid. Updated every 30 minutes by field teams.', color: '#1E3A5F', link: '#' },
+  { icon: 'fa-phone-volume', title: 'Helpline Numbers', desc: 'NDMA: 1078 | Police: 100 | Ambulance: 108 | Fire: 101 | Flood Control: 1070', color: '#B91C1C', link: '#' },
+  { icon: 'fa-map-location-dot', title: 'Evacuation Routes', desc: 'Real-time road closure data and safe evacuation corridors updated by traffic authorities.', color: '#1E3A5F', link: '#' },
+  { icon: 'fa-droplet', title: 'Water & Supplies', desc: 'Locate nearest clean water distribution points and essential supply depots in your area.', color: '#1E3A5F', link: '#' },
+  { icon: 'fa-hospital', title: 'Medical Facilities', desc: 'Hospitals and medical camps accepting disaster victims. Includes blood bank availability.', color: '#1E3A5F', link: '#' },
 ];
 
 const PREPAREDNESS_DATA = [
-  { icon: 'fa-list-check', title: 'Make a Family Plan', steps: ['Identify two meeting points — one near home, one outside your neighborhood', 'Save emergency contacts on every family member\'s phone', 'Assign roles: who carries the kit, who checks on elderly neighbors', 'Practice your evacuation route at least once a year'], color: '#2563EB' },
-  { icon: 'fa-kit-medical', title: 'Build a 72-Hour Kit', steps: ['3 days of water (1 gallon per person per day)', 'Non-perishable food, manual can opener, utensils', 'First aid kit, prescription medications, copies of documents', 'Flashlight, batteries, whistle, dust masks, local maps'], color: '#10B981' },
-  { icon: 'fa-mobile-screen', title: 'Stay Informed', steps: ['Register on OARFIN for SMS alerts in your area', 'Follow IMD and NDMA on official channels', 'Know your district\'s warning siren signals', 'Keep a battery-powered or hand-crank radio'], color: '#F59E0B' },
-  { icon: 'fa-house-flood-water', title: 'Flood Preparedness', steps: ['Know your flood zone — check NDMA flood maps', 'Move valuables and documents to higher floors', 'Never walk or drive through floodwater', 'Turn off electricity at the breaker if flooding is imminent'], color: '#EF4444' },
+  { icon: 'fa-list-check', title: 'Make a Family Plan', steps: ['Identify two meeting points — one near home, one outside your neighborhood', 'Save emergency contacts on every family member\'s phone', 'Assign roles: who carries the kit, who checks on elderly neighbors', 'Practice your evacuation route at least once a year'], color: '#1E3A5F' },
+  { icon: 'fa-kit-medical', title: 'Build a 72-Hour Kit', steps: ['3 days of water (1 gallon per person per day)', 'Non-perishable food, manual can opener, utensils', 'First aid kit, prescription medications, copies of documents', 'Flashlight, batteries, whistle, dust masks, local maps'], color: '#1E3A5F' },
+  { icon: 'fa-mobile-screen', title: 'Stay Informed', steps: ['Register on OARFIN for SMS alerts in your area', 'Follow IMD and NDMA on official channels', 'Know your district\'s warning siren signals', 'Keep a battery-powered or hand-crank radio'], color: '#1E3A5F' },
+  { icon: 'fa-house-flood-water', title: 'Flood Preparedness', steps: ['Know your flood zone — check NDMA flood maps', 'Move valuables and documents to higher floors', 'Never walk or drive through floodwater', 'Turn off electricity at the breaker if flooding is imminent'], color: '#1E3A5F' },
 ];
 
 
@@ -335,7 +335,7 @@ function Hero({ onLoginClick, lang }) {
             <span className="animate-pulse-dot" style={{ width: 8, height: 8, borderRadius: '50%', background: '#10B981', display: 'inline-block' }}></span>
             <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.04em' }}>{t.systemOperational}</span>
           </div>
-          <h1 style={{ fontSize: 'clamp(1.8rem, 3.5vw, 2.75rem)', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.15, marginBottom: '1.1rem', letterSpacing: '-0.02em' }}>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.9rem, 3.5vw, 2.9rem)', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.18, marginBottom: '1.1rem', letterSpacing: '-0.01em' }}>
             {t.heroTitle1}<br />
             <span style={{ color: 'var(--color-primary)' }}>{t.heroTitle2}</span>
           </h1>
@@ -406,7 +406,7 @@ function ActiveAlerts({ lang }) {
     <section id="alerts-section" style={{ background: 'var(--alert-section-bg)', borderBottom: '1px solid var(--border-subtle)', padding: '3.5rem 0', transition: 'background 0.4s ease' }}>
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1.5rem' }}>
         <div style={{ marginBottom: '0.75rem' }}>
-          <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
+          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.4rem', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
             <i className="fa-solid fa-circle-exclamation" style={{ color: 'var(--color-critical)' }}></i>
             {t.alertsTitle}
           </h2>
@@ -476,7 +476,7 @@ function Resources({ lang }) {
     <section id="resources-section" style={{ background: 'var(--hero-bg)', borderBottom: '1px solid var(--border-subtle)', padding: '3.5rem 0', transition: 'background 0.4s ease' }}>
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1.5rem' }}>
         <div style={{ marginBottom: '1.75rem' }}>
-          <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
+          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.4rem', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
             <i className="fa-solid fa-box-open" style={{ color: 'var(--color-primary)' }}></i>
             {t.resourcesTitle}
           </h2>
@@ -510,7 +510,7 @@ function Preparedness({ lang }) {
     <section id="preparedness-section" style={{ background: 'var(--alert-section-bg)', borderBottom: '1px solid var(--border-subtle)', padding: '3.5rem 0', transition: 'background 0.4s ease' }}>
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1.5rem' }}>
         <div style={{ marginBottom: '1.75rem' }}>
-          <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
+          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.4rem', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
             <i className="fa-solid fa-shield-halved" style={{ color: 'var(--color-primary)' }}></i>
             {t.preparednessTitle}
           </h2>
@@ -548,7 +548,7 @@ function About({ lang }) {
           <div style={{ flex: '1 1 340px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1rem' }}>
               <i className="fa-solid fa-shield-halved" style={{ color: 'var(--color-primary)', fontSize: '1.6rem' }}></i>
-              <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>{t.aboutTitle}</h2>
+              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.4rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>{t.aboutTitle}</h2>
             </div>
             <p style={{ fontSize: '0.95rem', color: 'var(--text-secondary)', lineHeight: 1.8, marginBottom: '1.5rem' }}>{t.aboutDesc}</p>
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--card-border)', borderRadius: 10, padding: '1.25rem', marginBottom: '1rem' }}>

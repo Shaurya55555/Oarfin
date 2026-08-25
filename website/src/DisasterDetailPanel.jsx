@@ -11,15 +11,15 @@ const RADIUS_OPTIONS = [
 ];
 
 const TYPE_ICONS = {
-  shelter: '🏠', hospital: '🏥', clinic: '🏥',
-  fire_station: '🚒', police: '🚔', assembly_point: '📍',
-  bunker: '🛡️', default: '📌',
+  shelter: 'fa-house', hospital: 'fa-hospital', clinic: 'fa-stethoscope',
+  fire_station: 'fa-fire-extinguisher', police: 'fa-shield-halved', assembly_point: 'fa-location-dot',
+  bunker: 'fa-shield', default: 'fa-map-pin',
 };
 
 const TYPE_COLORS = {
-  shelter: '#2E7D32', hospital: '#D32F2F', clinic: '#E65100',
-  fire_station: '#BF360C', police: '#1565C0', assembly_point: '#6A1B9A',
-  bunker: '#37474F', default: '#005EA2',
+  shelter: '#1E3A5F', hospital: '#1E3A5F', clinic: '#1E3A5F',
+  fire_station: '#1E3A5F', police: '#1E3A5F', assembly_point: '#1E3A5F',
+  bunker: '#1E3A5F', default: '#1E3A5F',
 };
 
 const EVENT_LABELS = { EQ: 'Earthquake', FL: 'Flood', TC: 'Cyclone', VO: 'Volcano', WF: 'Wildfire', DR: 'Drought' };
@@ -172,8 +172,8 @@ export default function DisasterDetailPanel({ disaster, onClose, onShowShelters 
             <div key={s.id || i} className="shelter-card"
               style={{ padding: '0.75rem 1rem', borderBottom: '1px solid #F0F0F0', cursor: 'default', background: '#fff', transition: 'background 0.1s' }}>
               <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'flex-start' }}>
-                <div style={{ width: 32, height: 32, borderRadius: '50%', background: color + '18', border: `1px solid ${color}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem', flexShrink: 0 }}>
-                  {icon}
+                <div style={{ width: 32, height: 32, borderRadius: '50%', background: color + '18', border: `1px solid ${color}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <i className={`fa-solid ${icon}`} style={{ color, fontSize: '0.8rem' }}></i>
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontWeight: 700, fontSize: '0.85rem', color: '#212121', marginBottom: '0.15rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -184,7 +184,7 @@ export default function DisasterDetailPanel({ disaster, onClose, onShowShelters 
                       {s.typeLabel || s.type}
                     </span>
                     <span style={{ fontSize: '0.7rem', color: s.verified ? '#2E7D32' : '#9E9E9E' }}>
-                      {s.verified ? '✓ Verified' : '○ User reported'}
+                      {s.verified ? 'Verified' : 'User reported'}
                     </span>
                   </div>
                   {s.address && <div style={{ fontSize: '0.72rem', color: '#9E9E9E', marginBottom: '0.15rem' }}>{s.address}</div>}

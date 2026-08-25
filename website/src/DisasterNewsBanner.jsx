@@ -65,7 +65,7 @@ export default function DisasterNewsBanner() {
     <div style={{ background: "#1E3A5F", borderBottom: "2px solid #D32F2F", overflow: "hidden", height: 36, display: "flex", alignItems: "center" }}>
       {/* Label */}
       <div style={{ background: "#D32F2F", color: "#fff", fontSize: "0.72rem", fontWeight: 800, padding: "0 0.75rem", height: "100%", display: "flex", alignItems: "center", whiteSpace: "nowrap", flexShrink: 0, letterSpacing: "0.04em" }}>
-        ⚠ LIVE ALERTS
+        <i className="fa-solid fa-triangle-exclamation" style={{ marginRight: '0.35rem' }}></i>LIVE ALERTS
       </div>
 
       {/* Ticker */}
