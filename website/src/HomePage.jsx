@@ -266,12 +266,11 @@ function Navbar({ onLoginClick, onRegisterClick, lang, onNavClick }) {
     return () => window.removeEventListener('scroll', fn);
   }, []);
 
-  const navIds = ['dashboard-section', 'alerts-section', 'resources-section', 'preparedness-section', 'about-section'];
+  const navKeys = ['dashboard', 'alerts', 'resources', 'preparedness', 'about'];
 
   const handleNav = (idx) => {
     setMenuOpen(false);
-    const el = document.getElementById(navIds[idx]);
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    onNavClick(navKeys[idx]);
   };
 
   return (
@@ -284,7 +283,7 @@ function Navbar({ onLoginClick, onRegisterClick, lang, onNavClick }) {
         <div style={{ display: 'flex', gap: '0.1rem', flex: 1, justifyContent: 'center' }} className="desktop-nav">
           {t.navLinks.map((l, i) => (
             <button key={l} onClick={() => handleNav(i)}
-              style={{ padding: '0.4rem 0.8rem', fontSize: '0.88rem', color: 'var(--nav-link)', borderRadius: 6, fontWeight: 500, transition: 'all 0.2s', background: 'none', border: 'none', cursor: 'pointer' }}
+              style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', color: 'var(--nav-link)', borderRadius: 6, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', transition: 'all 0.2s', background: 'none', border: 'none', cursor: 'pointer' }}
               onMouseEnter={e => { e.target.style.background = 'var(--bg-section)'; e.target.style.color = 'var(--text-primary)'; }}
               onMouseLeave={e => { e.target.style.background = 'none'; e.target.style.color = 'var(--nav-link)'; }}>
               {l}
@@ -459,8 +458,8 @@ function StatsBar({ lang }) {
         {vals.map((v, i) => (
           <div key={i} className="animate-slide-up" style={{ animationDelay: `${i * 100}ms`, textAlign: 'center' }}>
             <i className={`fa-solid ${icons[i]}`} style={{ color: 'rgba(255,255,255,0.7)', fontSize: '1.4rem', marginBottom: '0.5rem', display: 'block' }}></i>
-            <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#fff', lineHeight: 1 }}>{v}</div>
-            <div style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.75)', marginTop: '0.3rem', fontWeight: 500 }}>{t.statsLabels[i]}</div>
+            <div style={{ fontSize: 'clamp(2.2rem, 4vw, 3rem)', fontWeight: 800, color: '#fff', lineHeight: 1, letterSpacing: '-0.02em' }}>{v}</div>
+            <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.75)', marginTop: '0.5rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t.statsLabels[i]}</div>
           </div>
         ))}
       </div>
@@ -473,33 +472,27 @@ function StatsBar({ lang }) {
 function Resources({ lang }) {
   const t = T[lang];
   return (
-    <section id="resources-section" style={{ background: 'var(--hero-bg)', borderBottom: '1px solid var(--border-subtle)', padding: '3.5rem 0', transition: 'background 0.4s ease' }}>
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1.5rem' }}>
-        <div style={{ marginBottom: '1.75rem' }}>
-          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.4rem', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
-            <i className="fa-solid fa-box-open" style={{ color: 'var(--color-primary)' }}></i>
-            {t.resourcesTitle}
-          </h2>
-          <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)' }}>{t.resourcesDesc}</p>
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem' }}>
-          {RESOURCES_DATA.map((r, i) => (
-            <a key={i} href={r.link}
-              className="card-hover animate-slide-up"
-              style={{ animationDelay: `${i * 100}ms`, background: 'var(--bg-card)', border: '1px solid var(--card-border)', borderRadius: 12, padding: '1.5rem', textDecoration: 'none', display: 'block', transition: 'background 0.4s ease' }}>
-              <div style={{ width: 44, height: 44, borderRadius: 10, background: `${r.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' }}>
-                <i className={`fa-solid ${r.icon}`} style={{ color: r.color, fontSize: '1.25rem' }}></i>
-              </div>
-              <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)', marginBottom: '0.4rem' }}>{r.title}</div>
-              <div style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '1rem' }}>{r.desc}</div>
-              <span style={{ fontSize: '0.84rem', color: r.color, fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                {t.learnMore} <i className="fa-solid fa-arrow-right" style={{ fontSize: '0.72rem' }}></i>
-              </span>
-            </a>
-          ))}
-        </div>
+    <>
+      <div style={{ marginBottom: '1.75rem' }}>
+        <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)' }}>{t.resourcesDesc}</p>
       </div>
-    </section>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem' }}>
+        {RESOURCES_DATA.map((r, i) => (
+          <a key={i} href={r.link}
+            className="card-hover animate-slide-up"
+            style={{ animationDelay: `${i * 100}ms`, background: 'var(--bg-card)', border: '1px solid var(--card-border)', borderRadius: 12, padding: '1.5rem', textDecoration: 'none', display: 'block', transition: 'background 0.4s ease' }}>
+            <div style={{ width: 44, height: 44, borderRadius: 10, background: `${r.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' }}>
+              <i className={`fa-solid ${r.icon}`} style={{ color: r.color, fontSize: '1.25rem' }}></i>
+            </div>
+            <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)', marginBottom: '0.4rem' }}>{r.title}</div>
+            <div style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '1rem' }}>{r.desc}</div>
+            <span style={{ fontSize: '0.84rem', color: r.color, fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+              {t.learnMore} <i className="fa-solid fa-arrow-right" style={{ fontSize: '0.72rem' }}></i>
+            </span>
+          </a>
+        ))}
+      </div>
+    </>
   );
 }
 
@@ -507,33 +500,27 @@ function Resources({ lang }) {
 function Preparedness({ lang }) {
   const t = T[lang];
   return (
-    <section id="preparedness-section" style={{ background: 'var(--alert-section-bg)', borderBottom: '1px solid var(--border-subtle)', padding: '3.5rem 0', transition: 'background 0.4s ease' }}>
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1.5rem' }}>
-        <div style={{ marginBottom: '1.75rem' }}>
-          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.4rem', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
-            <i className="fa-solid fa-shield-halved" style={{ color: 'var(--color-primary)' }}></i>
-            {t.preparednessTitle}
-          </h2>
-          <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)' }}>{t.preparednessDesc}</p>
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem' }}>
-          {PREPAREDNESS_DATA.map((item, i) => (
-            <div key={i} className="card-hover animate-slide-up"
-              style={{ animationDelay: `${i * 100}ms`, background: 'var(--bg-card)', border: '1px solid var(--card-border)', borderRadius: 12, padding: '1.5rem', transition: 'background 0.4s ease' }}>
-              <div style={{ width: 44, height: 44, borderRadius: 10, background: `${item.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' }}>
-                <i className={`fa-solid ${item.icon}`} style={{ color: item.color, fontSize: '1.25rem' }}></i>
-              </div>
-              <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)', marginBottom: '0.75rem' }}>{item.title}</div>
-              <ul style={{ margin: 0, paddingLeft: '1.1rem' }}>
-                {item.steps.map((step, j) => (
-                  <li key={j} style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '0.35rem' }}>{step}</li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
+    <>
+      <div style={{ marginBottom: '1.75rem' }}>
+        <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)' }}>{t.preparednessDesc}</p>
       </div>
-    </section>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem' }}>
+        {PREPAREDNESS_DATA.map((item, i) => (
+          <div key={i} className="card-hover animate-slide-up"
+            style={{ animationDelay: `${i * 100}ms`, background: 'var(--bg-card)', border: '1px solid var(--card-border)', borderRadius: 12, padding: '1.5rem', transition: 'background 0.4s ease' }}>
+            <div style={{ width: 44, height: 44, borderRadius: 10, background: `${item.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' }}>
+              <i className={`fa-solid ${item.icon}`} style={{ color: item.color, fontSize: '1.25rem' }}></i>
+            </div>
+            <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)', marginBottom: '0.75rem' }}>{item.title}</div>
+            <ul style={{ margin: 0, paddingLeft: '1.1rem' }}>
+              {item.steps.map((step, j) => (
+                <li key={j} style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '0.35rem' }}>{step}</li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </>
   );
 }
 
@@ -542,14 +529,9 @@ function Preparedness({ lang }) {
 function About({ lang }) {
   const t = T[lang];
   return (
-    <section id="about-section" style={{ background: 'var(--hero-bg)', borderBottom: '1px solid var(--border-subtle)', padding: '3.5rem 0', transition: 'background 0.4s ease' }}>
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1.5rem' }}>
+    <>
         <div style={{ display: 'flex', gap: '3rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
           <div style={{ flex: '1 1 340px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1rem' }}>
-              <i className="fa-solid fa-shield-halved" style={{ color: 'var(--color-primary)', fontSize: '1.6rem' }}></i>
-              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.4rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>{t.aboutTitle}</h2>
-            </div>
             <p style={{ fontSize: '0.95rem', color: 'var(--text-secondary)', lineHeight: 1.8, marginBottom: '1.5rem' }}>{t.aboutDesc}</p>
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--card-border)', borderRadius: 10, padding: '1.25rem', marginBottom: '1rem' }}>
               <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-primary)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
@@ -593,6 +575,47 @@ function About({ lang }) {
               </div>
             </div>
           </div>
+        </div>
+    </>
+  );
+}
+
+
+// ── InfoTabs — horizontal tab bar switching between Resources / Preparedness / About ──
+const INFO_TABS = [
+  { key: 'resources', icon: 'fa-box-open' },
+  { key: 'preparedness', icon: 'fa-shield-halved' },
+  { key: 'about', icon: 'fa-circle-info' },
+];
+
+function InfoTabs({ lang, activeTab, setActiveTab }) {
+  const t = T[lang];
+  const labels = { resources: t.resourcesTitle, preparedness: t.preparednessTitle, about: t.aboutTitle };
+  const panels = { resources: <Resources lang={lang} />, preparedness: <Preparedness lang={lang} />, about: <About lang={lang} /> };
+
+  return (
+    <section id="info-tabs-section" style={{ background: 'var(--hero-bg)', borderBottom: '1px solid var(--border-subtle)', transition: 'background 0.4s ease' }}>
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1.5rem' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', borderBottom: '1px solid var(--border-subtle)', overflowX: 'auto' }}>
+          {INFO_TABS.map(({ key, icon }) => (
+            <button key={key} onClick={() => setActiveTab(key)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '0.5rem', whiteSpace: 'nowrap',
+                background: 'none', border: 'none', cursor: 'pointer',
+                padding: '1.1rem 1.4rem', marginBottom: '-1px',
+                fontFamily: 'var(--font)', fontSize: '0.85rem', fontWeight: 700,
+                textTransform: 'uppercase', letterSpacing: '0.08em',
+                color: activeTab === key ? 'var(--color-primary)' : 'var(--text-secondary)',
+                borderBottom: activeTab === key ? '2px solid var(--color-primary)' : '2px solid transparent',
+                transition: 'color 0.2s ease, border-color 0.2s ease',
+              }}>
+              <i className={`fa-solid ${icon}`}></i>
+              {labels[key]}
+            </button>
+          ))}
+        </div>
+        <div style={{ padding: '2.5rem 0' }}>
+          {panels[activeTab]}
         </div>
       </div>
     </section>
@@ -795,6 +818,7 @@ function AuthModal({ tab, onClose, onSuccess, lang }) {
 // ── HomePage (main export) ───────────────────────────────────────────
 export default function HomePage({ onLogin }) {
   const [modal, setModal] = useState(null);
+  const [activeTab, setActiveTab] = useState('resources');
   const [lang, setLang] = useState(() => localStorage.getItem('oarfin_lang') || 'English');
   const [darkMode, setDarkMode] = useState(() => {
     return localStorage.getItem('oarfin_theme') === 'dark' ||
@@ -829,17 +853,24 @@ export default function HomePage({ onLogin }) {
   const closeModal = () => { setModal(null); window.location.hash = ''; };
   const handleSuccess = (user) => { closeModal(); onLogin(user); };
 
+  const handleNav = (key) => {
+    if (key === 'resources' || key === 'preparedness' || key === 'about') {
+      setActiveTab(key);
+      document.getElementById('info-tabs-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      document.getElementById(`${key}-section`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   return (
     <div className="bg-mesh-flow min-h-screen">
       <TopBar onDarkToggle={() => setDarkMode(d => !d)} darkMode={darkMode} lang={lang} onLangChange={setLang} />
-      <Navbar onLoginClick={() => openModal('login')} onRegisterClick={() => openModal('register')} lang={lang} />
+      <Navbar onLoginClick={() => openModal('login')} onRegisterClick={() => openModal('register')} lang={lang} onNavClick={handleNav} />
       <main>
         <Hero onLoginClick={() => openModal('login')} lang={lang} />
         <ActiveAlerts lang={lang} />
         <StatsBar lang={lang} />
-        <Resources lang={lang} />
-        <Preparedness lang={lang} />
-        <About lang={lang} />
+        <InfoTabs lang={lang} activeTab={activeTab} setActiveTab={setActiveTab} />
       </main>
       <Footer lang={lang} />
       {modal && <AuthModal tab={modal} onClose={closeModal} onSuccess={handleSuccess} lang={lang} />}
