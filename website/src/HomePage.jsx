@@ -289,7 +289,10 @@ function TopBar({ onDarkToggle, darkMode, lang, onLangChange }) {
 
 
 // ── Navbar ───────────────────────────────────────────────────────────
-function Navbar({ onLoginClick, onRegisterClick, lang, onNavClick }) {
+// Horizontal top nav, active from the second page onward -- fixed to the
+// viewport (not sticky) so it can fully collapse offscreen while the Hero's
+// VerticalNav is showing, then slide/fade in once the hero scrolls out.
+function Navbar({ onLoginClick, onRegisterClick, lang, onNavClick, hidden }) {
   const t = T[lang];
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -307,7 +310,7 @@ function Navbar({ onLoginClick, onRegisterClick, lang, onNavClick }) {
   };
 
   return (
-    <nav style={{ background: 'var(--nav-bg)', borderBottom: '1px solid var(--border-subtle)', position: 'sticky', top: 0, zIndex: 100, boxShadow: scrolled ? '0 2px 12px rgba(0,0,0,0.08)' : 'none', transition: 'all 0.3s ease' }}>
+    <nav style={{ background: 'var(--nav-bg)', borderBottom: '1px solid var(--border-subtle)', position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, boxShadow: scrolled ? '0 2px 12px rgba(0,0,0,0.08)' : 'none', opacity: hidden ? 0 : 1, transform: hidden ? 'translateY(-100%)' : 'translateY(0)', pointerEvents: hidden ? 'none' : 'auto', transition: 'transform 0.4s cubic-bezier(0.16,1,0.3,1), opacity 0.3s ease, box-shadow 0.3s ease' }}>
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1.5rem', display: 'flex', alignItems: 'center', height: 62, gap: '2rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
           <i className="fa-solid fa-shield-halved" style={{ color: 'var(--color-primary)', fontSize: '1.4rem' }}></i>
@@ -351,8 +354,33 @@ function Navbar({ onLoginClick, onRegisterClick, lang, onNavClick }) {
 }
 
 
+// ── VerticalNav — first-page-only nav overlay, stacked along the left edge ──
+function VerticalNav({ lang, onNavClick, onLoginClick }) {
+  const t = T[lang];
+  const navKeys = ['dashboard', 'alerts', 'resources', 'preparedness', 'about'];
+  return (
+    <div className="vertical-nav" style={{ position: 'absolute', top: 0, left: 0, height: '100%', width: 96, zIndex: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', padding: '2.25rem 0', pointerEvents: 'auto' }}>
+      <i className="fa-solid fa-shield-halved" style={{ color: '#fff', fontSize: '1.5rem' }}></i>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.9rem', alignItems: 'center' }}>
+        {t.navLinks.map((l, i) => (
+          <button key={l} onClick={() => onNavClick(navKeys[i])}
+            style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.7)', fontSize: '0.76rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', cursor: 'pointer', writingMode: 'vertical-rl', transform: 'rotate(180deg)', padding: '0.3rem 0', transition: 'color 0.2s' }}
+            onMouseEnter={e => { e.currentTarget.style.color = '#fff'; }}
+            onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.7)'; }}>
+            {l}
+          </button>
+        ))}
+      </div>
+      <button onClick={onLoginClick} style={{ background: 'none', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 6, padding: '0.5rem 0.55rem', color: '#fff', cursor: 'pointer', fontSize: '0.85rem' }}>
+        <i className="fa-solid fa-right-to-bracket"></i>
+      </button>
+    </div>
+  );
+}
+
+
 // ── Hero ─────────────────────────────────────────────────────────────
-function Hero({ onLoginClick, lang }) {
+function Hero({ onLoginClick, onNavClick, lang, showVerticalNav = true }) {
   const t = T[lang];
   const pins = [
     { color: '#EF4444', label: 'Hurricane' },
@@ -362,7 +390,8 @@ function Hero({ onLoginClick, lang }) {
   return (
     <section id="dashboard-section" style={{ position: 'relative', overflow: 'hidden', background: 'radial-gradient(ellipse at 70% 100%, #0a1e4d 0%, #060a16 55%, #030408 100%)', minHeight: '92vh', display: 'flex', alignItems: 'center' }}>
       <Globe3D scrollContainerId="dashboard-section" markers={pins} />
-      <div style={{ position: 'relative', zIndex: 1, maxWidth: 1200, margin: '0 auto', padding: '5rem 1.5rem', width: '100%', pointerEvents: 'none' }}>
+      {showVerticalNav && <VerticalNav lang={lang} onNavClick={onNavClick} onLoginClick={onLoginClick} />}
+      <div style={{ position: 'relative', zIndex: 1, maxWidth: 1200, margin: '0 auto', padding: showVerticalNav ? '5rem 1.5rem 5rem 7.5rem' : '5rem 1.5rem', width: '100%', pointerEvents: 'none' }}>
         <div style={{ flex: '0 1 640px', maxWidth: 640, pointerEvents: 'none' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.14)', borderRadius: 20, padding: '0.3rem 0.9rem', marginBottom: '1.5rem', backdropFilter: 'blur(6px)' }}>
             <span className="animate-pulse-dot" style={{ width: 8, height: 8, borderRadius: '50%', background: '#10B981', display: 'inline-block' }}></span>
@@ -872,6 +901,31 @@ export default function HomePage({ onLogin }) {
   const closeModal = () => { setModal(null); window.location.hash = ''; };
   const handleSuccess = (user) => { closeModal(); onLogin(user); };
 
+  // First page (hero) uses the VerticalNav overlay instead of the horizontal
+  // bar; the horizontal Navbar collapses to zero height while the hero is in
+  // view and expands back in once the user scrolls past it onto page two.
+  const [heroVisible, setHeroVisible] = useState(true);
+  useEffect(() => {
+    const el = document.getElementById('dashboard-section');
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setHeroVisible(entry.isIntersecting),
+      { threshold: 0.35 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  // Below 768px the VerticalNav column doesn't fit alongside the hamburger
+  // menu -- fall back to the horizontal Navbar (with its hamburger) always.
+  const [isMobile, setIsMobile] = useState(() => window.matchMedia('(max-width: 768px)').matches);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)');
+    const fn = () => setIsMobile(mq.matches);
+    mq.addEventListener('change', fn);
+    return () => mq.removeEventListener('change', fn);
+  }, []);
+
   // Real inertia/momentum smooth scrolling (Lenis) -- the reference site runs
   // the same library. Lenis smooths the native scroll position directly, so
   // window.scrollY / scroll listeners elsewhere (Navbar shadow, Globe3D scroll
@@ -907,10 +961,12 @@ export default function HomePage({ onLogin }) {
   return (
     <div className="bg-mesh-flow min-h-screen">
       <TopBar onDarkToggle={() => setDarkMode(d => !d)} darkMode={darkMode} lang={lang} onLangChange={setLang} />
-      <Navbar onLoginClick={() => openModal('login')} onRegisterClick={() => openModal('register')} lang={lang} onNavClick={handleNav} />
+      <Navbar onLoginClick={() => openModal('login')} onRegisterClick={() => openModal('register')} lang={lang} onNavClick={handleNav} hidden={heroVisible && !isMobile} />
       <main>
-        <Hero onLoginClick={() => openModal('login')} lang={lang} />
-        <AlertsAndStats lang={lang} />
+        <Hero onLoginClick={() => openModal('login')} onNavClick={handleNav} lang={lang} showVerticalNav={!isMobile} />
+        <div style={{ paddingTop: (heroVisible && !isMobile) ? 0 : 62, transition: 'padding-top 0.4s cubic-bezier(0.16,1,0.3,1)' }}>
+          <AlertsAndStats lang={lang} />
+        </div>
         <InfoTabs lang={lang} activeTab={activeTab} setActiveTab={setActiveTab} />
       </main>
       <Footer lang={lang} />
