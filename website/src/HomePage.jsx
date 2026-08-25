@@ -361,30 +361,29 @@ function Navbar({ onLoginClick, onRegisterClick, lang, onNavClick, hidden }) {
 }
 
 
-// ── VerticalNav — first-page-only nav overlay: plain horizontal labels
-// stacked in a vertical column along the left edge, matching the reference
-// site's menu (upright text, not rotated -- rotated/sideways text was
-// overflowing its column and causing a stray horizontal scrollbar).
+// ── VerticalNav — first-page-only nav overlay: OARFIN logo + nav links in a
+// horizontal row along the top-left of the hero. Same translucent text
+// treatment as the original stacked-column version (no background box, just
+// upright letter-spaced text that brightens on hover) -- only the layout
+// direction changed, column -> row.
 function VerticalNav({ lang, onNavClick }) {
   const t = T[lang];
   const navKeys = ['dashboard', 'alerts', 'resources', 'preparedness', 'about'];
   return (
-    <div className="vertical-nav" style={{ position: 'absolute', top: 0, left: 0, height: '100%', width: 190, zIndex: 3, display: 'flex', flexDirection: 'column', padding: '2.25rem 0 2.25rem 1.75rem', pointerEvents: 'auto', boxSizing: 'border-box' }}>
+    <div className="vertical-nav" style={{ position: 'absolute', top: '1.75rem', left: '1.75rem', zIndex: 3, display: 'flex', alignItems: 'center', gap: '2rem', flexWrap: 'wrap', pointerEvents: 'auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
         <i className="fa-solid fa-shield-halved" style={{ color: '#fff', fontSize: '1.25rem' }}></i>
         <span style={{ fontWeight: 800, fontSize: '1rem', color: '#fff', letterSpacing: '0.06em' }}>OARFIN</span>
       </div>
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.15rem', alignItems: 'flex-start' }}>
-          {t.navLinks.map((l, i) => (
-            <button key={l} onClick={() => onNavClick(navKeys[i])}
-              style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.7)', fontSize: '0.78rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer', padding: '0.15rem 0', textAlign: 'left', transition: 'color 0.2s' }}
-              onMouseEnter={e => { e.currentTarget.style.color = '#fff'; }}
-              onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.7)'; }}>
-              {l}
-            </button>
-          ))}
-        </div>
+      <div style={{ display: 'flex', flexDirection: 'row', gap: '1.6rem', alignItems: 'center', flexWrap: 'wrap' }}>
+        {t.navLinks.map((l, i) => (
+          <button key={l} onClick={() => onNavClick(navKeys[i])}
+            style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.7)', fontSize: '0.78rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer', padding: '0.15rem 0', textAlign: 'left', transition: 'color 0.2s', whiteSpace: 'nowrap' }}
+            onMouseEnter={e => { e.currentTarget.style.color = '#fff'; }}
+            onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.7)'; }}>
+            {l}
+          </button>
+        ))}
       </div>
     </div>
   );
@@ -415,7 +414,7 @@ function Hero({ onLoginClick, onRegisterClick, onNavClick, lang, showVerticalNav
           {t.createAccount}
         </button>
       </div>
-      <div style={{ position: 'relative', zIndex: 1, maxWidth: 1200, margin: '0 auto', padding: showVerticalNav ? '5rem 1.5rem 5rem 13rem' : '5rem 1.5rem', width: '100%', pointerEvents: 'none' }}>
+      <div style={{ position: 'relative', zIndex: 1, maxWidth: 1200, margin: '0 auto', padding: '5rem 1.5rem', width: '100%', pointerEvents: 'none' }}>
         <div style={{ flex: '0 1 590px', maxWidth: 590, pointerEvents: 'none' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.14)', borderRadius: 20, padding: '0.3rem 0.9rem', marginBottom: '1.5rem', backdropFilter: 'blur(6px)' }}>
             <span className="animate-pulse-dot" style={{ width: 8, height: 8, borderRadius: '50%', background: '#10B981', display: 'inline-block' }}></span>
