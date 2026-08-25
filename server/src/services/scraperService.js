@@ -108,8 +108,6 @@ async function scrapeNDTV() {
   }
 }
 
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
 async function fetchReddit(sub) {
   sub = sub || 'DisasterUpdate';
   const cacheKey = 'reddit_' + sub;
