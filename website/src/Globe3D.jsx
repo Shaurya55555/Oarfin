@@ -44,52 +44,48 @@ function buildOrbitRing(radius, tiltX, tiltZ, color) {
   return ring;
 }
 
-// Rough continent outlines (lon, lat degrees) — stylized, not survey-accurate.
-// Good enough to read as "the world" once rasterized into a dot pattern, which
-// is the actual reference look (a stippled dot-matrix map on the sphere, not
-// a photographic earth texture).
-const CONTINENTS = [
-  [[-165, 70], [-70, 70], [-52, 60], [-60, 45], [-80, 25], [-97, 18], [-115, 32], [-125, 49], [-140, 60], [-165, 70]], // N. America
-  [[-80, 10], [-35, -5], [-35, -20], [-58, -38], [-73, -45], [-75, -20], [-80, 10]], // S. America
-  [[-17, 20], [35, 32], [45, 12], [40, -25], [15, -35], [10, -5], [-10, 10], [-17, 20]], // Africa
-  [[-10, 45], [10, 55], [30, 58], [40, 45], [20, 38], [0, 38], [-10, 45]], // Europe
-  [[35, 45], [60, 55], [100, 65], [140, 60], [145, 35], [120, 20], [95, 10], [70, 10], [60, 25], [45, 30], [35, 45]], // Asia
-  [[113, -12], [135, -12], [153, -25], [145, -38], [130, -32], [115, -22], [113, -12]], // Australia
-];
-
-// Rasterizes CONTINENTS into an equirectangular dot-matrix canvas texture —
-// this is what actually reads as "a map" on the rotating sphere.
-function buildDotEarthTexture() {
-  const W = 1024, H = 512;
+// Rasterizes real land-polygon GeoJSON (fetched from /world-land.geojson,
+// Natural Earth 110m land data) into an equirectangular dot-matrix canvas
+// texture — the actual "stippled world map" look, using real coastlines
+// instead of an approximation.
+function rasterizeLandToDots(geojson) {
+  const W = 1400, H = 700;
   const landCanvas = document.createElement('canvas');
   landCanvas.width = W; landCanvas.height = H;
   const lctx = landCanvas.getContext('2d');
   lctx.fillStyle = '#fff';
   const toXY = (lon, lat) => [(lon + 180) / 360 * W, (90 - lat) / 180 * H];
-  CONTINENTS.forEach(poly => {
-    lctx.beginPath();
-    poly.forEach(([lon, lat], i) => {
+
+  const drawRing = (ring) => {
+    ring.forEach(([lon, lat], i) => {
       const [x, y] = toXY(lon, lat);
       i === 0 ? lctx.moveTo(x, y) : lctx.lineTo(x, y);
     });
-    lctx.closePath();
-    lctx.fill();
+  };
+  const drawPolygon = (rings) => rings.forEach(drawRing);
+
+  lctx.beginPath();
+  geojson.features.forEach(f => {
+    const g = f.geometry;
+    if (g.type === 'Polygon') drawPolygon(g.coordinates);
+    else if (g.type === 'MultiPolygon') g.coordinates.forEach(drawPolygon);
   });
+  lctx.fill('evenodd');
   const landData = lctx.getImageData(0, 0, W, H).data;
 
   const dotCanvas = document.createElement('canvas');
   dotCanvas.width = W; dotCanvas.height = H;
   const dctx = dotCanvas.getContext('2d');
   dctx.fillStyle = '#bcd4ff';
-  const step = 7;
+  const step = 6;
   for (let y = 0; y < H; y += step) {
     for (let x = 0; x < W; x += step) {
       const idx = (y * W + x) * 4;
       if (landData[idx + 3] > 128) {
-        const jx = x + (Math.random() - 0.5) * 2;
-        const jy = y + (Math.random() - 0.5) * 2;
+        const jx = x + (Math.random() - 0.5) * 1.5;
+        const jy = y + (Math.random() - 0.5) * 1.5;
         dctx.beginPath();
-        dctx.arc(jx, jy, 1.1, 0, Math.PI * 2);
+        dctx.arc(jx, jy, 1, 0, Math.PI * 2);
         dctx.fill();
       }
     }
@@ -131,13 +127,15 @@ function buildMarker(radius, latDeg, lonDeg, colorHex) {
 }
 
 /**
- * Full-bleed animated hero background: a rotating globe (offset toward the
- * right side of the viewport) with a dot-matrix continent texture, orbit
+ * Full-bleed animated hero background: a rotating globe (offset well to the
+ * right of the viewport so it never sits under the headline column) with a
+ * real dot-matrix world map (rasterized from actual coastline data), orbit
  * shipping-route trails, a starfield, and real markers on the globe surface
  * for each entry in `markers` ({ color, label }). Each marker gets a
  * floating HTML label (like the reference site's country-name pills) that
- * fades in only while that marker is rotated toward the camera. Camera
- * pulls back on scroll. Renders behind the hero's real DOM content.
+ * fades in only while that marker is rotated toward the camera. The globe
+ * auto-rotates, pulls back on scroll, and can be dragged with the cursor
+ * (mouse/touch) to spin it manually, with momentum on release.
  */
 export default function Globe3D({ scrollContainerId, markers = [] }) {
   const mountRef = useRef(null);
@@ -146,6 +144,7 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
   useEffect(() => {
     const mount = mountRef.current;
     if (!mount) return;
+    let cancelled = false;
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(45, mount.clientWidth / mount.clientHeight, 0.1, 500);
@@ -155,11 +154,12 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(mount.clientWidth, mount.clientHeight);
     mount.appendChild(renderer.domElement);
+    mount.style.cursor = 'grab';
 
-    // Everything planet-related lives in one group, offset to the right so
-    // the globe sits beside the headline column rather than behind it.
+    // Everything planet-related lives in one group, offset well to the
+    // right so the globe sits clear of the headline column.
     const planetGroup = new THREE.Group();
-    planetGroup.position.x = 9;
+    planetGroup.position.x = 16;
     scene.add(planetGroup);
 
     // Globe body — mostly-dark sphere, matching the reference's night-side look.
@@ -169,14 +169,24 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
     );
     planetGroup.add(globe);
 
-    // Dot-matrix continent map, laid over the sphere as a slightly larger,
-    // additively-blended shell so the dots glow instead of looking flat.
-    const dotTexture = buildDotEarthTexture();
+    // Dot-matrix world map shell — filled in asynchronously once the real
+    // land geometry loads (see fetch below); starts blank so nothing pops.
     const dotEarth = new THREE.Mesh(
       new THREE.SphereGeometry(10.03, 64, 64),
-      new THREE.MeshBasicMaterial({ map: dotTexture, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending })
+      new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending })
     );
     globe.add(dotEarth);
+
+    let dotTexture = null;
+    fetch('/world-land.geojson')
+      .then(r => r.json())
+      .then(geojson => {
+        if (cancelled) return;
+        dotTexture = rasterizeLandToDots(geojson);
+        dotEarth.material.map = dotTexture;
+        dotEarth.material.needsUpdate = true;
+      })
+      .catch(() => { /* decorative only — fine to skip if it fails to load */ });
 
     // Real disaster-type markers on the globe surface, spread across
     // different hemispheres so rotation reveals them one at a time.
@@ -257,6 +267,40 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
     window.addEventListener('scroll', onScroll, { passive: true });
     computeScroll();
 
+    // ── Drag-to-rotate ──────────────────────────────────────────────────
+    let dragging = false;
+    let lastX = 0, lastY = 0;
+    let velY = 0;
+
+    const onPointerDown = (e) => {
+      dragging = true;
+      lastX = e.clientX; lastY = e.clientY;
+      velY = 0;
+      mount.style.cursor = 'grabbing';
+      mount.setPointerCapture?.(e.pointerId);
+      document.body.style.userSelect = 'none';
+      e.preventDefault();
+    };
+    const onPointerMove = (e) => {
+      if (!dragging) return;
+      const dx = e.clientX - lastX;
+      const dy = e.clientY - lastY;
+      const rotY = dx * 0.006;
+      globe.rotation.y += rotY;
+      globe.rotation.x = THREE.MathUtils.clamp(globe.rotation.x + dy * 0.006, -1.1, 1.1);
+      velY = rotY;
+      lastX = e.clientX; lastY = e.clientY;
+      e.preventDefault();
+    };
+    const onPointerUp = () => {
+      dragging = false;
+      mount.style.cursor = 'grab';
+      document.body.style.userSelect = '';
+    };
+    mount.addEventListener('pointerdown', onPointerDown);
+    window.addEventListener('pointermove', onPointerMove);
+    window.addEventListener('pointerup', onPointerUp);
+
     const clock = new THREE.Clock();
     const worldPos = new THREE.Vector3();
     const worldNormal = new THREE.Vector3();
@@ -266,7 +310,13 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
     const animate = () => {
       const dt = clock.getDelta();
       elapsed += dt;
-      globe.rotation.y += dt * (0.09 + scrollProgress * 0.4);
+
+      if (dragging) {
+        // rotation already applied directly in the pointermove handler
+      } else {
+        globe.rotation.y += dt * (0.09 + scrollProgress * 0.4) + velY;
+        velY *= 0.92; // momentum decay after release
+      }
       orbitGroup.rotation.y += dt * 0.03;
       stars.rotation.y += dt * 0.005;
 
@@ -313,12 +363,17 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
     window.addEventListener('resize', onResize);
 
     return () => {
+      cancelled = true;
+      document.body.style.userSelect = '';
       cancelAnimationFrame(raf);
       window.removeEventListener('resize', onResize);
       window.removeEventListener('scroll', onScroll);
+      mount.removeEventListener('pointerdown', onPointerDown);
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerup', onPointerUp);
       mount.removeChild(renderer.domElement);
       labelEls.forEach(el => el.remove());
-      dotTexture.dispose();
+      dotTexture?.dispose();
       const disposables = [globe, dotEarth, glow, warmRim, stars, ...orbitGroup.children];
       globe.children.forEach(child => { if (child !== dotEarth) child.children.forEach(c => disposables.push(c)); });
       disposables.forEach(obj => {
@@ -331,5 +386,9 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scrollContainerId, markersKey]);
 
-  return <div ref={mountRef} style={{ position: 'absolute', inset: 0, zIndex: 0, overflow: 'hidden' }} aria-hidden="true" />;
+  return <div ref={mountRef} style={{
+    position: 'absolute', inset: 0, zIndex: 0, overflow: 'hidden',
+    maskImage: 'linear-gradient(to right, transparent 0%, transparent 30%, black 48%)',
+    WebkitMaskImage: 'linear-gradient(to right, transparent 0%, transparent 30%, black 48%)',
+  }} aria-hidden="true" />;
 }
