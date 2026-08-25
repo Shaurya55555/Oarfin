@@ -318,6 +318,18 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
     let elapsed = 0;
 
     const animate = () => {
+      // Always reschedule first: if anything below throws on some frame, a
+      // hand-rolled raf loop otherwise dies permanently (the reschedule call
+      // never runs), freezing the globe until the next full page reload.
+      raf = requestAnimationFrame(animate);
+      try {
+        renderFrame();
+      } catch (err) {
+        console.error('Globe3D render frame error:', err);
+      }
+    };
+
+    const renderFrame = () => {
       const dt = clock.getDelta();
       elapsed += dt;
 
@@ -360,7 +372,6 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
       });
 
       renderer.render(scene, camera);
-      raf = requestAnimationFrame(animate);
     };
     animate();
 

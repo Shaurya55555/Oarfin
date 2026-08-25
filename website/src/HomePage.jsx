@@ -880,16 +880,19 @@ export default function HomePage({ onLogin }) {
   // lenis.scrollTo so they animate with the same easing instead of snapping.
   const lenisRef = useRef(null);
   useEffect(() => {
+    // autoRaf: true delegates the requestAnimationFrame loop to Lenis's own
+    // internal, battle-tested scheduler instead of a hand-rolled one -- a
+    // custom `raf = requestAnimationFrame(loop)` chain permanently dies if
+    // any single frame throws (the reschedule call after it never runs),
+    // which reproduces exactly "works once, then scrolling goes still."
     const lenis = new Lenis({
       duration: 1.1,
       easing: (t) => 1 - Math.pow(1 - t, 3),
       smoothWheel: true,
+      autoRaf: true,
     });
     lenisRef.current = lenis;
-    let raf;
-    const loop = (time) => { lenis.raf(time); raf = requestAnimationFrame(loop); };
-    raf = requestAnimationFrame(loop);
-    return () => { cancelAnimationFrame(raf); lenis.destroy(); lenisRef.current = null; };
+    return () => { lenis.destroy(); lenisRef.current = null; };
   }, []);
 
   const handleNav = (key) => {
