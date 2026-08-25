@@ -108,33 +108,54 @@ async function scrapeNDTV() {
   }
 }
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 async function fetchReddit(sub) {
   sub = sub || 'DisasterUpdate';
   const cacheKey = 'reddit_' + sub;
+  const staleKey = cacheKey + '_stale';
   const cached = cache.get(cacheKey);
   if (cached) return cached;
 
-  // Use Pullpush (Reddit archive API) — Reddit direct API blocks server-side requests
-  const response = await axios.get('https://api.pullpush.io/reddit/search/submission/?subreddit=' + sub + '&size=25&sort=desc', {
-    headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' },
-    timeout: 10000,
-  });
+  // Pullpush (Reddit archive API) is a free public service with an aggressive,
+  // often-shared rate limit -- a 429 there is common and not something we can
+  // eliminate outright, so we retry once with backoff, and if it still fails
+  // we serve the last known-good result (kept around much longer than the
+  // normal cache TTL) instead of surfacing a raw error to the UI.
+  let lastErr;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      if (attempt > 0) await sleep(1500);
+      const response = await axios.get('https://api.pullpush.io/reddit/search/submission/?subreddit=' + sub + '&size=25&sort=desc', {
+        headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' },
+        timeout: 10000,
+      });
 
-  const posts = (response.data.data || []).map((post) => ({
-    title: post.title,
-    type: post.is_video ? 'video' : (/\.(jpg|jpeg|png|gif|webp)$/i.test(post.url || '') ? 'image' : 'link'),
-    post_link: post.url,
-    reddit_link: 'https://reddit.com' + post.permalink,
-    thumbnail: post.thumbnail && post.thumbnail.startsWith('http') ? post.thumbnail : null,
-    score: post.score,
-    comments: post.num_comments,
-    created: new Date((post.created_utc || 0) * 1000).toISOString(),
-    author: post.author,
-    flair: post.link_flair_text || '',
-  })).filter(p => p.title);
+      const posts = (response.data.data || []).map((post) => ({
+        id: post.id,
+        title: post.title,
+        type: post.is_video ? 'video' : (/\.(jpg|jpeg|png|gif|webp)$/i.test(post.url || '') ? 'image' : 'link'),
+        post_link: post.url,
+        reddit_link: 'https://reddit.com' + post.permalink,
+        thumbnail: post.thumbnail && post.thumbnail.startsWith('http') ? post.thumbnail : null,
+        score: post.score,
+        comments: post.num_comments,
+        created: new Date((post.created_utc || 0) * 1000).toISOString(),
+        author: post.author,
+        flair: post.link_flair_text || '',
+      })).filter(p => p.title);
 
-  cache.set(cacheKey, posts, CACHE_TTL.REDDIT);
-  return posts;
+      cache.set(cacheKey, posts, CACHE_TTL.REDDIT);
+      cache.set(staleKey, posts, 21600); // 6h fallback, survives Pullpush being down/rate-limited
+      return posts;
+    } catch (err) {
+      lastErr = err;
+    }
+  }
+
+  const stale = cache.get(staleKey);
+  if (stale) return stale;
+  throw lastErr;
 }
 
 

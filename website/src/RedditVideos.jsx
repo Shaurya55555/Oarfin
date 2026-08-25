@@ -1,23 +1,27 @@
 import { useEffect, useState } from "react";
 import "./RedditVideos.css";
 
+const SERVER_URL = import.meta.env.VITE_SERVER_URL || "http://localhost:3000";
 const SUBREDDITS = ["DisasterUpdate", "worldnews", "NaturalDisasters"];
 
-// Pullpush is a Reddit archive API with CORS enabled — works directly from browser
+// Routed through our own server (not Pullpush directly from the browser):
+// the server caches results and retries with backoff, so one visitor's
+// requests don't exhaust Pullpush's rate limit for everyone, and a
+// transient Pullpush failure serves stale-but-real data instead of an error.
 const fetchPosts = (sub) =>
-  fetch(`https://api.pullpush.io/reddit/search/submission/?subreddit=${sub}&size=25&sort=desc`)
+  fetch(`${SERVER_URL}/api/news/reddit?sub=${sub}`)
     .then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
-    .then((data) => (data.data || []).filter((p) => p.title).map((p) => ({
+    .then((data) => (data || []).map((p) => ({
       id: p.id,
       title: p.title,
-      type: p.is_video ? "video" : /\.(jpg|jpeg|png|gif|webp)$/i.test(p.url || "") ? "image" : "link",
-      url: p.url,
-      redditUrl: `https://reddit.com${p.permalink}`,
-      thumbnail: p.thumbnail && p.thumbnail.startsWith("http") ? p.thumbnail : null,
+      type: p.type,
+      url: p.post_link,
+      redditUrl: p.reddit_link,
+      thumbnail: p.thumbnail,
       score: p.score || 0,
-      comments: p.num_comments || 0,
-      created: new Date((p.created_utc || 0) * 1000).toLocaleDateString(),
-      flair: p.link_flair_text || "",
+      comments: p.comments || 0,
+      created: p.created ? new Date(p.created).toLocaleDateString() : "",
+      flair: p.flair || "",
     })));
 
 export default function RedditVideos() {
