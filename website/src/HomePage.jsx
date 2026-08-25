@@ -9,7 +9,7 @@ const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3000';
 // into the viewport. Pass `delay` (ms) to stagger a sequence of siblings so
 // they come in one-by-one rather than all at once, matching the reference
 // site's scroll-triggered reveal.
-function Reveal({ children, style, delay = 0 }) {
+function Reveal({ children, style, delay = 0, once = true }) {
   const ref = useRef(null);
   const [visible, setVisible] = useState(false);
 
@@ -17,12 +17,19 @@ function Reveal({ children, style, delay = 0 }) {
     const el = ref.current;
     if (!el) return;
     const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) { setVisible(true); observer.disconnect(); } },
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          if (once) observer.disconnect();
+        } else if (!once) {
+          setVisible(false);
+        }
+      },
       { threshold: 0.15 }
     );
     observer.observe(el);
     return () => observer.disconnect();
-  }, []);
+  }, [once]);
 
   return (
     <div ref={ref} style={{
@@ -503,13 +510,15 @@ function AlertsAndStats({ lang }) {
                 </span>
               </div>
             </Reveal>
-            <div style={{ background: 'var(--color-primary)', borderRadius: 12, padding: '2rem 1.75rem', display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               {vals.map((v, i) => (
-                <Reveal key={i} delay={i * 130} style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                  <i className={`fa-solid ${icons[i]}`} style={{ color: 'rgba(255,255,255,0.7)', fontSize: '1.3rem', width: 28, flexShrink: 0 }}></i>
-                  <div>
-                    <div style={{ fontSize: 'clamp(1.8rem, 2.4vw, 2.4rem)', fontWeight: 800, color: '#fff', lineHeight: 1, letterSpacing: '-0.02em' }}>{v}</div>
-                    <div style={{ fontSize: '0.74rem', color: 'rgba(255,255,255,0.75)', marginTop: '0.3rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t.statsLabels[i]}</div>
+                <Reveal key={i} delay={i * 130} once={false}>
+                  <div style={{ background: 'var(--color-primary)', borderRadius: 12, padding: '1.5rem 1.75rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <i className={`fa-solid ${icons[i]}`} style={{ color: 'rgba(255,255,255,0.7)', fontSize: '1.3rem', width: 28, flexShrink: 0 }}></i>
+                    <div>
+                      <div style={{ fontSize: 'clamp(1.8rem, 2.4vw, 2.4rem)', fontWeight: 800, color: '#fff', lineHeight: 1, letterSpacing: '-0.02em' }}>{v}</div>
+                      <div style={{ fontSize: '0.74rem', color: 'rgba(255,255,255,0.75)', marginTop: '0.3rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t.statsLabels[i]}</div>
+                    </div>
                   </div>
                 </Reveal>
               ))}
