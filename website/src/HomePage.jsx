@@ -4,8 +4,11 @@ import Globe3D from './Globe3D';
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3000';
 
-// ── Reveal — fades/slides a section in the first time it scrolls into view ──
-function Reveal({ children, style }) {
+// ── Reveal — fades/slides an element up into view the first time it scrolls
+// into the viewport. Pass `delay` (ms) to stagger a sequence of siblings so
+// they come in one-by-one rather than all at once, matching the reference
+// site's scroll-triggered reveal.
+function Reveal({ children, style, delay = 0 }) {
   const ref = useRef(null);
   const [visible, setVisible] = useState(false);
 
@@ -25,7 +28,7 @@ function Reveal({ children, style }) {
       ...style,
       opacity: visible ? 1 : 0,
       transform: visible ? 'translateY(0)' : 'translateY(36px)',
-      transition: 'opacity 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1)',
+      transition: `opacity 0.7s cubic-bezier(0.16,1,0.3,1) ${delay}ms, transform 0.7s cubic-bezier(0.16,1,0.3,1) ${delay}ms`,
     }}>
       {children}
     </div>
@@ -359,12 +362,12 @@ function Hero({ onLoginClick, lang }) {
     <section id="dashboard-section" style={{ position: 'relative', overflow: 'hidden', background: 'radial-gradient(ellipse at 70% 100%, #0a1e4d 0%, #060a16 55%, #030408 100%)', minHeight: '92vh', display: 'flex', alignItems: 'center' }}>
       <Globe3D scrollContainerId="dashboard-section" markers={pins} />
       <div style={{ position: 'relative', zIndex: 1, maxWidth: 1200, margin: '0 auto', padding: '5rem 1.5rem', width: '100%' }}>
-        <div style={{ flex: '0 1 560px', maxWidth: 560 }}>
+        <div style={{ flex: '0 1 640px', maxWidth: 640 }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.14)', borderRadius: 20, padding: '0.3rem 0.9rem', marginBottom: '1.5rem', backdropFilter: 'blur(6px)' }}>
             <span className="animate-pulse-dot" style={{ width: 8, height: 8, borderRadius: '50%', background: '#10B981', display: 'inline-block' }}></span>
             <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.85)', fontWeight: 600, letterSpacing: '0.04em' }}>{t.systemOperational}</span>
           </div>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(2rem, 3.6vw, 3.2rem)', fontWeight: 600, textTransform: 'uppercase', color: '#fff', lineHeight: 1.12, marginBottom: '1.3rem', letterSpacing: '0.005em', overflowWrap: 'break-word' }}>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.6rem, 2.9vw, 2.6rem)', fontWeight: 600, textTransform: 'uppercase', color: '#fff', lineHeight: 1.18, marginBottom: '1.3rem', letterSpacing: '0.005em', overflowWrap: 'break-word' }}>
             {t.heroTitle1}<br />
             <span style={{ color: '#5b8fff' }}>{t.heroTitle2}</span>
           </h1>
@@ -414,17 +417,17 @@ function AlertsAndStats({ lang }) {
   const icons = ['fa-users', 'fa-bell', 'fa-house-chimney-medical', 'fa-clock-rotate-left'];
   return (
     <section id="alerts-section" style={{ background: 'var(--alert-section-bg)', borderBottom: '1px solid var(--border-subtle)', padding: '3.5rem 0', transition: 'background 0.4s ease' }}>
-      <Reveal style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1.5rem' }}>
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1.5rem' }}>
         <div className="alerts-stats-grid" style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '2.5rem', alignItems: 'start' }}>
           {/* Left column — Live Alert Feed */}
           <div>
-            <div style={{ marginBottom: '0.75rem' }}>
+            <Reveal style={{ marginBottom: '0.75rem' }}>
               <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.4rem', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
                 <i className="fa-solid fa-circle-exclamation" style={{ color: 'var(--color-critical)' }}></i>
                 {t.alertsTitle}
               </h2>
               <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)' }}>{t.alertsDesc}</p>
-            </div>
+            </Reveal>
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1.25rem' }}>
               <a href="#" style={{ fontSize: '0.85rem', color: 'var(--color-primary)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
                 {t.viewArchive} <i className="fa-solid fa-arrow-right" style={{ fontSize: '0.75rem' }}></i>
@@ -432,28 +435,30 @@ function AlertsAndStats({ lang }) {
             </div>
             <div style={{ display: 'grid', gap: '1.25rem' }}>
               {ALERTS_DATA.map((alert, i) => (
-                <div key={i} onClick={() => setExpanded(expanded === i ? null : i)}
-                  className="card-hover animate-slide-up"
-                  style={{ animationDelay: `${i * 150}ms`, background: 'var(--bg-card)', borderRadius: 10, padding: '1.25rem', cursor: 'pointer', borderLeft: `4px solid ${alert.color}`, border: `1px solid var(--card-border)`, transition: 'background 0.4s ease' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.6rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <i className={`fa-solid ${alert.icon}`} style={{ color: alert.color, fontSize: '1rem' }}></i>
-                      <span style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)' }}>{alert.title}</span>
+                <Reveal key={i} delay={i * 130}>
+                  <div onClick={() => setExpanded(expanded === i ? null : i)}
+                    className="card-hover"
+                    style={{ background: 'var(--bg-card)', borderRadius: 10, padding: '1.25rem', cursor: 'pointer', borderLeft: `4px solid ${alert.color}`, border: `1px solid var(--card-border)`, transition: 'background 0.4s ease' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.6rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <i className={`fa-solid ${alert.icon}`} style={{ color: alert.color, fontSize: '1rem' }}></i>
+                        <span style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)' }}>{alert.title}</span>
+                      </div>
+                      <span style={{ background: alert.badgeBg, color: '#fff', fontSize: '0.66rem', fontWeight: 800, padding: '0.18rem 0.55rem', borderRadius: 4, letterSpacing: '0.06em' }}>{alert.badge}</span>
                     </div>
-                    <span style={{ background: alert.badgeBg, color: '#fff', fontSize: '0.66rem', fontWeight: 800, padding: '0.18rem 0.55rem', borderRadius: 4, letterSpacing: '0.06em' }}>{alert.badge}</span>
-                  </div>
-                  <p style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', marginBottom: '0.75rem' }}>{alert.meta}</p>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '0.8rem', fontWeight: 600, color: alert.color }}>{alert.status}</span>
-                    <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>Updated {alert.updated}</span>
-                  </div>
-                  {expanded === i && (
-                    <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--expanded-border)' }}>
-                      <p style={{ fontSize: '0.85rem', color: 'var(--expanded-text)', marginBottom: '0.5rem', lineHeight: 1.6 }}>{alert.detail}</p>
-                      <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Source: {alert.source}</p>
+                    <p style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', marginBottom: '0.75rem' }}>{alert.meta}</p>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '0.8rem', fontWeight: 600, color: alert.color }}>{alert.status}</span>
+                      <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>Updated {alert.updated}</span>
                     </div>
-                  )}
-                </div>
+                    {expanded === i && (
+                      <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--expanded-border)' }}>
+                        <p style={{ fontSize: '0.85rem', color: 'var(--expanded-text)', marginBottom: '0.5rem', lineHeight: 1.6 }}>{alert.detail}</p>
+                        <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Source: {alert.source}</p>
+                      </div>
+                    )}
+                  </div>
+                </Reveal>
               ))}
             </div>
           </div>
@@ -461,17 +466,17 @@ function AlertsAndStats({ lang }) {
           {/* Right column — live numbers, stacked vertically */}
           <div style={{ background: 'var(--color-primary)', borderRadius: 12, padding: '2rem 1.75rem', display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
             {vals.map((v, i) => (
-              <div key={i} className="animate-slide-up" style={{ animationDelay: `${i * 100}ms`, display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <Reveal key={i} delay={i * 130} style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                 <i className={`fa-solid ${icons[i]}`} style={{ color: 'rgba(255,255,255,0.7)', fontSize: '1.3rem', width: 28, flexShrink: 0 }}></i>
                 <div>
                   <div style={{ fontSize: 'clamp(1.8rem, 2.4vw, 2.4rem)', fontWeight: 800, color: '#fff', lineHeight: 1, letterSpacing: '-0.02em' }}>{v}</div>
                   <div style={{ fontSize: '0.74rem', color: 'rgba(255,255,255,0.75)', marginTop: '0.3rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t.statsLabels[i]}</div>
                 </div>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>
-      </Reveal>
+      </div>
     </section>
   );
 }
@@ -487,18 +492,20 @@ function Resources({ lang }) {
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem' }}>
         {RESOURCES_DATA.map((r, i) => (
-          <a key={i} href={r.link}
-            className="card-hover animate-slide-up"
-            style={{ animationDelay: `${i * 100}ms`, background: 'var(--bg-card)', border: '1px solid var(--card-border)', borderRadius: 12, padding: '1.5rem', textDecoration: 'none', display: 'block', transition: 'background 0.4s ease' }}>
-            <div style={{ width: 44, height: 44, borderRadius: 10, background: `${r.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' }}>
-              <i className={`fa-solid ${r.icon}`} style={{ color: r.color, fontSize: '1.25rem' }}></i>
-            </div>
-            <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)', marginBottom: '0.4rem' }}>{r.title}</div>
-            <div style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '1rem' }}>{r.desc}</div>
-            <span style={{ fontSize: '0.84rem', color: r.color, fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-              {t.learnMore} <i className="fa-solid fa-arrow-right" style={{ fontSize: '0.72rem' }}></i>
-            </span>
-          </a>
+          <Reveal key={i} delay={i * 100}>
+            <a href={r.link}
+              className="card-hover"
+              style={{ background: 'var(--bg-card)', border: '1px solid var(--card-border)', borderRadius: 12, padding: '1.5rem', textDecoration: 'none', display: 'block', transition: 'background 0.4s ease' }}>
+              <div style={{ width: 44, height: 44, borderRadius: 10, background: `${r.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' }}>
+                <i className={`fa-solid ${r.icon}`} style={{ color: r.color, fontSize: '1.25rem' }}></i>
+              </div>
+              <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)', marginBottom: '0.4rem' }}>{r.title}</div>
+              <div style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '1rem' }}>{r.desc}</div>
+              <span style={{ fontSize: '0.84rem', color: r.color, fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                {t.learnMore} <i className="fa-solid fa-arrow-right" style={{ fontSize: '0.72rem' }}></i>
+              </span>
+            </a>
+          </Reveal>
         ))}
       </div>
     </>
@@ -515,18 +522,20 @@ function Preparedness({ lang }) {
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem' }}>
         {PREPAREDNESS_DATA.map((item, i) => (
-          <div key={i} className="card-hover animate-slide-up"
-            style={{ animationDelay: `${i * 100}ms`, background: 'var(--bg-card)', border: '1px solid var(--card-border)', borderRadius: 12, padding: '1.5rem', transition: 'background 0.4s ease' }}>
-            <div style={{ width: 44, height: 44, borderRadius: 10, background: `${item.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' }}>
-              <i className={`fa-solid ${item.icon}`} style={{ color: item.color, fontSize: '1.25rem' }}></i>
+          <Reveal key={i} delay={i * 100}>
+            <div className="card-hover"
+              style={{ background: 'var(--bg-card)', border: '1px solid var(--card-border)', borderRadius: 12, padding: '1.5rem', transition: 'background 0.4s ease' }}>
+              <div style={{ width: 44, height: 44, borderRadius: 10, background: `${item.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' }}>
+                <i className={`fa-solid ${item.icon}`} style={{ color: item.color, fontSize: '1.25rem' }}></i>
+              </div>
+              <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)', marginBottom: '0.75rem' }}>{item.title}</div>
+              <ul style={{ margin: 0, paddingLeft: '1.1rem' }}>
+                {item.steps.map((step, j) => (
+                  <li key={j} style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '0.35rem' }}>{step}</li>
+                ))}
+              </ul>
             </div>
-            <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)', marginBottom: '0.75rem' }}>{item.title}</div>
-            <ul style={{ margin: 0, paddingLeft: '1.1rem' }}>
-              {item.steps.map((step, j) => (
-                <li key={j} style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '0.35rem' }}>{step}</li>
-              ))}
-            </ul>
-          </div>
+          </Reveal>
         ))}
       </div>
     </>

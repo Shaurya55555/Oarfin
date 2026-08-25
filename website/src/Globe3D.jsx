@@ -159,7 +159,8 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
     // Everything planet-related lives in one group, offset well to the
     // right so the globe sits clear of the headline column.
     const planetGroup = new THREE.Group();
-    planetGroup.position.x = 16;
+    planetGroup.position.x = 21;
+    planetGroup.scale.setScalar(0.86);
     scene.add(planetGroup);
 
     // Globe body — mostly-dark sphere, matching the reference's night-side look.
@@ -297,9 +298,18 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
       mount.style.cursor = 'grab';
       document.body.style.userSelect = '';
     };
+    // Belt-and-suspenders: selectstart fires regardless of which input path
+    // (real pointer, plain mouse, or automated/CDP-simulated events) drove
+    // the gesture, so this is the one reliable place to kill text selection
+    // for the duration of a drag no matter how it was initiated.
+    const onSelectStart = (e) => { if (dragging) e.preventDefault(); };
     mount.addEventListener('pointerdown', onPointerDown);
+    mount.addEventListener('mousedown', onPointerDown);
+    document.addEventListener('selectstart', onSelectStart);
     window.addEventListener('pointermove', onPointerMove);
     window.addEventListener('pointerup', onPointerUp);
+    window.addEventListener('mousemove', onPointerMove);
+    window.addEventListener('mouseup', onPointerUp);
 
     const clock = new THREE.Clock();
     const worldPos = new THREE.Vector3();
@@ -369,8 +379,12 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
       window.removeEventListener('resize', onResize);
       window.removeEventListener('scroll', onScroll);
       mount.removeEventListener('pointerdown', onPointerDown);
+      mount.removeEventListener('mousedown', onPointerDown);
+      document.removeEventListener('selectstart', onSelectStart);
       window.removeEventListener('pointermove', onPointerMove);
       window.removeEventListener('pointerup', onPointerUp);
+      window.removeEventListener('mousemove', onPointerMove);
+      window.removeEventListener('mouseup', onPointerUp);
       mount.removeChild(renderer.domElement);
       labelEls.forEach(el => el.remove());
       dotTexture?.dispose();
