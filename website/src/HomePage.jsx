@@ -364,7 +364,7 @@ function Hero({ onLoginClick, lang }) {
             <span className="animate-pulse-dot" style={{ width: 8, height: 8, borderRadius: '50%', background: '#10B981', display: 'inline-block' }}></span>
             <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.85)', fontWeight: 600, letterSpacing: '0.04em' }}>{t.systemOperational}</span>
           </div>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(2.6rem, 6vw, 4.6rem)', fontWeight: 700, textTransform: 'uppercase', color: '#fff', lineHeight: 0.98, marginBottom: '1.3rem', letterSpacing: '-0.01em' }}>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(2rem, 3.6vw, 3.2rem)', fontWeight: 600, textTransform: 'uppercase', color: '#fff', lineHeight: 1.12, marginBottom: '1.3rem', letterSpacing: '0.005em', overflowWrap: 'break-word' }}>
             {t.heroTitle1}<br />
             <span style={{ color: '#5b8fff' }}>{t.heroTitle2}</span>
           </h1>
