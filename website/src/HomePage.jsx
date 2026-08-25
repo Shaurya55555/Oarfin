@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
+import Lenis from 'lenis';
 import Globe3D from './Globe3D';
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3000';
@@ -871,13 +872,33 @@ export default function HomePage({ onLogin }) {
   const closeModal = () => { setModal(null); window.location.hash = ''; };
   const handleSuccess = (user) => { closeModal(); onLogin(user); };
 
+  // Real inertia/momentum smooth scrolling (Lenis) -- the reference site runs
+  // the same library. Lenis smooths the native scroll position directly, so
+  // window.scrollY / scroll listeners elsewhere (Navbar shadow, Globe3D scroll
+  // progress, Reveal's IntersectionObserver) all benefit automatically without
+  // needing to know Lenis exists; programmatic nav jumps go through
+  // lenis.scrollTo so they animate with the same easing instead of snapping.
+  const lenisRef = useRef(null);
+  useEffect(() => {
+    const lenis = new Lenis({
+      duration: 1.1,
+      easing: (t) => 1 - Math.pow(1 - t, 3),
+      smoothWheel: true,
+    });
+    lenisRef.current = lenis;
+    let raf;
+    const loop = (time) => { lenis.raf(time); raf = requestAnimationFrame(loop); };
+    raf = requestAnimationFrame(loop);
+    return () => { cancelAnimationFrame(raf); lenis.destroy(); lenisRef.current = null; };
+  }, []);
+
   const handleNav = (key) => {
-    if (key === 'resources' || key === 'preparedness' || key === 'about') {
-      setActiveTab(key);
-      document.getElementById('info-tabs-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    } else {
-      document.getElementById(`${key}-section`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    const targetId = (key === 'resources' || key === 'preparedness' || key === 'about') ? 'info-tabs-section' : `${key}-section`;
+    if (key === 'resources' || key === 'preparedness' || key === 'about') setActiveTab(key);
+    const el = document.getElementById(targetId);
+    if (!el) return;
+    if (lenisRef.current) lenisRef.current.scrollTo(el, { duration: 1.3 });
+    else el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   return (
