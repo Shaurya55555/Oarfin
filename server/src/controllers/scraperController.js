@@ -28,7 +28,11 @@ async function getRedditNews(req, res) {
     res.status(200).json(posts);
   } catch (err) {
     console.error('Reddit error:', err.message);
-    res.status(500).json({ error: 'Failed to fetch Reddit posts' });
+    if (err.upstreamUnavailable) {
+      res.status(503).json({ error: err.message, upstreamUnavailable: true });
+    } else {
+      res.status(500).json({ error: 'Failed to fetch Reddit posts' });
+    }
   }
 }
 

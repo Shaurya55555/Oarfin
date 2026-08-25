@@ -78,120 +78,73 @@ async function queryFEMA(lat, lng, radiusKm) {
   } catch { return []; }
 }
 
-async function queryOSM(lat, lng, radiusKm) {
-  const radiusM = Math.min(radiusKm * 1000, 500000);
+const OSM_TYPE_MAP = {
+  shelter: 'shelter', hospital: 'hospital', clinic: 'clinic', doctors: 'clinic',
+  nursing_home: 'nursing_home', social_facility: 'shelter', police: 'police',
+  fire_station: 'fire_station', pharmacy: 'pharmacy',
+  community_centre: 'shelter', school: 'shelter', stadium: 'shelter',
+};
 
-  // Compact single-union query — covers global shelter/emergency facility tags
-  const query = `[out:json][timeout:20];(nwr["amenity"~"^(shelter|hospital|clinic|doctors|nursing_home|social_facility|police|fire_station|pharmacy|community_centre|school|stadium)$"](around:${radiusM},${lat},${lng});nwr["emergency"~"^(shelter|assembly_point|evacuation_point)$"](around:${radiusM},${lat},${lng});nwr["disaster:shelter"="yes"](around:${radiusM},${lat},${lng}););out center 200;`;
-
-  const typeMap = {
-    shelter: 'shelter', hospital: 'hospital', clinic: 'clinic', doctors: 'clinic',
-    nursing_home: 'nursing_home', social_facility: 'shelter', police: 'police',
-    fire_station: 'fire_station', pharmacy: 'pharmacy',
-    community_centre: 'shelter', school: 'shelter', stadium: 'shelter',
-  };
-
-  // Try GET first (less rate-limited), then POST as fallback
-  for (const endpoint of OVERPASS_ENDPOINTS) {
-    try {
-      // Use GET with encoded query — avoids POST rate limits on some mirrors
-      const getUrl = `${endpoint}?data=${encodeURIComponent(query)}`;
-      const res = await axios.get(getUrl, {
-        headers: { 'Accept': '*/*', 'User-Agent': 'OarfinApp/1.0' },
-        timeout: 10000,
-      });
-
-      if (typeof res.data === 'string' && res.data.includes('<html')) continue;
-      const elements = res.data?.elements || [];
-      if (elements.length === 0 && res.data?.remark) continue;
-
-      const results = elements.map(el => {
-        const elLat = el.lat ?? el.center?.lat;
-        const elLng = el.lon ?? el.center?.lon;
-        if (!elLat || !elLng) return null;
-        const amenity = el.tags?.amenity || '';
-        const type = el.tags?.emergency ? 'shelter'
-          : el.tags?.['disaster:shelter'] ? 'shelter'
-          : typeMap[amenity] || 'shelter';
-        return {
-          id: `osm-${el.id}`,
-          name: el.tags?.name || null,
-          lat: elLat, lng: elLng, type,
-          address: el.tags?.['addr:street'] || el.tags?.['addr:full'] || null,
-          capacity: null,
-          source: 'OpenStreetMap',
-          distance_km: Math.round(haversine(lat, lng, elLat, elLng) * 10) / 10,
-        };
-      }).filter(Boolean).sort((a, b) => a.distance_km - b.distance_km);
-
-      console.log(`Overpass ${endpoint.slice(8, 35)} OK: ${results.length} results`);
-      return results;
-
-    } catch (err) {
-      console.warn(`Overpass ${endpoint.slice(8, 35)} failed: ${err.response?.status || err.message}`);
-      // Try POST as fallback for this endpoint
-      try {
-        const res = await axios.post(
-          endpoint,
-          `data=${encodeURIComponent(query)}`,
-          { headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, timeout: 10000 }
-        );
-        if (typeof res.data === 'string' && res.data.includes('<html')) continue;
-        const elements = res.data?.elements || [];
-        if (elements.length === 0 && res.data?.remark) continue;
-
-        const results = elements.map(el => {
-          const elLat = el.lat ?? el.center?.lat;
-          const elLng = el.lon ?? el.center?.lon;
-          if (!elLat || !elLng) return null;
-          const amenity = el.tags?.amenity || '';
-          const type = el.tags?.emergency ? 'shelter'
-            : el.tags?.['disaster:shelter'] ? 'shelter'
-            : typeMap[amenity] || 'shelter';
-          return {
-            id: `osm-${el.id}`,
-            name: el.tags?.name || null,
-            lat: elLat, lng: elLng, type,
-            address: el.tags?.['addr:street'] || el.tags?.['addr:full'] || null,
-            capacity: null,
-            source: 'OpenStreetMap',
-            distance_km: Math.round(haversine(lat, lng, elLat, elLng) * 10) / 10,
-          };
-        }).filter(Boolean).sort((a, b) => a.distance_km - b.distance_km);
-
-        console.log(`Overpass ${endpoint.slice(8, 35)} POST OK: ${results.length} results`);
-        return results;
-      } catch (err2) {
-        console.warn(`Overpass ${endpoint.slice(8, 35)} POST also failed: ${err2.response?.status || err2.message}`);
-        continue;
-      }
-    }
-  }
-
-  return [];
+function mapOverpassElements(elements, lat, lng) {
+  return elements.map(el => {
+    const elLat = el.lat ?? el.center?.lat;
+    const elLng = el.lon ?? el.center?.lon;
+    if (!elLat || !elLng) return null;
+    const amenity = el.tags?.amenity || '';
+    const type = el.tags?.emergency ? 'shelter'
+      : el.tags?.['disaster:shelter'] ? 'shelter'
+      : OSM_TYPE_MAP[amenity] || 'shelter';
+    return {
+      id: `osm-${el.id}`,
+      name: el.tags?.name || null,
+      lat: elLat, lng: elLng, type,
+      address: el.tags?.['addr:street'] || el.tags?.['addr:full'] || null,
+      capacity: null,
+      source: 'OpenStreetMap',
+      distance_km: Math.round(haversine(lat, lng, elLat, elLng) * 10) / 10,
+    };
+  }).filter(Boolean).sort((a, b) => a.distance_km - b.distance_km);
 }
 
+// This broad multi-tag query genuinely takes 10-20s on a loaded Overpass
+// mirror (measured directly: ~13s against overpass-api.de) -- a 10s timeout
+// was cutting it off mid-response on every request, which is why shelter
+// search kept coming back empty even though the data was there. Racing all
+// mirrors in parallel (instead of trying them one at a time, each with its
+// own GET-then-POST fallback) both fixes that and cuts worst-case latency
+// from ~80s sequential down to whichever mirror answers first.
+async function queryOSM(lat, lng, radiusKm) {
+  const radiusM = Math.min(radiusKm * 1000, 500000);
+  const query = `[out:json][timeout:25];(nwr["amenity"~"^(shelter|hospital|clinic|doctors|nursing_home|social_facility|police|fire_station|pharmacy|community_centre|school|stadium)$"](around:${radiusM},${lat},${lng});nwr["emergency"~"^(shelter|assembly_point|evacuation_point)$"](around:${radiusM},${lat},${lng});nwr["disaster:shelter"="yes"](around:${radiusM},${lat},${lng}););out center 200;`;
 
-// If all endpoints are rate-limited, wait 3s and try once more with the most reliable one
+  const tryEndpoint = async (endpoint) => {
+    const res = await axios.get(`${endpoint}?data=${encodeURIComponent(query)}`, {
+      headers: { 'Accept': '*/*', 'User-Agent': 'OarfinApp/1.0' },
+      timeout: 22000,
+    });
+    if (typeof res.data === 'string' && res.data.includes('<html')) throw new Error('html response (blocked/rate-limited)');
+    const elements = res.data?.elements || [];
+    if (elements.length === 0 && res.data?.remark) throw new Error(res.data.remark);
+    return mapOverpassElements(elements, lat, lng);
+  };
+
+  try {
+    const results = await Promise.any(OVERPASS_ENDPOINTS.map(tryEndpoint));
+    console.log(`Overpass OK: ${results.length} results`);
+    return results;
+  } catch (aggregate) {
+    console.warn('All Overpass mirrors failed:', aggregate?.errors?.map(e => e.message).join(' | ') || aggregate.message);
+    return [];
+  }
+}
+
+// One retry pass after a short pause in case every mirror was transiently
+// overloaded at the same moment.
 async function queryOSMWithRetry(lat, lng, radiusKm) {
   const result = await queryOSM(lat, lng, radiusKm);
   if (result.length > 0) return result;
-  // All endpoints failed — wait 3s and try the most reliable one directly
   await new Promise(r => setTimeout(r, 3000));
-  const radiusM = Math.min(radiusKm * 1000, 500000);
-  const query = `[out:json][timeout:25];(nwr["amenity"~"^(shelter|hospital|clinic|doctors|nursing_home|social_facility|police|fire_station|pharmacy|community_centre|school|stadium)$"](around:${radiusM},${lat},${lng});nwr["emergency"~"^(shelter|assembly_point|evacuation_point)$"](around:${radiusM},${lat},${lng});nwr["disaster:shelter"="yes"](around:${radiusM},${lat},${lng}););out center 200;`;
-  const typeMap = { shelter:'shelter',hospital:'hospital',clinic:'clinic',doctors:'clinic',nursing_home:'nursing_home',social_facility:'shelter',police:'police',fire_station:'fire_station',pharmacy:'pharmacy',community_centre:'shelter',school:'shelter',stadium:'shelter' };
-  try {
-    const res = await axios.get(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`, { headers: { 'Accept': '*/*', 'User-Agent': 'OarfinApp/1.0' }, timeout: 25000 });
-    if (typeof res.data === 'string' && res.data.includes('<html')) return [];
-    return (res.data?.elements || []).map(el => {
-      const elLat = el.lat ?? el.center?.lat;
-      const elLng = el.lon ?? el.center?.lon;
-      if (!elLat || !elLng) return null;
-      const amenity = el.tags?.amenity || '';
-      return { id: `osm-${el.id}`, name: el.tags?.name||null, lat:elLat, lng:elLng, type: el.tags?.emergency?'shelter':typeMap[amenity]||'shelter', address: el.tags?.['addr:street']||null, capacity:null, source:'OpenStreetMap', distance_km: Math.round(haversine(lat,lng,elLat,elLng)*10)/10 };
-    }).filter(Boolean).sort((a,b)=>a.distance_km-b.distance_km);
-  } catch { return []; }
+  return queryOSM(lat, lng, radiusKm);
 }
 
 module.exports = { queryNearby };

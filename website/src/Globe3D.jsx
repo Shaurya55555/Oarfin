@@ -189,8 +189,12 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
 
     // Real disaster-type markers on the globe surface, spread across
     // different hemispheres so rotation reveals them one at a time.
+    // Coordinates picked to actually land on ground plausible for each
+    // type (a wildfire pin sitting in open ocean made no sense): Gulf
+    // Coast Florida for hurricane, Southern California for wildfire,
+    // Bangladesh's river delta for flood.
     const markerLatLon = [
-      [24, -20], [-18, 60], [34, 140],
+      [26, -81], [36, -119], [23, 90],
     ];
     const labelEls = [];
     const markerObjs = markers.slice(0, markerLatLon.length).map((m, i) => {

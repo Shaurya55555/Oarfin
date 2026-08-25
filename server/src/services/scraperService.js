@@ -153,7 +153,18 @@ async function fetchReddit(sub) {
 
   const stale = cache.get(staleKey);
   if (stale) return stale;
-  throw lastErr;
+
+  // Pullpush now actively refuses automated/server-side traffic outright
+  // ("This website does not provide free scraping resources for agents")
+  // rather than just occasionally rate-limiting -- surface that distinctly
+  // so the controller/frontend can show a calm "unavailable" state instead
+  // of a generic server-error message.
+  const upstreamBlocked = lastErr?.response?.status === 429;
+  const err = new Error(upstreamBlocked
+    ? 'Reddit archive service is currently rate-limiting/blocking automated requests'
+    : (lastErr?.message || 'Failed to reach Reddit archive service'));
+  err.upstreamUnavailable = true;
+  throw err;
 }
 
 

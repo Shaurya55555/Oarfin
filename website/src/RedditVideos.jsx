@@ -10,7 +10,16 @@ const SUBREDDITS = ["DisasterUpdate", "worldnews", "NaturalDisasters"];
 // transient Pullpush failure serves stale-but-real data instead of an error.
 const fetchPosts = (sub) =>
   fetch(`${SERVER_URL}/api/news/reddit?sub=${sub}`)
-    .then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+    .then((r) => {
+      if (!r.ok) {
+        return r.json().catch(() => ({})).then((body) => {
+          const err = new Error(body.error || `HTTP ${r.status}`);
+          err.upstreamUnavailable = !!body.upstreamUnavailable;
+          throw err;
+        });
+      }
+      return r.json();
+    })
     .then((data) => (data || []).map((p) => ({
       id: p.id,
       title: p.title,
@@ -28,15 +37,17 @@ export default function RedditVideos() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [upstreamUnavailable, setUpstreamUnavailable] = useState(false);
   const [activeSub, setActiveSub] = useState("DisasterUpdate");
   const [filter, setFilter] = useState("all");
 
   const load = (sub) => {
     setLoading(true);
     setError(null);
+    setUpstreamUnavailable(false);
     fetchPosts(sub)
       .then(setPosts)
-      .catch((e) => setError(e.message || "Failed to load posts."))
+      .catch((e) => { setError(e.message || "Failed to load posts."); setUpstreamUnavailable(!!e.upstreamUnavailable); })
       .finally(() => setLoading(false));
   };
 
@@ -88,7 +99,20 @@ export default function RedditVideos() {
       )}
 
       {/* Error */}
-      {error && !loading && (
+      {error && !loading && upstreamUnavailable && (
+        <div style={{ textAlign: "center", padding: "3rem 1.5rem", color: "#666" }}>
+          <i className="fa-brands fa-reddit" style={{ fontSize: "2rem", marginBottom: "0.75rem", display: "block", color: "#d1d5db" }}></i>
+          <p style={{ fontWeight: 600, marginBottom: "0.35rem" }}>Reddit updates aren't available right now</p>
+          <p style={{ fontSize: "0.85rem", color: "#999", maxWidth: 380, margin: "0 auto 1rem" }}>
+            The archive service we use for this feed is currently rate-limiting automated requests. This is on their end, not ours — try again in a few minutes.
+          </p>
+          <button onClick={() => load(activeSub)}
+            style={{ padding: "0.4rem 1rem", background: "#1E3A5F", color: "#fff", border: "none", borderRadius: 6, cursor: "pointer", fontSize: "0.82rem" }}>
+            Retry
+          </button>
+        </div>
+      )}
+      {error && !loading && !upstreamUnavailable && (
         <div style={{ background: "#fff3cd", border: "1px solid #ffc107", borderLeft: "4px solid #e65100", borderRadius: 8, padding: "1rem 1.25rem", display: "flex", alignItems: "center", gap: "0.75rem" }}>
           <i className="fa-solid fa-triangle-exclamation" style={{ color: "#e65100" }}></i>
           <span style={{ fontSize: "0.9rem", color: "#555" }}>{error}</span>
