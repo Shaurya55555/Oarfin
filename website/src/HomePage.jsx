@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
+import Globe3D from './Globe3D';
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3000';
 
@@ -327,37 +328,38 @@ function Hero({ onLoginClick, lang }) {
     { top: '38%', left: '72%', color: '#3B82F6', label: 'Flood' },
   ];
   return (
-    <section id="dashboard-section" style={{ background: 'var(--hero-bg)', borderBottom: '1px solid var(--hero-border)', transition: 'background 0.4s ease' }}>
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '4rem 1.5rem', display: 'flex', gap: '3rem', alignItems: 'center', flexWrap: 'wrap' }}>
+    <section id="dashboard-section" style={{ position: 'relative', overflow: 'hidden', background: 'radial-gradient(ellipse at 70% 100%, #0a1e4d 0%, #060a16 55%, #030408 100%)' }}>
+      <Globe3D scrollContainerId="dashboard-section" />
+      <div style={{ position: 'relative', zIndex: 1, maxWidth: 1200, margin: '0 auto', padding: '5rem 1.5rem', display: 'flex', gap: '3rem', alignItems: 'center', flexWrap: 'wrap' }}>
         <div style={{ flex: '1 1 340px' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'var(--bg-section)', border: '1px solid var(--border-subtle)', borderRadius: 20, padding: '0.3rem 0.9rem', marginBottom: '1.5rem' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.14)', borderRadius: 20, padding: '0.3rem 0.9rem', marginBottom: '1.5rem', backdropFilter: 'blur(6px)' }}>
             <span className="animate-pulse-dot" style={{ width: 8, height: 8, borderRadius: '50%', background: '#10B981', display: 'inline-block' }}></span>
-            <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.04em' }}>{t.systemOperational}</span>
+            <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.85)', fontWeight: 600, letterSpacing: '0.04em' }}>{t.systemOperational}</span>
           </div>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.9rem, 3.5vw, 2.9rem)', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.18, marginBottom: '1.1rem', letterSpacing: '-0.01em' }}>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(2.6rem, 6vw, 4.6rem)', fontWeight: 700, textTransform: 'uppercase', color: '#fff', lineHeight: 0.98, marginBottom: '1.3rem', letterSpacing: '-0.01em' }}>
             {t.heroTitle1}<br />
-            <span style={{ color: 'var(--color-primary)' }}>{t.heroTitle2}</span>
+            <span style={{ color: '#5b8fff' }}>{t.heroTitle2}</span>
           </h1>
-          <p style={{ fontSize: '1.05rem', color: 'var(--text-secondary)', marginBottom: '2rem', maxWidth: 480, lineHeight: 1.7 }}>{t.heroDesc}</p>
+          <p style={{ fontSize: '1.05rem', color: 'rgba(255,255,255,0.75)', marginBottom: '2rem', maxWidth: 480, lineHeight: 1.7 }}>{t.heroDesc}</p>
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '2.25rem' }} className="animate-fade-in delay-200">
             <button className="btn-modern" onClick={onLoginClick} style={{ background: 'var(--color-primary)', color: '#fff', border: 'none', borderRadius: 10, padding: '0.75rem 1.6rem', fontWeight: 700, fontSize: '0.95rem', boxShadow: '0 4px 14px rgba(37,99,235,0.3)', cursor: 'pointer' }}>
               <i className="fa-solid fa-gauge-high" style={{ marginRight: '0.5rem' }}></i>{t.viewDashboard}
             </button>
-            <button className="btn-modern" style={{ background: 'transparent', color: 'var(--color-critical)', border: '2px solid var(--color-critical)', borderRadius: 10, padding: '0.75rem 1.6rem', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer' }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-critical)'; e.currentTarget.style.color = '#fff'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--color-critical)'; }}>
+            <button className="btn-modern" style={{ background: 'transparent', color: '#ff6b6b', border: '2px solid #ff6b6b', borderRadius: 10, padding: '0.75rem 1.6rem', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer' }}
+              onMouseEnter={e => { e.currentTarget.style.background = '#ff6b6b'; e.currentTarget.style.color = '#fff'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#ff6b6b'; }}>
               <i className="fa-solid fa-triangle-exclamation" style={{ marginRight: '0.5rem' }}></i>{t.reportEmergency}
             </button>
           </div>
           <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
             {[['fa-building-columns', t.operatedBy], ['fa-clock', t.monitoring], ['fa-server', t.uptime]].map(([icon, text]) => (
-              <div key={text} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-                <i className={`fa-solid ${icon}`} style={{ color: 'var(--color-primary)' }}></i>{text}
+              <div key={text} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.82rem', color: 'rgba(255,255,255,0.6)' }}>
+                <i className={`fa-solid ${icon}`} style={{ color: '#5b8fff' }}></i>{text}
               </div>
             ))}
           </div>
         </div>
-        <div style={{ flex: '1 1 300px', background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 12, overflow: 'hidden', boxShadow: 'var(--shadow-card)', transition: 'background 0.4s ease' }}>
+        <div style={{ flex: '1 1 300px', background: 'rgba(10,14,26,0.7)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 12, overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.5)', backdropFilter: 'blur(10px)' }}>
           <div style={{ background: 'var(--color-navy)', padding: '0.7rem 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ color: '#fff', fontSize: '0.85rem', fontWeight: 700 }}>
               <i className="fa-solid fa-map-location-dot" style={{ marginRight: '0.4rem', color: 'var(--color-primary)' }}></i>{t.liveMap}
@@ -380,15 +382,15 @@ function Hero({ onLoginClick, lang }) {
               </div>
             ))}
           </div>
-          <div style={{ padding: '0.65rem 1rem', borderTop: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-card)', transition: 'background 0.4s ease' }}>
+          <div style={{ padding: '0.65rem 1rem', borderTop: '1px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ display: 'flex', gap: '1rem' }}>
               {[['#EF4444', 'Hurricane'], ['#F59E0B', 'Wildfire'], ['#3B82F6', 'Flood']].map(([c, l]) => (
-                <span key={l} style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                <span key={l} style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.75rem', color: 'rgba(255,255,255,0.7)' }}>
                   <span style={{ width: 8, height: 8, borderRadius: '50%', background: c, display: 'inline-block' }}></span>{l}
                 </span>
               ))}
             </div>
-            <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{t.updatedAgo}</span>
+            <span style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.45)' }}>{t.updatedAgo}</span>
           </div>
         </div>
       </div>
