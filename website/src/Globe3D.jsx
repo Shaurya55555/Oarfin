@@ -115,6 +115,26 @@ function rasterizeLandToDots(geojson) {
   return tex;
 }
 
+// Glowing flight-path arc between two surface points, lifted above the
+// sphere at its midpoint (quadratic bezier), plus a small traveling light
+// particle that animates along it — the "flight route" look from the
+// reference site's global network visualization.
+function buildArc(p1, p2, color) {
+  const chord = p1.distanceTo(p2);
+  const mid = p1.clone().add(p2).multiplyScalar(0.5);
+  const liftFactor = 1 + (chord / (2 * p1.length())) * 0.55;
+  mid.normalize().multiplyScalar(p1.length() * liftFactor);
+  const curve = new THREE.QuadraticBezierCurve3(p1, mid, p2);
+  const points = curve.getPoints(48);
+  const geo = new THREE.BufferGeometry().setFromPoints(points);
+  const line = new THREE.Line(geo, new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.4, blending: THREE.AdditiveBlending }));
+  const particle = new THREE.Mesh(
+    new THREE.SphereGeometry(0.16, 8, 8),
+    new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending })
+  );
+  return { line, particle, curve };
+}
+
 function latLonToVector3(radius, latDeg, lonDeg) {
   const lat = THREE.MathUtils.degToRad(latDeg);
   const lon = THREE.MathUtils.degToRad(lonDeg);
@@ -239,6 +259,22 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
       return { halo, localPos, el };
     });
 
+    // Flight-path arcs connecting each marker to the next (closing the loop
+    // once there are 3+), each with a traveling light particle -- children
+    // of `globe` so they rotate together with the markers they connect.
+    const arcs = [];
+    if (markerObjs.length >= 2) {
+      const pairCount = markerObjs.length >= 3 ? markerObjs.length : 1;
+      for (let i = 0; i < pairCount; i++) {
+        const a = markerObjs[i].localPos;
+        const b = markerObjs[(i + 1) % markerObjs.length].localPos;
+        const { line, particle, curve } = buildArc(a, b, 0xffa64d);
+        globe.add(line);
+        globe.add(particle);
+        arcs.push({ curve, line, particle, phase: i / pairCount, speed: 0.18 });
+      }
+    }
+
     // Atmosphere glow shell (fresnel rim light), warm at the top fading to
     // cool blue at the bottom -- additive-blended, matching the reference's
     // sunlit-limb globe rather than a flat single-color glow.
@@ -326,6 +362,20 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
     window.addEventListener('mousemove', onPointerMove);
     window.addEventListener('mouseup', onPointerUp);
 
+    // ── Mouse-follow tilt — a gentle passive tilt of the whole planet
+    // group (separate from the globe's own spin/drag rotation) that eases
+    // toward the cursor position, suspended while actively dragging.
+    let targetTiltX = 0, targetTiltY = 0;
+    const onMouseTilt = (e) => {
+      if (dragging) return;
+      const rect = mount.getBoundingClientRect();
+      const nx = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      const ny = ((e.clientY - rect.top) / rect.height) * 2 - 1;
+      targetTiltY = THREE.MathUtils.clamp(nx, -1, 1) * 0.12;
+      targetTiltX = THREE.MathUtils.clamp(-ny, -1, 1) * 0.08;
+    };
+    mount.addEventListener('mousemove', onMouseTilt);
+
     const clock = new THREE.Clock();
     const worldPos = new THREE.Vector3();
     const worldNormal = new THREE.Vector3();
@@ -356,6 +406,14 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
       }
       orbitGroup.rotation.y += dt * 0.03;
       stars.rotation.y += dt * 0.005;
+
+      planetGroup.rotation.x += (targetTiltX - planetGroup.rotation.x) * 0.05;
+      planetGroup.rotation.y += (targetTiltY - planetGroup.rotation.y) * 0.05;
+
+      arcs.forEach(a => {
+        const t = (elapsed * a.speed + a.phase) % 1;
+        a.curve.getPoint(t, a.particle.position);
+      });
 
       camera.position.z = 34 + scrollProgress * 18;
       camera.position.y = -scrollProgress * 6;
@@ -411,10 +469,12 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
       window.removeEventListener('pointerup', onPointerUp);
       window.removeEventListener('mousemove', onPointerMove);
       window.removeEventListener('mouseup', onPointerUp);
+      mount.removeEventListener('mousemove', onMouseTilt);
       mount.removeChild(renderer.domElement);
       labelEls.forEach(el => el.remove());
       dotTexture?.dispose();
       const disposables = [globe, dotEarth, glow, stars, ...orbitGroup.children];
+      arcs.forEach(a => { disposables.push(a.line, a.particle); });
       globe.children.forEach(child => { if (child !== dotEarth) child.children.forEach(c => disposables.push(c)); });
       disposables.forEach(obj => {
         obj.geometry?.dispose();
