@@ -157,8 +157,8 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
     // Everything planet-related lives in one group, offset well to the
     // right so the globe sits clear of the headline column.
     const planetGroup = new THREE.Group();
-    planetGroup.position.x = 46;
-    planetGroup.scale.setScalar(2.6);
+    planetGroup.position.x = 26;
+    planetGroup.scale.setScalar(1.35);
     scene.add(planetGroup);
 
     // Globe body — mostly-dark sphere, matching the reference's night-side look.
@@ -325,7 +325,7 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
 
       camera.position.z = 34 + scrollProgress * 18;
       camera.position.y = -scrollProgress * 6;
-      camera.lookAt(planetGroup.position.x * 0.15, 0, 0);
+      camera.lookAt(planetGroup.position.x * 0.4, 0, 0);
       camera.getWorldDirection(camDir);
 
       const mountRect = mount.getBoundingClientRect();
@@ -394,7 +394,7 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
 
   return <div ref={mountRef} style={{
     position: 'absolute', inset: 0, zIndex: 0, overflow: 'hidden',
-    maskImage: 'linear-gradient(to right, transparent 0%, transparent 42%, black 60%)',
-    WebkitMaskImage: 'linear-gradient(to right, transparent 0%, transparent 42%, black 60%)',
+    maskImage: 'linear-gradient(to right, transparent 0%, transparent 22%, black 34%)',
+    WebkitMaskImage: 'linear-gradient(to right, transparent 0%, transparent 22%, black 34%)',
   }} aria-hidden="true" />;
 }
