@@ -2,19 +2,27 @@ import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 
 // Reusable atmosphere-glow fresnel shader — cheap approximation of the
-// "blue-glowing planet" look without a full PBR/atmospheric-scattering pass.
+// reference site's sunlit-limb look: warm orange near the top of the sphere
+// fading to cool blue toward the bottom, blended by object-space Y so the
+// "light direction" stays fixed in place while the globe spins underneath it.
 const GLOW_VERTEX = `
   varying vec3 vNormal;
+  varying vec3 vPosition;
   void main() {
     vNormal = normalize(normalMatrix * normal);
+    vPosition = position;
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
   }
 `;
 const GLOW_FRAGMENT = `
   varying vec3 vNormal;
-  uniform vec3 glowColor;
+  varying vec3 vPosition;
+  uniform vec3 topColor;
+  uniform vec3 bottomColor;
   void main() {
     float intensity = pow(0.55 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 2.5);
+    float t = smoothstep(-8.0, 4.0, vPosition.y);
+    vec3 glowColor = mix(bottomColor, topColor, t);
     gl_FragColor = vec4(glowColor, intensity);
   }
 `;
@@ -32,16 +40,6 @@ function buildStarfield(count) {
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
   return new THREE.Points(geo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.35, transparent: true, opacity: 0.7, sizeAttenuation: true }));
-}
-
-function buildOrbitRing(radius, tiltX, tiltZ, color) {
-  const curve = new THREE.EllipseCurve(0, 0, radius, radius, 0, Math.PI * 2, false, 0);
-  const points = curve.getPoints(128).map(p => new THREE.Vector3(p.x, p.y, 0));
-  const geo = new THREE.BufferGeometry().setFromPoints(points);
-  const ring = new THREE.LineLoop(geo, new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.35 }));
-  ring.rotation.x = tiltX;
-  ring.rotation.z = tiltZ;
-  return ring;
 }
 
 // Rasterizes real land-polygon GeoJSON (fetched from /world-land.geojson,
@@ -215,40 +213,24 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
       return { halo, localPos, el };
     });
 
-    // Atmosphere glow shell (fresnel rim light), additive-blended.
+    // Atmosphere glow shell (fresnel rim light), warm at the top fading to
+    // cool blue at the bottom -- additive-blended, matching the reference's
+    // sunlit-limb globe rather than a flat single-color glow.
     const glow = new THREE.Mesh(
       new THREE.SphereGeometry(10.6, 64, 64),
       new THREE.ShaderMaterial({
         vertexShader: GLOW_VERTEX,
         fragmentShader: GLOW_FRAGMENT,
-        uniforms: { glowColor: { value: new THREE.Color(0x2f6bff) } },
+        uniforms: {
+          topColor: { value: new THREE.Color(0xffab5c) },
+          bottomColor: { value: new THREE.Color(0x2f6bff) },
+        },
         blending: THREE.AdditiveBlending,
         side: THREE.BackSide,
         transparent: true,
       })
     );
     planetGroup.add(glow);
-
-    // A second, tighter warm rim to echo the reference's orange edge light.
-    const warmRim = new THREE.Mesh(
-      new THREE.SphereGeometry(10.15, 64, 64),
-      new THREE.ShaderMaterial({
-        vertexShader: GLOW_VERTEX,
-        fragmentShader: GLOW_FRAGMENT,
-        uniforms: { glowColor: { value: new THREE.Color(0xff8a3d) } },
-        blending: THREE.AdditiveBlending,
-        side: THREE.BackSide,
-        transparent: true,
-      })
-    );
-    warmRim.scale.set(1.001, 1.001, 1.001);
-    planetGroup.add(warmRim);
-
-    const orbitGroup = new THREE.Group();
-    orbitGroup.add(buildOrbitRing(14, Math.PI / 2.3, 0.4, 0xff8a3d));
-    orbitGroup.add(buildOrbitRing(16.5, Math.PI / 2.1, -0.6, 0xff8a3d));
-    orbitGroup.add(buildOrbitRing(12.5, Math.PI / 2.6, 1.1, 0x4a86ff));
-    planetGroup.add(orbitGroup);
 
     // Starfield stays centered on the whole viewport, not offset with the planet.
     const stars = buildStarfield(1800);
@@ -339,7 +321,6 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
         globe.rotation.y += dt * (0.09 + scrollProgress * 0.4) + velY;
         velY *= 0.92; // momentum decay after release
       }
-      orbitGroup.rotation.y += dt * 0.03;
       stars.rotation.y += dt * 0.005;
 
       camera.position.z = 34 + scrollProgress * 18;
@@ -399,7 +380,7 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
       mount.removeChild(renderer.domElement);
       labelEls.forEach(el => el.remove());
       dotTexture?.dispose();
-      const disposables = [globe, dotEarth, glow, warmRim, stars, ...orbitGroup.children];
+      const disposables = [globe, dotEarth, glow, stars];
       globe.children.forEach(child => { if (child !== dotEarth) child.children.forEach(c => disposables.push(c)); });
       disposables.forEach(obj => {
         obj.geometry?.dispose();

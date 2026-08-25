@@ -379,7 +379,7 @@ function VerticalNav({ lang, onNavClick }) {
 
 
 // ── Hero ─────────────────────────────────────────────────────────────
-function Hero({ onLoginClick, onNavClick, lang, showVerticalNav = true }) {
+function Hero({ onLoginClick, onRegisterClick, onNavClick, lang, showVerticalNav = true, darkMode, onDarkToggle }) {
   const t = T[lang];
   const pins = [
     { color: '#EF4444', label: 'Hurricane' },
@@ -387,9 +387,21 @@ function Hero({ onLoginClick, onNavClick, lang, showVerticalNav = true }) {
     { color: '#3B82F6', label: 'Flood' },
   ];
   return (
-    <section id="dashboard-section" style={{ position: 'relative', overflow: 'hidden', background: 'radial-gradient(ellipse at 70% 100%, #0a1e4d 0%, #060a16 55%, #030408 100%)', minHeight: '92vh', display: 'flex', alignItems: 'center' }}>
+    <section id="dashboard-section" style={{ position: 'relative', overflow: 'hidden', background: 'radial-gradient(ellipse at 70% 100%, #0a1e4d 0%, #060a16 55%, #030408 100%)', minHeight: 'calc(100vh - 40px)', display: 'flex', alignItems: 'center' }}>
       <Globe3D scrollContainerId="dashboard-section" markers={pins} />
       {showVerticalNav && <VerticalNav lang={lang} onNavClick={onNavClick} onLoginClick={onLoginClick} />}
+      <div style={{ position: 'absolute', top: '1.75rem', right: '1.75rem', zIndex: 4, display: 'flex', alignItems: 'center', gap: '0.9rem' }}>
+        <button onClick={onDarkToggle} title="Toggle Dark Mode" aria-label="Toggle dark mode"
+          style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.16)', borderRadius: '50%', width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', cursor: 'pointer', fontSize: '0.85rem' }}>
+          <i className={`fa-solid ${darkMode ? 'fa-moon' : 'fa-sun'}`}></i>
+        </button>
+        <button className="btn-modern" onClick={onLoginClick} style={{ background: 'none', border: 'none', color: '#fff', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', padding: '0.4rem 0.2rem' }}>
+          {t.signIn}
+        </button>
+        <button className="btn-modern" onClick={onRegisterClick} style={{ background: '#fff', color: '#0a1e4d', border: 'none', borderRadius: 999, padding: '0.55rem 1.2rem', fontWeight: 700, fontSize: '0.83rem', cursor: 'pointer' }}>
+          {t.createAccount}
+        </button>
+      </div>
       <div style={{ position: 'relative', zIndex: 1, maxWidth: 1200, margin: '0 auto', padding: showVerticalNav ? '5rem 1.5rem 5rem 13rem' : '5rem 1.5rem', width: '100%', pointerEvents: 'none' }}>
         <div style={{ flex: '0 1 640px', maxWidth: 640, pointerEvents: 'none' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.14)', borderRadius: 20, padding: '0.3rem 0.9rem', marginBottom: '1.5rem', backdropFilter: 'blur(6px)' }}>
@@ -961,7 +973,7 @@ export default function HomePage({ onLogin }) {
       <TopBar onDarkToggle={() => setDarkMode(d => !d)} darkMode={darkMode} lang={lang} onLangChange={setLang} />
       <Navbar onLoginClick={() => openModal('login')} onRegisterClick={() => openModal('register')} lang={lang} onNavClick={handleNav} hidden={heroVisible && !isMobile} />
       <main>
-        <Hero onLoginClick={() => openModal('login')} onNavClick={handleNav} lang={lang} showVerticalNav={!isMobile} />
+        <Hero onLoginClick={() => openModal('login')} onRegisterClick={() => openModal('register')} onNavClick={handleNav} lang={lang} showVerticalNav={!isMobile} darkMode={darkMode} onDarkToggle={() => setDarkMode(d => !d)} />
         <div style={{ paddingTop: (heroVisible && !isMobile) ? 0 : 62, transition: 'padding-top 0.4s cubic-bezier(0.16,1,0.3,1)' }}>
           <AlertsAndStats lang={lang} />
         </div>
