@@ -4,6 +4,34 @@ import Globe3D from './Globe3D';
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3000';
 
+// ── Reveal — fades/slides a section in the first time it scrolls into view ──
+function Reveal({ children, style }) {
+  const ref = useRef(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setVisible(true); observer.disconnect(); } },
+      { threshold: 0.15 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div ref={ref} style={{
+      ...style,
+      opacity: visible ? 1 : 0,
+      transform: visible ? 'translateY(0)' : 'translateY(36px)',
+      transition: 'opacity 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1)',
+    }}>
+      {children}
+    </div>
+  );
+}
+
 // ── Translations ─────────────────────────────────────────────────────
 const T = {
   English: {
@@ -323,15 +351,15 @@ function Navbar({ onLoginClick, onRegisterClick, lang, onNavClick }) {
 function Hero({ onLoginClick, lang }) {
   const t = T[lang];
   const pins = [
-    { top: '30%', left: '22%', color: '#EF4444', label: 'Hurricane' },
-    { top: '48%', left: '15%', color: '#F59E0B', label: 'Wildfire' },
-    { top: '38%', left: '72%', color: '#3B82F6', label: 'Flood' },
+    { color: '#EF4444', label: 'Hurricane' },
+    { color: '#F59E0B', label: 'Wildfire' },
+    { color: '#3B82F6', label: 'Flood' },
   ];
   return (
-    <section id="dashboard-section" style={{ position: 'relative', overflow: 'hidden', background: 'radial-gradient(ellipse at 70% 100%, #0a1e4d 0%, #060a16 55%, #030408 100%)' }}>
-      <Globe3D scrollContainerId="dashboard-section" />
-      <div style={{ position: 'relative', zIndex: 1, maxWidth: 1200, margin: '0 auto', padding: '5rem 1.5rem', display: 'flex', gap: '3rem', alignItems: 'center', flexWrap: 'wrap' }}>
-        <div style={{ flex: '1 1 340px' }}>
+    <section id="dashboard-section" style={{ position: 'relative', overflow: 'hidden', background: 'radial-gradient(ellipse at 70% 100%, #0a1e4d 0%, #060a16 55%, #030408 100%)', minHeight: '92vh', display: 'flex', alignItems: 'center' }}>
+      <Globe3D scrollContainerId="dashboard-section" markers={pins} />
+      <div style={{ position: 'relative', zIndex: 1, maxWidth: 1200, margin: '0 auto', padding: '5rem 1.5rem', width: '100%' }}>
+        <div style={{ flex: '0 1 560px', maxWidth: 560 }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.14)', borderRadius: 20, padding: '0.3rem 0.9rem', marginBottom: '1.5rem', backdropFilter: 'blur(6px)' }}>
             <span className="animate-pulse-dot" style={{ width: 8, height: 8, borderRadius: '50%', background: '#10B981', display: 'inline-block' }}></span>
             <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.85)', fontWeight: 600, letterSpacing: '0.04em' }}>{t.systemOperational}</span>
@@ -351,47 +379,26 @@ function Hero({ onLoginClick, lang }) {
               <i className="fa-solid fa-triangle-exclamation" style={{ marginRight: '0.5rem' }}></i>{t.reportEmergency}
             </button>
           </div>
-          <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', marginBottom: '1.75rem' }}>
             {[['fa-building-columns', t.operatedBy], ['fa-clock', t.monitoring], ['fa-server', t.uptime]].map(([icon, text]) => (
               <div key={text} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.82rem', color: 'rgba(255,255,255,0.6)' }}>
                 <i className={`fa-solid ${icon}`} style={{ color: '#5b8fff' }}></i>{text}
               </div>
             ))}
           </div>
-        </div>
-        <div style={{ flex: '1 1 300px', background: 'rgba(10,14,26,0.7)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 12, overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.5)', backdropFilter: 'blur(10px)' }}>
-          <div style={{ background: 'var(--color-navy)', padding: '0.7rem 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ color: '#fff', fontSize: '0.85rem', fontWeight: 700 }}>
-              <i className="fa-solid fa-map-location-dot" style={{ marginRight: '0.4rem', color: 'var(--color-primary)' }}></i>{t.liveMap}
-            </span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.72rem', color: '#10B981', fontWeight: 600 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.78rem', color: 'rgba(255,255,255,0.5)', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            <i className="fa-solid fa-globe" style={{ color: '#5b8fff' }}></i>{t.liveMap}
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: '#10B981', marginLeft: '0.3rem' }}>
               <span className="animate-pulse-dot" style={{ width: 6, height: 6, borderRadius: '50%', background: '#10B981', display: 'inline-block' }}></span>{t.live}
             </span>
           </div>
-          <div style={{ position: 'relative', height: 260, background: 'var(--map-bg)', overflow: 'hidden', transition: 'background 0.4s ease' }}>
-            <svg viewBox="0 0 800 400" style={{ width: '100%', height: '100%', opacity: 0.3 }}>
-              <rect width="800" height="400" fill="var(--map-bg)" />
-              <ellipse cx="200" cy="200" rx="120" ry="140" fill="#a8c4b8" />
-              <ellipse cx="420" cy="180" rx="160" ry="120" fill="#a8c4b8" />
-              <ellipse cx="620" cy="200" rx="100" ry="130" fill="#a8c4b8" />
-              <ellipse cx="680" cy="300" rx="60" ry="50" fill="#a8c4b8" />
-            </svg>
+          <div style={{ display: 'flex', gap: '1.25rem', flexWrap: 'wrap' }}>
             {pins.map((pin, i) => (
-              <div key={i} title={pin.label} className="animate-float" style={{ animationDelay: `${i * 400}ms`, position: 'absolute', top: pin.top, left: pin.left, transform: 'translate(-50%,-100%)' }}>
-                <i className="fa-solid fa-location-dot" style={{ color: pin.color, fontSize: '1.6rem', filter: 'drop-shadow(0 3px 6px rgba(0,0,0,0.35))' }}></i>
-              </div>
+              <span key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.75)' }}>
+                <span style={{ width: 9, height: 9, borderRadius: '50%', background: pin.color, display: 'inline-block', boxShadow: `0 0 8px ${pin.color}` }}></span>{pin.label}
+              </span>
             ))}
           </div>
-          <div style={{ padding: '0.65rem 1rem', borderTop: '1px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', gap: '1rem' }}>
-              {[['#EF4444', 'Hurricane'], ['#F59E0B', 'Wildfire'], ['#3B82F6', 'Flood']].map(([c, l]) => (
-                <span key={l} style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.75rem', color: 'rgba(255,255,255,0.7)' }}>
-                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: c, display: 'inline-block' }}></span>{l}
-                </span>
-              ))}
-            </div>
-            <span style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.45)' }}>{t.updatedAgo}</span>
-          </div>
         </div>
       </div>
     </section>
@@ -399,72 +406,72 @@ function Hero({ onLoginClick, lang }) {
 }
 
 
-// ── Active Alerts ────────────────────────────────────────────────────
-function ActiveAlerts({ lang }) {
+// ── Active Alerts + Stats — two vertical columns: alert feed | live numbers ──
+function AlertsAndStats({ lang }) {
   const t = T[lang];
   const [expanded, setExpanded] = useState(null);
-  return (
-    <section id="alerts-section" style={{ background: 'var(--alert-section-bg)', borderBottom: '1px solid var(--border-subtle)', padding: '3.5rem 0', transition: 'background 0.4s ease' }}>
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1.5rem' }}>
-        <div style={{ marginBottom: '0.75rem' }}>
-          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.4rem', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
-            <i className="fa-solid fa-circle-exclamation" style={{ color: 'var(--color-critical)' }}></i>
-            {t.alertsTitle}
-          </h2>
-          <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)' }}>{t.alertsDesc}</p>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1.25rem' }}>
-          <a href="#" style={{ fontSize: '0.85rem', color: 'var(--color-primary)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-            {t.viewArchive} <i className="fa-solid fa-arrow-right" style={{ fontSize: '0.75rem' }}></i>
-          </a>
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem' }}>
-          {ALERTS_DATA.map((alert, i) => (
-            <div key={i} onClick={() => setExpanded(expanded === i ? null : i)}
-              className="card-hover animate-slide-up"
-              style={{ animationDelay: `${i * 150}ms`, background: 'var(--bg-card)', borderRadius: 10, padding: '1.25rem', cursor: 'pointer', borderLeft: `4px solid ${alert.color}`, border: `1px solid var(--card-border)`, transition: 'background 0.4s ease' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.6rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <i className={`fa-solid ${alert.icon}`} style={{ color: alert.color, fontSize: '1rem' }}></i>
-                  <span style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)' }}>{alert.title}</span>
-                </div>
-                <span style={{ background: alert.badgeBg, color: '#fff', fontSize: '0.66rem', fontWeight: 800, padding: '0.18rem 0.55rem', borderRadius: 4, letterSpacing: '0.06em' }}>{alert.badge}</span>
-              </div>
-              <p style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', marginBottom: '0.75rem' }}>{alert.meta}</p>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '0.8rem', fontWeight: 600, color: alert.color }}>{alert.status}</span>
-                <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>Updated {alert.updated}</span>
-              </div>
-              {expanded === i && (
-                <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--expanded-border)' }}>
-                  <p style={{ fontSize: '0.85rem', color: 'var(--expanded-text)', marginBottom: '0.5rem', lineHeight: 1.6 }}>{alert.detail}</p>
-                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Source: {alert.source}</p>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ── Stats Bar ────────────────────────────────────────────────────────
-function StatsBar({ lang }) {
-  const t = T[lang];
   const vals = ['1,240', '3,800+', '420+', '< 2 min'];
   const icons = ['fa-users', 'fa-bell', 'fa-house-chimney-medical', 'fa-clock-rotate-left'];
   return (
-    <section style={{ background: 'var(--color-primary)', padding: '2.5rem 0' }}>
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1.5rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1.5rem' }}>
-        {vals.map((v, i) => (
-          <div key={i} className="animate-slide-up" style={{ animationDelay: `${i * 100}ms`, textAlign: 'center' }}>
-            <i className={`fa-solid ${icons[i]}`} style={{ color: 'rgba(255,255,255,0.7)', fontSize: '1.4rem', marginBottom: '0.5rem', display: 'block' }}></i>
-            <div style={{ fontSize: 'clamp(2.2rem, 4vw, 3rem)', fontWeight: 800, color: '#fff', lineHeight: 1, letterSpacing: '-0.02em' }}>{v}</div>
-            <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.75)', marginTop: '0.5rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t.statsLabels[i]}</div>
+    <section id="alerts-section" style={{ background: 'var(--alert-section-bg)', borderBottom: '1px solid var(--border-subtle)', padding: '3.5rem 0', transition: 'background 0.4s ease' }}>
+      <Reveal style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1.5rem' }}>
+        <div className="alerts-stats-grid" style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '2.5rem', alignItems: 'start' }}>
+          {/* Left column — Live Alert Feed */}
+          <div>
+            <div style={{ marginBottom: '0.75rem' }}>
+              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.4rem', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
+                <i className="fa-solid fa-circle-exclamation" style={{ color: 'var(--color-critical)' }}></i>
+                {t.alertsTitle}
+              </h2>
+              <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)' }}>{t.alertsDesc}</p>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1.25rem' }}>
+              <a href="#" style={{ fontSize: '0.85rem', color: 'var(--color-primary)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                {t.viewArchive} <i className="fa-solid fa-arrow-right" style={{ fontSize: '0.75rem' }}></i>
+              </a>
+            </div>
+            <div style={{ display: 'grid', gap: '1.25rem' }}>
+              {ALERTS_DATA.map((alert, i) => (
+                <div key={i} onClick={() => setExpanded(expanded === i ? null : i)}
+                  className="card-hover animate-slide-up"
+                  style={{ animationDelay: `${i * 150}ms`, background: 'var(--bg-card)', borderRadius: 10, padding: '1.25rem', cursor: 'pointer', borderLeft: `4px solid ${alert.color}`, border: `1px solid var(--card-border)`, transition: 'background 0.4s ease' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.6rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <i className={`fa-solid ${alert.icon}`} style={{ color: alert.color, fontSize: '1rem' }}></i>
+                      <span style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)' }}>{alert.title}</span>
+                    </div>
+                    <span style={{ background: alert.badgeBg, color: '#fff', fontSize: '0.66rem', fontWeight: 800, padding: '0.18rem 0.55rem', borderRadius: 4, letterSpacing: '0.06em' }}>{alert.badge}</span>
+                  </div>
+                  <p style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', marginBottom: '0.75rem' }}>{alert.meta}</p>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.8rem', fontWeight: 600, color: alert.color }}>{alert.status}</span>
+                    <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>Updated {alert.updated}</span>
+                  </div>
+                  {expanded === i && (
+                    <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--expanded-border)' }}>
+                      <p style={{ fontSize: '0.85rem', color: 'var(--expanded-text)', marginBottom: '0.5rem', lineHeight: 1.6 }}>{alert.detail}</p>
+                      <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Source: {alert.source}</p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
-        ))}
-      </div>
+
+          {/* Right column — live numbers, stacked vertically */}
+          <div style={{ background: 'var(--color-primary)', borderRadius: 12, padding: '2rem 1.75rem', display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
+            {vals.map((v, i) => (
+              <div key={i} className="animate-slide-up" style={{ animationDelay: `${i * 100}ms`, display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <i className={`fa-solid ${icons[i]}`} style={{ color: 'rgba(255,255,255,0.7)', fontSize: '1.3rem', width: 28, flexShrink: 0 }}></i>
+                <div>
+                  <div style={{ fontSize: 'clamp(1.8rem, 2.4vw, 2.4rem)', fontWeight: 800, color: '#fff', lineHeight: 1, letterSpacing: '-0.02em' }}>{v}</div>
+                  <div style={{ fontSize: '0.74rem', color: 'rgba(255,255,255,0.75)', marginTop: '0.3rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t.statsLabels[i]}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </Reveal>
     </section>
   );
 }
@@ -616,9 +623,9 @@ function InfoTabs({ lang, activeTab, setActiveTab }) {
             </button>
           ))}
         </div>
-        <div style={{ padding: '2.5rem 0' }}>
+        <Reveal style={{ padding: '2.5rem 0' }}>
           {panels[activeTab]}
-        </div>
+        </Reveal>
       </div>
     </section>
   );
@@ -870,8 +877,7 @@ export default function HomePage({ onLogin }) {
       <Navbar onLoginClick={() => openModal('login')} onRegisterClick={() => openModal('register')} lang={lang} onNavClick={handleNav} />
       <main>
         <Hero onLoginClick={() => openModal('login')} lang={lang} />
-        <ActiveAlerts lang={lang} />
-        <StatsBar lang={lang} />
+        <AlertsAndStats lang={lang} />
         <InfoTabs lang={lang} activeTab={activeTab} setActiveTab={setActiveTab} />
       </main>
       <Footer lang={lang} />
@@ -880,6 +886,7 @@ export default function HomePage({ onLogin }) {
         @media (max-width: 768px) {
           .desktop-nav { display: none !important; }
           .hamburger { display: block !important; }
+          .alerts-stats-grid { grid-template-columns: 1fr !important; }
         }
       `}</style>
     </div>
