@@ -157,8 +157,8 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
     // Everything planet-related lives in one group, offset well to the
     // right so the globe sits clear of the headline column.
     const planetGroup = new THREE.Group();
-    planetGroup.position.x = 30;
-    planetGroup.scale.setScalar(1.3);
+    planetGroup.position.x = 34;
+    planetGroup.scale.setScalar(1.65);
     scene.add(planetGroup);
 
     // Globe body — mostly-dark sphere, matching the reference's night-side look.

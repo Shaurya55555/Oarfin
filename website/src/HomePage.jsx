@@ -369,16 +369,22 @@ function VerticalNav({ lang, onNavClick }) {
   const t = T[lang];
   const navKeys = ['dashboard', 'alerts', 'resources', 'preparedness', 'about'];
   return (
-    <div className="vertical-nav" style={{ position: 'absolute', top: 0, left: 0, height: '100%', width: 190, zIndex: 3, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '2.25rem 0 2.25rem 1.75rem', pointerEvents: 'auto', boxSizing: 'border-box' }}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.15rem', alignItems: 'flex-start' }}>
-        {t.navLinks.map((l, i) => (
-          <button key={l} onClick={() => onNavClick(navKeys[i])}
-            style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.7)', fontSize: '0.78rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer', padding: '0.15rem 0', textAlign: 'left', transition: 'color 0.2s' }}
-            onMouseEnter={e => { e.currentTarget.style.color = '#fff'; }}
-            onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.7)'; }}>
-            {l}
-          </button>
-        ))}
+    <div className="vertical-nav" style={{ position: 'absolute', top: 0, left: 0, height: '100%', width: 190, zIndex: 3, display: 'flex', flexDirection: 'column', padding: '2.25rem 0 2.25rem 1.75rem', pointerEvents: 'auto', boxSizing: 'border-box' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
+        <i className="fa-solid fa-shield-halved" style={{ color: '#fff', fontSize: '1.25rem' }}></i>
+        <span style={{ fontWeight: 800, fontSize: '1rem', color: '#fff', letterSpacing: '0.06em' }}>OARFIN</span>
+      </div>
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.15rem', alignItems: 'flex-start' }}>
+          {t.navLinks.map((l, i) => (
+            <button key={l} onClick={() => onNavClick(navKeys[i])}
+              style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.7)', fontSize: '0.78rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer', padding: '0.15rem 0', textAlign: 'left', transition: 'color 0.2s' }}
+              onMouseEnter={e => { e.currentTarget.style.color = '#fff'; }}
+              onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.7)'; }}>
+              {l}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -424,7 +430,7 @@ function Hero({ onLoginClick, onRegisterClick, onNavClick, lang, showVerticalNav
             <button className="btn-modern" onClick={onLoginClick} style={{ pointerEvents: 'auto', background: 'var(--color-primary)', color: '#fff', border: 'none', borderRadius: 10, padding: '0.75rem 1.6rem', fontWeight: 700, fontSize: '0.95rem', boxShadow: '0 4px 14px rgba(37,99,235,0.3)', cursor: 'pointer' }}>
               <i className="fa-solid fa-gauge-high" style={{ marginRight: '0.5rem' }}></i>{t.viewDashboard}
             </button>
-            <button className="btn-modern" style={{ pointerEvents: 'auto', background: 'transparent', color: '#ff6b6b', border: '2px solid #ff6b6b', borderRadius: 10, padding: '0.75rem 1.6rem', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer' }}
+            <button className="btn-modern" onClick={onLoginClick} style={{ pointerEvents: 'auto', background: 'transparent', color: '#ff6b6b', border: '2px solid #ff6b6b', borderRadius: 10, padding: '0.75rem 1.6rem', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer' }}
               onMouseEnter={e => { e.currentTarget.style.background = '#ff6b6b'; e.currentTarget.style.color = '#fff'; }}
               onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#ff6b6b'; }}>
               <i className="fa-solid fa-triangle-exclamation" style={{ marginRight: '0.5rem' }}></i>{t.reportEmergency}
