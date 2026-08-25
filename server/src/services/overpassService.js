@@ -2,12 +2,19 @@ const axios = require('axios');
 const NodeCache = require('node-cache');
 const cache = new NodeCache({ stdTTL: 1800 });
 
-// Use GET-based Overpass API — less rate-limited than POST
-// overpass.private.coffee is a reliable community instance
+// Render's shared egress IP gets outright connection-refused/timed-out by
+// the whole overpass-api.de family (confirmed via Render logs: ETIMEDOUT/
+// ECONNREFUSED/ENETUNREACH on all of them, while the same requests succeed
+// fine from an unrelated network) -- almost certainly that family's block
+// list catching abuse from other tenants sharing Render's IP range, not
+// something fixable with more retries/timeout tuning. Mixed in mirrors from
+// unrelated operators (openstreetmap.fr, mail.ru) that don't share that
+// block list, so Promise.any below still has real candidates to reach.
 const OVERPASS_ENDPOINTS = [
+  'https://overpass.openstreetmap.fr/api/interpreter',
+  'https://maps.mail.ru/osm/tools/overpass/api/interpreter',
   'https://overpass-api.de/api/interpreter',
   'https://lz4.overpass-api.de/api/interpreter',
-  'https://overpass.kumi.systems/api/interpreter',
   'https://z.overpass-api.de/api/interpreter',
 ];
 
