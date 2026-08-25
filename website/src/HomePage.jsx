@@ -403,7 +403,7 @@ function Hero({ onLoginClick, onRegisterClick, onNavClick, lang, showVerticalNav
     <section id="dashboard-section" style={{ position: 'relative', overflow: 'hidden', background: 'radial-gradient(ellipse at 70% 100%, #0a1e4d 0%, #060a16 55%, #030408 100%)', minHeight: '100vh', display: 'flex', alignItems: 'center' }}>
       <Globe3D scrollContainerId="dashboard-section" markers={pins} />
       {showVerticalNav && <VerticalNav lang={lang} onNavClick={onNavClick} onLoginClick={onLoginClick} />}
-      <div style={{ position: 'absolute', top: '1.75rem', right: '1.75rem', zIndex: 4, display: 'flex', alignItems: 'center', gap: '0.9rem' }}>
+      <div style={{ position: 'absolute', top: '3.5rem', right: '1.75rem', zIndex: 4, display: 'flex', alignItems: 'center', gap: '0.9rem' }}>
         <button onClick={onDarkToggle} title="Toggle Dark Mode" aria-label="Toggle dark mode"
           style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.16)', borderRadius: '50%', width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', cursor: 'pointer', fontSize: '0.85rem' }}>
           <i className={`fa-solid ${darkMode ? 'fa-moon' : 'fa-sun'}`}></i>
@@ -416,7 +416,7 @@ function Hero({ onLoginClick, onRegisterClick, onNavClick, lang, showVerticalNav
         </button>
       </div>
       <div style={{ position: 'relative', zIndex: 1, maxWidth: 1200, margin: '0 auto', padding: showVerticalNav ? '5rem 1.5rem 5rem 13rem' : '5rem 1.5rem', width: '100%', pointerEvents: 'none' }}>
-        <div style={{ flex: '0 1 640px', maxWidth: 640, pointerEvents: 'none' }}>
+        <div style={{ flex: '0 1 590px', maxWidth: 590, pointerEvents: 'none' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.14)', borderRadius: 20, padding: '0.3rem 0.9rem', marginBottom: '1.5rem', backdropFilter: 'blur(6px)' }}>
             <span className="animate-pulse-dot" style={{ width: 8, height: 8, borderRadius: '50%', background: '#10B981', display: 'inline-block' }}></span>
             <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.85)', fontWeight: 600, letterSpacing: '0.04em' }}>{t.systemOperational}</span>

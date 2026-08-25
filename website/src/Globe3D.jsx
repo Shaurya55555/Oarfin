@@ -67,14 +67,17 @@ function rasterizeLandToDots(geojson) {
   landCanvas.width = W; landCanvas.height = H;
   const lctx = landCanvas.getContext('2d');
   lctx.fillStyle = '#fff';
-  // THREE.SphereGeometry's default UV unwrap puts u=0 at the sphere's -X
-  // axis (u=0.25 at +Z, u=0.5 at +X, ...) rather than the u=0.5-at-lon-0
-  // convention a plain equirectangular map uses. latLonToVector3 below
-  // places lon=0 at +Z, so a naive (lon+180)/360 U coordinate was rotating
-  // the rendered land a quarter-turn away from where markers are actually
-  // placed -- that's why a marker at real on-land coordinates still showed
-  // up over open ocean. +90 aligns the texture's U with the sphere's UVs.
-  const toXY = (lon, lat) => [(((lon + 90) % 360 + 360) % 360) / 360 * W, (90 - lat) / 180 * H];
+  // Rasterize with the standard equirectangular seam at lon=+-180 (mostly
+  // open ocean/Bering Strait -- safe for polygon fill: a ring that crosses
+  // this seam jumps from x~W to x~0 mid-path, and Canvas2D's lineTo just
+  // draws a stray connecting line across the fill for whatever it clips).
+  // A first attempt at the THREE-UV alignment fix (see below) baked a +90
+  // degree offset directly into this coordinate, which relocated that same
+  // seam-crossing hazard to lon=-90 -- right through North America instead
+  // of the Pacific -- tearing up that landmass's shape. The alignment
+  // shift is applied afterwards instead, as a pure pixel offset on the
+  // already-rasterized dot image, which can't corrupt any vector paths.
+  const toXY = (lon, lat) => [(lon + 180) / 360 * W, (90 - lat) / 180 * H];
 
   const drawRing = (ring) => {
     ring.forEach(([lon, lat], i) => {
@@ -98,11 +101,16 @@ function rasterizeLandToDots(geojson) {
   const dctx = dotCanvas.getContext('2d');
   dctx.fillStyle = '#bcd4ff';
   const step = 6;
+  // See note above: (lon+90)/360 is THREE's actual UV convention, which is
+  // this toXY's (lon+180)/360 shifted by -90deg (=-0.25 of the width, i.e.
+  // +0.75W mod W) -- applied here per-dot on already-rasterized alpha data,
+  // not as a coordinate change during path construction.
+  const shiftPx = Math.round(W * 0.75);
   for (let y = 0; y < H; y += step) {
     for (let x = 0; x < W; x += step) {
       const idx = (y * W + x) * 4;
       if (landData[idx + 3] > 128) {
-        const jx = x + (Math.random() - 0.5) * 1.5;
+        const jx = ((x + shiftPx) % W) + (Math.random() - 0.5) * 1.5;
         const jy = y + (Math.random() - 0.5) * 1.5;
         dctx.beginPath();
         dctx.arc(jx, jy, 1, 0, Math.PI * 2);
@@ -199,7 +207,7 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
     // Everything planet-related lives in one group, offset well to the
     // right so the globe sits clear of the headline column.
     const planetGroup = new THREE.Group();
-    planetGroup.position.x = 26;
+    planetGroup.position.x = 29;
     planetGroup.scale.setScalar(1.35);
     scene.add(planetGroup);
 
@@ -296,10 +304,13 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
 
     // Decorative orbit rings, tilted enough to read clearly as ellipses
     // rather than the near-edge-on lines the earlier tilt values produced.
+    // Child of `globe` (not `planetGroup`) so drag-to-rotate -- which only
+    // touches globe.rotation -- carries the rings along with it, instead of
+    // them sitting still while the dots/markers/arcs spin underneath.
     const orbitGroup = new THREE.Group();
     orbitGroup.add(buildOrbitRing(13.5, 1.05, 0.35, 0xff8a3d));
     orbitGroup.add(buildOrbitRing(15.5, 0.85, -0.5, 0x4a86ff));
-    planetGroup.add(orbitGroup);
+    globe.add(orbitGroup);
 
     // Starfield stays centered on the whole viewport, not offset with the planet.
     const stars = buildStarfield(1800);
