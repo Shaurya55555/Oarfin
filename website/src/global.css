@@ -216,5 +216,13 @@ input:focus, select:focus {
   }
 }
 
-.leaflet-container { font-family: var(--font); }
+/* Web Mercator tiles physically stop existing past ~85.05 deg lat -- panning
+   past that edge used to show Leaflet's flat white canvas background. Now
+   themed as an icy polar gradient so hitting the edge (paired with the
+   maxBounds hard-stop + ArcticCapOverlay/AntarcticCapOverlay in
+   DisasterMap.jsx) reads as "you've reached the pole," not "the map broke." */
+.leaflet-container {
+  font-family: var(--font);
+  background: linear-gradient(180deg, #eaf4fb 0%, #dce9f5 6%, #7a92ab 6%, #0b1a2e 50%, #7a92ab 94%, #dce9f5 94%, #eaf4fb 100%);
+}
 

@@ -26,6 +26,50 @@ const userLocationIcon = new L.Icon({
 function SpotMarker({ onMapClick }) { useMapEvents({ click:(e)=>onMapClick(e.latlng) }); return null; }
 function FlyTo({ center }) { const map=useMap(); useEffect(()=>{ if(center) map.flyTo(center,8,{duration:1.0}); },[center]); return null; }
 
+// Web Mercator tiles are mathematically undefined past ~85.05 deg lat -- any
+// tile provider shows blank canvas beyond that, which used to read as a
+// broken map when panning toward either pole. POLE_EDGE keeps maxBounds just
+// inside real tile coverage (hard stop, no more blank canvas is reachable at
+// all) and PoleWatcher/PoleCapBanner sell the edge as an intentional "you've
+// reached the Arctic/Antarctic" moment instead of an abrupt wall.
+const POLE_EDGE = 85;
+const POLE_FADE_START = 66;
+function PoleWatcher({ onChange }) {
+  const map = useMapEvents({
+    move: () => { const b=map.getBounds(); onChange({north:b.getNorth(),south:b.getSouth()}); },
+  });
+  useEffect(() => { const b=map.getBounds(); onChange({north:b.getNorth(),south:b.getSouth()}); }, [map]);
+  return null;
+}
+function PoleCapBanner({ side, opacity }) {
+  if (opacity <= 0.01) return null;
+  const isTop = side==="top";
+  return (
+    <div style={{
+      position:"absolute", [isTop?"top":"bottom"]:0, left:0, right:0, height:100,
+      pointerEvents:"none", zIndex:500, opacity,
+      display:"flex", alignItems: isTop?"flex-start":"flex-end", justifyContent:"center",
+      background: isTop
+        ? "linear-gradient(180deg, rgba(234,244,251,0.95) 0%, rgba(234,244,251,0) 100%)"
+        : "linear-gradient(0deg, rgba(11,26,46,0.92) 0%, rgba(11,26,46,0) 100%)",
+      transition:"opacity 0.25s ease",
+    }}>
+      <div style={{
+        marginTop: isTop?12:0, marginBottom: isTop?0:12,
+        display:"flex", alignItems:"center", gap:8,
+        background: isTop?"rgba(255,255,255,0.9)":"rgba(15,23,42,0.8)",
+        color: isTop?"#1E3A5F":"#dbeafe",
+        padding:"6px 14px", borderRadius:20, fontSize:12, fontWeight:700,
+        letterSpacing:"0.08em", textTransform:"uppercase",
+        boxShadow:"0 2px 8px rgba(0,0,0,0.18)", backdropFilter:"blur(4px)",
+      }}>
+        <i className={`fa-solid ${isTop?"fa-snowflake":"fa-mountain"}`}></i>
+        {isTop ? "Arctic Ocean" : "Antarctica"}
+      </div>
+    </div>
+  );
+}
+
 function MapSkeleton() {
   return (
     <div style={{height:"100%",background:"#1a2a3a",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:"1.25rem"}}>
@@ -63,6 +107,7 @@ export default function DisasterMap() {
   const [activeCategory,setActiveCategory]=useState("all");
   const [userLocation,setUserLocation]=useState(null);
   const [toast,setToast]=useState("");
+  const [poleView,setPoleView]=useState({north:0,south:0});
   const debounceRef=useRef(null);
   const disasterCoords=useRef(null);
   const toastRef=useRef(null);
@@ -155,6 +200,8 @@ export default function DisasterMap() {
   const categoryCounts=shelters.reduce((acc,s)=>{ acc[s.type]=(acc[s.type]||0)+1; return acc; },{});
   const filteredShelters=activeCategory==="all"?shelters:shelters.filter(s=>s.type===activeCategory);
   const availableCategories=["all",...Object.keys(CATEGORY_FA).filter(c=>categoryCounts[c]>0)];
+  const arcticOpacity=Math.min(1,Math.max(0,(poleView.north-POLE_FADE_START)/(POLE_EDGE-POLE_FADE_START)));
+  const antarcticOpacity=Math.min(1,Math.max(0,(-POLE_FADE_START-poleView.south)/(POLE_EDGE-POLE_FADE_START)));
 
   return (
     <div style={{display:"flex",height:"calc(100vh - 92px)",position:"relative"}}>
@@ -162,9 +209,11 @@ export default function DisasterMap() {
       {/* Map */}
       <div style={{flex:3,position:"relative",minWidth:0}}>
         {loading&&<div style={{position:"absolute",inset:0,zIndex:999}}><MapSkeleton/></div>}
-        <MapContainer center={[20,0]} zoom={2} style={{height:"100%",width:"100%"}} preferCanvas={true}>
+        <MapContainer center={[20,0]} zoom={2} style={{height:"100%",width:"100%"}} preferCanvas={true}
+          maxBounds={[[-POLE_EDGE,-540],[POLE_EDGE,540]]} maxBoundsViscosity={1.0} minZoom={2}>
           <SpotMarker onMapClick={setClickPosition}/>
           {flyTarget&&<FlyTo center={flyTarget}/>}
+          <PoleWatcher onChange={setPoleView}/>
           <LayersControl position="topright">
             <LayersControl.BaseLayer checked name="Satellite">
               <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" attribution="Tiles &copy; Esri"/>
@@ -258,6 +307,8 @@ export default function DisasterMap() {
             </Marker>
           ))}
         </MapContainer>
+        <PoleCapBanner side="top" opacity={arcticOpacity}/>
+        <PoleCapBanner side="bottom" opacity={antarcticOpacity}/>
       </div>
 
 
