@@ -354,26 +354,25 @@ function Navbar({ onLoginClick, onRegisterClick, lang, onNavClick, hidden }) {
 }
 
 
-// ── VerticalNav — first-page-only nav overlay, stacked along the left edge ──
-function VerticalNav({ lang, onNavClick, onLoginClick }) {
+// ── VerticalNav — first-page-only nav overlay: plain horizontal labels
+// stacked in a vertical column along the left edge, matching the reference
+// site's menu (upright text, not rotated -- rotated/sideways text was
+// overflowing its column and causing a stray horizontal scrollbar).
+function VerticalNav({ lang, onNavClick }) {
   const t = T[lang];
   const navKeys = ['dashboard', 'alerts', 'resources', 'preparedness', 'about'];
   return (
-    <div className="vertical-nav" style={{ position: 'absolute', top: 0, left: 0, height: '100%', width: 96, zIndex: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', padding: '2.25rem 0', pointerEvents: 'auto' }}>
-      <i className="fa-solid fa-shield-halved" style={{ color: '#fff', fontSize: '1.5rem' }}></i>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.9rem', alignItems: 'center' }}>
+    <div className="vertical-nav" style={{ position: 'absolute', top: 0, left: 0, height: '100%', width: 190, zIndex: 3, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '2.25rem 0 2.25rem 1.75rem', pointerEvents: 'auto', boxSizing: 'border-box' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.15rem', alignItems: 'flex-start' }}>
         {t.navLinks.map((l, i) => (
           <button key={l} onClick={() => onNavClick(navKeys[i])}
-            style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.7)', fontSize: '0.76rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', cursor: 'pointer', writingMode: 'vertical-rl', transform: 'rotate(180deg)', padding: '0.3rem 0', transition: 'color 0.2s' }}
+            style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.7)', fontSize: '0.78rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer', padding: '0.15rem 0', textAlign: 'left', transition: 'color 0.2s' }}
             onMouseEnter={e => { e.currentTarget.style.color = '#fff'; }}
             onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.7)'; }}>
             {l}
           </button>
         ))}
       </div>
-      <button onClick={onLoginClick} style={{ background: 'none', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 6, padding: '0.5rem 0.55rem', color: '#fff', cursor: 'pointer', fontSize: '0.85rem' }}>
-        <i className="fa-solid fa-right-to-bracket"></i>
-      </button>
     </div>
   );
 }
@@ -391,7 +390,7 @@ function Hero({ onLoginClick, onNavClick, lang, showVerticalNav = true }) {
     <section id="dashboard-section" style={{ position: 'relative', overflow: 'hidden', background: 'radial-gradient(ellipse at 70% 100%, #0a1e4d 0%, #060a16 55%, #030408 100%)', minHeight: '92vh', display: 'flex', alignItems: 'center' }}>
       <Globe3D scrollContainerId="dashboard-section" markers={pins} />
       {showVerticalNav && <VerticalNav lang={lang} onNavClick={onNavClick} onLoginClick={onLoginClick} />}
-      <div style={{ position: 'relative', zIndex: 1, maxWidth: 1200, margin: '0 auto', padding: showVerticalNav ? '5rem 1.5rem 5rem 7.5rem' : '5rem 1.5rem', width: '100%', pointerEvents: 'none' }}>
+      <div style={{ position: 'relative', zIndex: 1, maxWidth: 1200, margin: '0 auto', padding: showVerticalNav ? '5rem 1.5rem 5rem 13rem' : '5rem 1.5rem', width: '100%', pointerEvents: 'none' }}>
         <div style={{ flex: '0 1 640px', maxWidth: 640, pointerEvents: 'none' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.14)', borderRadius: 20, padding: '0.3rem 0.9rem', marginBottom: '1.5rem', backdropFilter: 'blur(6px)' }}>
             <span className="animate-pulse-dot" style={{ width: 8, height: 8, borderRadius: '50%', background: '#10B981', display: 'inline-block' }}></span>
@@ -417,19 +416,6 @@ function Hero({ onLoginClick, onNavClick, lang, showVerticalNav = true }) {
               <div key={text} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.82rem', color: 'rgba(255,255,255,0.6)' }}>
                 <i className={`fa-solid ${icon}`} style={{ color: '#5b8fff' }}></i>{text}
               </div>
-            ))}
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.78rem', color: 'rgba(255,255,255,0.5)', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-            <i className="fa-solid fa-globe" style={{ color: '#5b8fff' }}></i>{t.liveMap}
-            <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: '#10B981', marginLeft: '0.3rem' }}>
-              <span className="animate-pulse-dot" style={{ width: 6, height: 6, borderRadius: '50%', background: '#10B981', display: 'inline-block' }}></span>{t.live}
-            </span>
-          </div>
-          <div style={{ display: 'flex', gap: '1.25rem', flexWrap: 'wrap' }}>
-            {pins.map((pin, i) => (
-              <span key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.75)' }}>
-                <span style={{ width: 9, height: 9, borderRadius: '50%', background: pin.color, display: 'inline-block', boxShadow: `0 0 8px ${pin.color}` }}></span>{pin.label}
-              </span>
             ))}
           </div>
         </div>
@@ -493,17 +479,29 @@ function AlertsAndStats({ lang }) {
             </div>
           </div>
 
-          {/* Right column — live numbers, stacked vertically */}
-          <div style={{ background: 'var(--color-primary)', borderRadius: 12, padding: '2rem 1.75rem', display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
-            {vals.map((v, i) => (
-              <Reveal key={i} delay={i * 130} style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <i className={`fa-solid ${icons[i]}`} style={{ color: 'rgba(255,255,255,0.7)', fontSize: '1.3rem', width: 28, flexShrink: 0 }}></i>
-                <div>
-                  <div style={{ fontSize: 'clamp(1.8rem, 2.4vw, 2.4rem)', fontWeight: 800, color: '#fff', lineHeight: 1, letterSpacing: '-0.02em' }}>{v}</div>
-                  <div style={{ fontSize: '0.74rem', color: 'rgba(255,255,255,0.75)', marginTop: '0.3rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t.statsLabels[i]}</div>
-                </div>
-              </Reveal>
-            ))}
+          {/* Right column — active-alerts ticker, then live numbers */}
+          <div>
+            <Reveal style={{ marginBottom: '1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', background: '#1E1400', border: '1px solid #3D2E00', borderRadius: 8, padding: '0.6rem 0.9rem', overflow: 'hidden' }}>
+                <span style={{ background: '#D32F2F', color: '#fff', fontSize: '0.66rem', fontWeight: 800, padding: '0.15rem 0.5rem', borderRadius: 3, whiteSpace: 'nowrap', letterSpacing: '0.04em', flexShrink: 0 }}>
+                  ● {t.activeAlerts}
+                </span>
+                <span style={{ fontSize: '0.78rem', fontWeight: 600, color: '#E3B341', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {ALERTS_DATA[1].title} — {ALERTS_DATA[1].meta} — {t.updatedAgo}
+                </span>
+              </div>
+            </Reveal>
+            <div style={{ background: 'var(--color-primary)', borderRadius: 12, padding: '2rem 1.75rem', display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
+              {vals.map((v, i) => (
+                <Reveal key={i} delay={i * 130} style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <i className={`fa-solid ${icons[i]}`} style={{ color: 'rgba(255,255,255,0.7)', fontSize: '1.3rem', width: 28, flexShrink: 0 }}></i>
+                  <div>
+                    <div style={{ fontSize: 'clamp(1.8rem, 2.4vw, 2.4rem)', fontWeight: 800, color: '#fff', lineHeight: 1, letterSpacing: '-0.02em' }}>{v}</div>
+                    <div style={{ fontSize: '0.74rem', color: 'rgba(255,255,255,0.75)', marginTop: '0.3rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t.statsLabels[i]}</div>
+                  </div>
+                </Reveal>
+              ))}
+            </div>
           </div>
         </div>
       </div>

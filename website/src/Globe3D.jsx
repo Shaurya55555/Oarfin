@@ -159,7 +159,7 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
     // Everything planet-related lives in one group, offset well to the
     // right so the globe sits clear of the headline column.
     const planetGroup = new THREE.Group();
-    planetGroup.position.x = 21;
+    planetGroup.position.x = 25;
     planetGroup.scale.setScalar(1.3);
     scene.add(planetGroup);
 
@@ -413,7 +413,7 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
 
   return <div ref={mountRef} style={{
     position: 'absolute', inset: 0, zIndex: 0, overflow: 'hidden',
-    maskImage: 'linear-gradient(to right, transparent 0%, transparent 30%, black 48%)',
-    WebkitMaskImage: 'linear-gradient(to right, transparent 0%, transparent 30%, black 48%)',
+    maskImage: 'linear-gradient(to right, transparent 0%, transparent 36%, black 54%)',
+    WebkitMaskImage: 'linear-gradient(to right, transparent 0%, transparent 36%, black 54%)',
   }} aria-hidden="true" />;
 }
