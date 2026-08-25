@@ -154,7 +154,7 @@ export default function DisasterMap() {
   const filteredDisasters=disasters.filter(d=>{ const t=d.properties?.eventtype; return t&&filters[t]; });
   const categoryCounts=shelters.reduce((acc,s)=>{ acc[s.type]=(acc[s.type]||0)+1; return acc; },{});
   const filteredShelters=activeCategory==="all"?shelters:shelters.filter(s=>s.type===activeCategory);
-  const availableCategories=["all",...Object.keys(SHELTER_ICONS).filter(c=>categoryCounts[c]>0)];
+  const availableCategories=["all",...Object.keys(CATEGORY_FA).filter(c=>categoryCounts[c]>0)];
 
   return (
     <div style={{display:"flex",height:"calc(100vh - 92px)",position:"relative"}}>
@@ -246,7 +246,7 @@ export default function DisasterMap() {
               <Popup>
                 <div style={{fontFamily:"system-ui",minWidth:160}}>
                   <div style={{fontWeight:700,fontSize:"13px",marginBottom:3}}>{s.name||"Unnamed Facility"}</div>
-                  <div style={{fontSize:"11px",color:"#555",textTransform:"capitalize",marginBottom:4}}>{SHELTER_ICONS[s.type]} {s.type?.replace(/_/g," ")}</div>
+                  <div style={{fontSize:"11px",color:"#555",textTransform:"capitalize",marginBottom:4}}><i className={`fa-solid ${CATEGORY_FA[s.type]||'fa-location-dot'}`}></i> {s.type?.replace(/_/g," ")}</div>
                   {s.address&&<div style={{fontSize:"11px",color:"#777",marginBottom:4}}>{s.address}</div>}
                   {s.capacity&&<div style={{fontSize:"11px",marginBottom:4}}>Capacity: {s.capacity}</div>}
                   <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
