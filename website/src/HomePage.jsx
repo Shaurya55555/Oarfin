@@ -361,8 +361,8 @@ function Hero({ onLoginClick, lang }) {
   return (
     <section id="dashboard-section" style={{ position: 'relative', overflow: 'hidden', background: 'radial-gradient(ellipse at 70% 100%, #0a1e4d 0%, #060a16 55%, #030408 100%)', minHeight: '92vh', display: 'flex', alignItems: 'center' }}>
       <Globe3D scrollContainerId="dashboard-section" markers={pins} />
-      <div style={{ position: 'relative', zIndex: 1, maxWidth: 1200, margin: '0 auto', padding: '5rem 1.5rem', width: '100%' }}>
-        <div style={{ flex: '0 1 640px', maxWidth: 640 }}>
+      <div style={{ position: 'relative', zIndex: 1, maxWidth: 1200, margin: '0 auto', padding: '5rem 1.5rem', width: '100%', pointerEvents: 'none' }}>
+        <div style={{ flex: '0 1 640px', maxWidth: 640, pointerEvents: 'none' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.14)', borderRadius: 20, padding: '0.3rem 0.9rem', marginBottom: '1.5rem', backdropFilter: 'blur(6px)' }}>
             <span className="animate-pulse-dot" style={{ width: 8, height: 8, borderRadius: '50%', background: '#10B981', display: 'inline-block' }}></span>
             <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.85)', fontWeight: 600, letterSpacing: '0.04em' }}>{t.systemOperational}</span>
@@ -373,10 +373,10 @@ function Hero({ onLoginClick, lang }) {
           </h1>
           <p style={{ fontSize: '1.05rem', color: 'rgba(255,255,255,0.75)', marginBottom: '2rem', maxWidth: 480, lineHeight: 1.7 }}>{t.heroDesc}</p>
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '2.25rem' }} className="animate-fade-in delay-200">
-            <button className="btn-modern" onClick={onLoginClick} style={{ background: 'var(--color-primary)', color: '#fff', border: 'none', borderRadius: 10, padding: '0.75rem 1.6rem', fontWeight: 700, fontSize: '0.95rem', boxShadow: '0 4px 14px rgba(37,99,235,0.3)', cursor: 'pointer' }}>
+            <button className="btn-modern" onClick={onLoginClick} style={{ pointerEvents: 'auto', background: 'var(--color-primary)', color: '#fff', border: 'none', borderRadius: 10, padding: '0.75rem 1.6rem', fontWeight: 700, fontSize: '0.95rem', boxShadow: '0 4px 14px rgba(37,99,235,0.3)', cursor: 'pointer' }}>
               <i className="fa-solid fa-gauge-high" style={{ marginRight: '0.5rem' }}></i>{t.viewDashboard}
             </button>
-            <button className="btn-modern" style={{ background: 'transparent', color: '#ff6b6b', border: '2px solid #ff6b6b', borderRadius: 10, padding: '0.75rem 1.6rem', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer' }}
+            <button className="btn-modern" style={{ pointerEvents: 'auto', background: 'transparent', color: '#ff6b6b', border: '2px solid #ff6b6b', borderRadius: 10, padding: '0.75rem 1.6rem', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer' }}
               onMouseEnter={e => { e.currentTarget.style.background = '#ff6b6b'; e.currentTarget.style.color = '#fff'; }}
               onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#ff6b6b'; }}>
               <i className="fa-solid fa-triangle-exclamation" style={{ marginRight: '0.5rem' }}></i>{t.reportEmergency}
