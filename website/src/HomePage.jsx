@@ -394,7 +394,7 @@ function Hero({ onLoginClick, onRegisterClick, onNavClick, lang, showVerticalNav
     { color: '#3B82F6', label: 'Flood' },
   ];
   return (
-    <section id="dashboard-section" style={{ position: 'relative', overflow: 'hidden', background: 'radial-gradient(ellipse at 70% 100%, #0a1e4d 0%, #060a16 55%, #030408 100%)', minHeight: 'calc(100vh - 40px)', display: 'flex', alignItems: 'center' }}>
+    <section id="dashboard-section" style={{ position: 'relative', overflow: 'hidden', background: 'radial-gradient(ellipse at 70% 100%, #0a1e4d 0%, #060a16 55%, #030408 100%)', minHeight: '100vh', display: 'flex', alignItems: 'center' }}>
       <Globe3D scrollContainerId="dashboard-section" markers={pins} />
       {showVerticalNav && <VerticalNav lang={lang} onNavClick={onNavClick} onLoginClick={onLoginClick} />}
       <div style={{ position: 'absolute', top: '1.75rem', right: '1.75rem', zIndex: 4, display: 'flex', alignItems: 'center', gap: '0.9rem' }}>
@@ -979,7 +979,6 @@ export default function HomePage({ onLogin }) {
 
   return (
     <div className="bg-mesh-flow min-h-screen">
-      <TopBar onDarkToggle={() => setDarkMode(d => !d)} darkMode={darkMode} lang={lang} onLangChange={setLang} />
       <Navbar onLoginClick={() => openModal('login')} onRegisterClick={() => openModal('register')} lang={lang} onNavClick={handleNav} hidden={heroVisible && !isMobile} />
       <main>
         <Hero onLoginClick={() => openModal('login')} onRegisterClick={() => openModal('register')} onNavClick={handleNav} lang={lang} showVerticalNav={!isMobile} darkMode={darkMode} onDarkToggle={() => setDarkMode(d => !d)} />
