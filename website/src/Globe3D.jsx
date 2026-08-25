@@ -27,6 +27,21 @@ const GLOW_FRAGMENT = `
   }
 `;
 
+// Thin decorative orbit rings around the globe. Earlier tilt values (near
+// Math.PI/2, i.e. nearly edge-on to the camera) made these render as
+// straight-looking diagonal lines cutting across the globe instead of
+// visible ellipses -- keeping tiltX well short of edge-on (~35-55 deg from
+// face-on) keeps them readable as rings from the camera's fixed viewpoint.
+function buildOrbitRing(radius, tiltX, tiltZ, color) {
+  const curve = new THREE.EllipseCurve(0, 0, radius, radius, 0, Math.PI * 2, false, 0);
+  const points = curve.getPoints(128).map(p => new THREE.Vector3(p.x, p.y, 0));
+  const geo = new THREE.BufferGeometry().setFromPoints(points);
+  const ring = new THREE.LineLoop(geo, new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.3 }));
+  ring.rotation.x = tiltX;
+  ring.rotation.z = tiltZ;
+  return ring;
+}
+
 function buildStarfield(count) {
   const positions = new Float32Array(count * 3);
   for (let i = 0; i < count; i++) {
@@ -52,7 +67,14 @@ function rasterizeLandToDots(geojson) {
   landCanvas.width = W; landCanvas.height = H;
   const lctx = landCanvas.getContext('2d');
   lctx.fillStyle = '#fff';
-  const toXY = (lon, lat) => [(lon + 180) / 360 * W, (90 - lat) / 180 * H];
+  // THREE.SphereGeometry's default UV unwrap puts u=0 at the sphere's -X
+  // axis (u=0.25 at +Z, u=0.5 at +X, ...) rather than the u=0.5-at-lon-0
+  // convention a plain equirectangular map uses. latLonToVector3 below
+  // places lon=0 at +Z, so a naive (lon+180)/360 U coordinate was rotating
+  // the rendered land a quarter-turn away from where markers are actually
+  // placed -- that's why a marker at real on-land coordinates still showed
+  // up over open ocean. +90 aligns the texture's U with the sphere's UVs.
+  const toXY = (lon, lat) => [(((lon + 90) % 360 + 360) % 360) / 360 * W, (90 - lat) / 180 * H];
 
   const drawRing = (ring) => {
     ring.forEach(([lon, lat], i) => {
@@ -236,6 +258,13 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
     );
     planetGroup.add(glow);
 
+    // Decorative orbit rings, tilted enough to read clearly as ellipses
+    // rather than the near-edge-on lines the earlier tilt values produced.
+    const orbitGroup = new THREE.Group();
+    orbitGroup.add(buildOrbitRing(13.5, 1.05, 0.35, 0xff8a3d));
+    orbitGroup.add(buildOrbitRing(15.5, 0.85, -0.5, 0x4a86ff));
+    planetGroup.add(orbitGroup);
+
     // Starfield stays centered on the whole viewport, not offset with the planet.
     const stars = buildStarfield(1800);
     scene.add(stars);
@@ -325,6 +354,7 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
         globe.rotation.y += dt * (0.09 + scrollProgress * 0.4) + velY;
         velY *= 0.92; // momentum decay after release
       }
+      orbitGroup.rotation.y += dt * 0.03;
       stars.rotation.y += dt * 0.005;
 
       camera.position.z = 34 + scrollProgress * 18;
@@ -384,7 +414,7 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
       mount.removeChild(renderer.domElement);
       labelEls.forEach(el => el.remove());
       dotTexture?.dispose();
-      const disposables = [globe, dotEarth, glow, stars];
+      const disposables = [globe, dotEarth, glow, stars, ...orbitGroup.children];
       globe.children.forEach(child => { if (child !== dotEarth) child.children.forEach(c => disposables.push(c)); });
       disposables.forEach(obj => {
         obj.geometry?.dispose();
