@@ -2,9 +2,16 @@ import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 
 // Reusable atmosphere-glow fresnel shader — cheap approximation of the
-// reference site's sunlit-limb look: warm orange near the top of the sphere
-// fading to cool blue toward the bottom, blended by object-space Y so the
-// "light direction" stays fixed in place while the globe spins underneath it.
+// reference site's sunlit-limb look. Important fix: the top (warm) and
+// bottom (cool) glows are two INDEPENDENT falloffs that each fade to zero
+// well before reaching the opposite pole, combined additively -- not a
+// single mix(bottomColor, topColor, t) sweeping across the whole sphere.
+// Linearly interpolating orange toward blue in RGB passes through muddy
+// red/magenta/purple at the midpoint (that's a real color-mixing artifact,
+// not a rendering bug), which is exactly the "rainbow border" look that
+// didn't match the reference. The reference doesn't blend hue-to-hue at
+// all -- each glow fades to plain darkness on its own before they'd ever
+// meet, so the sides of the globe stay near-black.
 const GLOW_VERTEX = `
   varying vec3 vNormal;
   varying vec3 vPosition;
@@ -21,19 +28,23 @@ const GLOW_FRAGMENT = `
   uniform vec3 bottomColor;
   uniform vec3 peakColor;
   void main() {
-    float intensity = pow(0.55 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 2.5);
-    float t = smoothstep(-8.0, 4.0, vPosition.y);
-    float peak = smoothstep(4.0, 9.5, vPosition.y);
-    vec3 glowColor = mix(mix(bottomColor, topColor, t), peakColor, peak);
-    gl_FragColor = vec4(glowColor, intensity);
+    float rim = pow(0.55 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 2.5);
+    float topGlow = smoothstep(2.0, 8.0, vPosition.y);
+    float peak = smoothstep(5.0, 9.5, vPosition.y);
+    float bottomGlow = 1.0 - smoothstep(-8.0, -2.0, vPosition.y);
+    vec3 warm = mix(topColor, peakColor, peak);
+    vec3 glowColor = warm * topGlow + bottomColor * bottomGlow;
+    float alpha = rim * clamp(topGlow + bottomGlow, 0.0, 1.0);
+    gl_FragColor = vec4(glowColor, alpha);
   }
 `;
 
 // Dot-matrix layer shader: samples the same rasterized land texture as
 // before, but modulates each dot's color/brightness by how close it sits to
 // the sphere's silhouette edge (the same fresnel term the atmosphere shell
-// uses) -- dots near the horizon pick up the rim's orange/blue tint and
-// glow brighter, dots facing the camera stay their plain light-blue color.
+// uses) -- dots near the horizon pick up the rim's tint and glow brighter,
+// dots facing the camera stay their plain white/pale color. Same
+// independent-falloff approach as the glow shell above, for the same reason.
 const DOT_VERTEX = `
   varying vec3 vNormal;
   varying vec3 vPosition;
@@ -56,9 +67,11 @@ const DOT_FRAGMENT = `
     vec4 tex = texture2D(dotMap, vUv);
     if (tex.a < 0.1) discard;
     float rim = pow(1.0 - abs(dot(vNormal, vec3(0.0, 0.0, 1.0))), 3.0);
-    float t = smoothstep(-8.0, 4.0, vPosition.y);
-    vec3 tint = mix(bottomColor, topColor, t);
-    vec3 finalColor = mix(tex.rgb, tint, rim * 0.8);
+    float topGlow = smoothstep(2.0, 8.0, vPosition.y);
+    float bottomGlow = 1.0 - smoothstep(-8.0, -2.0, vPosition.y);
+    vec3 tint = topColor * topGlow + bottomColor * bottomGlow;
+    float tintAmount = rim * clamp(topGlow + bottomGlow, 0.0, 1.0);
+    vec3 finalColor = mix(tex.rgb, tint, tintAmount * 0.8);
     gl_FragColor = vec4(finalColor * (1.0 + rim * 1.4), tex.a);
   }
 `;
@@ -347,7 +360,7 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
         vertexShader: GLOW_VERTEX,
         fragmentShader: GLOW_FRAGMENT,
         uniforms: {
-          topColor: { value: new THREE.Color(0xff4500) },
+          topColor: { value: new THREE.Color(0xffa64d) },
           bottomColor: { value: new THREE.Color(0x0066ff) },
           peakColor: { value: new THREE.Color(0xffe9b0) },
         },
