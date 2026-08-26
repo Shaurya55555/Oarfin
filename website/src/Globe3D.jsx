@@ -10,11 +10,11 @@ import * as THREE from 'three';
 // LineBasicMaterial's linewidth (always render 1px) regardless of what's
 // set, so a genuinely thicker ring needs real 3D geometry -- a modest tube
 // radius, not thick enough to read as Saturn-style rings.
-function buildOrbitRing(radius, tiltX, tiltZ, color) {
+function buildOrbitRing(radius, tiltX, tiltZ, color, tubeRadius = 0.035) {
   const curve = new THREE.EllipseCurve(0, 0, radius, radius, 0, Math.PI * 2, false, 0);
   const points = curve.getPoints(128).map(p => new THREE.Vector3(p.x, p.y, 0));
   const path = new THREE.CatmullRomCurve3(points, true);
-  const geo = new THREE.TubeGeometry(path, 128, 0.035, 8, true);
+  const geo = new THREE.TubeGeometry(path, 128, tubeRadius, 8, true);
   const ring = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.4 }));
   ring.rotation.x = tiltX;
   ring.rotation.z = tiltZ;
@@ -239,18 +239,26 @@ function buildSun(radius) {
 }
 
 function buildOrbitPlanet(orbitRadius, planetRadius, color, opts = {}) {
-  const { hasRing = false, bands = false, seed = 1 } = opts;
+  const { hasRing = false } = opts;
   const group = new THREE.Group();
   // Thin, neutral pale-grey path -- real orbit-diagram lines, not a
   // colored decoration -- so the eye reads it as a trajectory rather
   // than part of the planet's own design.
-  const ring = buildOrbitRing(orbitRadius, 0, 0, 0x8a97ad);
+  // Thicker tube than the default (0.09 vs 0.035): at solar-system scale
+  // (orbit radii 22-110 vs the default's ~13.5) the default tube was
+  // nearly sub-pixel at render distance and read as barely-there threads
+  // rather than visible orbit paths.
+  const ring = buildOrbitRing(orbitRadius, 0, 0, 0x8a97ad, 0.09);
   ring.material.opacity = 0;
   group.add(ring);
-  const surfaceTex = makeSurfaceTexture(color, { bands, blotches: true, seed });
+  // Starts as a flat placeholder in the planet's real average color;
+  // swapped for the actual NASA-imagery equirectangular map once it
+  // loads (see the loader calls below, same pattern as the Earth globe's
+  // own texture) -- the load is local and fast, and the planet stays
+  // invisible (opacity 0) until the zoom-out gesture fades it in anyway.
   const planet = new THREE.Mesh(
     new THREE.SphereGeometry(planetRadius, 28, 28),
-    new THREE.MeshBasicMaterial({ map: surfaceTex, color: 0xffffff, transparent: true, opacity: 0 })
+    new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0 })
   );
   group.add(planet);
   // Faint atmosphere-limb rim in the planet's own color -- the subtle
@@ -259,13 +267,13 @@ function buildOrbitPlanet(orbitRadius, planetRadius, color, opts = {}) {
   const atmosphere = buildFresnelGlow(planetRadius * 1.06, color, 2.2);
   planet.add(atmosphere);
   // Saturn's own ring -- a flat disc tilted relative to its orbital plane,
-  // distinct from the thin orbit-path ring above.
+  // distinct from the thin orbit-path ring above. Starts transparent
+  // black; swapped for the real ring alpha texture once loaded.
   let saturnRing = null;
   if (hasRing) {
-    const ringTex = makeSurfaceTexture(0xd8c79a, { bands: true, blotches: false, seed: seed + 100 });
     saturnRing = new THREE.Mesh(
-      new THREE.RingGeometry(planetRadius * 1.5, planetRadius * 2.4, 48),
-      new THREE.MeshBasicMaterial({ map: ringTex, color: 0xffffff, transparent: true, opacity: 0, side: THREE.DoubleSide })
+      new THREE.RingGeometry(planetRadius * 1.5, planetRadius * 2.6, 48),
+      new THREE.MeshBasicMaterial({ color: 0xd8c79a, transparent: true, opacity: 0, side: THREE.DoubleSide })
     );
     saturnRing.rotation.x = Math.PI / 2.5;
     planet.add(saturnRing);
@@ -528,13 +536,13 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
     // for a readable silhouette); Earth's own slot (~40) is intentionally
     // left as a gap since the real textured globe sits near there already.
     const solarPlanets = [
-      buildOrbitPlanet(22, 1.1, 0x9c9c94, { seed: 11 }), // Mercury
-      buildOrbitPlanet(29, 1.8, 0xe0c088, { seed: 22 }), // Venus
-      buildOrbitPlanet(48, 1.4, 0xc1440e, { seed: 33 }), // Mars
-      buildOrbitPlanet(62, 6.2, 0xd8ae82, { bands: true, seed: 44 }), // Jupiter
-      buildOrbitPlanet(80, 5.2, 0xead6a8, { bands: true, hasRing: true, seed: 55 }), // Saturn (+ ring)
-      buildOrbitPlanet(96, 3.4, 0xace5ee, { bands: true, seed: 66 }), // Uranus
-      buildOrbitPlanet(110, 3.3, 0x3f5efb, { bands: true, seed: 77 }), // Neptune
+      buildOrbitPlanet(22, 1.1, 0x9c9c94), // Mercury
+      buildOrbitPlanet(29, 1.8, 0xe0c088), // Venus
+      buildOrbitPlanet(48, 1.4, 0xc1440e), // Mars
+      buildOrbitPlanet(62, 6.2, 0xd8ae82), // Jupiter
+      buildOrbitPlanet(80, 5.2, 0xead6a8, { hasRing: true }), // Saturn (+ ring)
+      buildOrbitPlanet(96, 3.4, 0xace5ee), // Uranus
+      buildOrbitPlanet(110, 3.3, 0x3f5efb), // Neptune
     ];
     // Staggered (not random) starting angles, fanned out on roughly the
     // same side of the sun -- reads as a clean line-up at first glance
@@ -542,6 +550,27 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
     // planets scattered arbitrarily around their orbits, while the render
     // loop's per-frame angle update still lets them drift naturally after.
     solarPlanets.forEach((p, i) => { p.angle = -0.12 * i; solarGroup.add(p.group); });
+
+    // Real NASA-imagery equirectangular texture maps for the seven other
+    // planets (same open-source-bundled asset family as the Earth globe's
+    // own /earth_map.jpg), loaded async and swapped in once ready --
+    // replaces the flat placeholder color set in buildOrbitPlanet above.
+    const planetTextureLoader = new THREE.TextureLoader();
+    const loadInto = (material, url) => {
+      planetTextureLoader.load(url, tex => {
+        if (cancelled) return;
+        tex.colorSpace = THREE.SRGBColorSpace;
+        material.map = tex;
+        material.color.set(0xffffff);
+        material.needsUpdate = true;
+      });
+    };
+    const PLANET_TEXTURE_URLS = [
+      '/planets/mercury.jpg', '/planets/venus.jpg', '/planets/mars.jpg',
+      '/planets/jupiter.jpg', '/planets/saturn.jpg', '/planets/uranus.jpg', '/planets/neptune.jpg',
+    ];
+    solarPlanets.forEach((p, i) => loadInto(p.planet.material, PLANET_TEXTURE_URLS[i]));
+    loadInto(solarPlanets[4].saturnRing.material, '/planets/saturn_ring.png');
 
     let raf = null;
     let scrollProgress = 0; // 0 = top of hero, 1 = scrolled a full viewport past it
@@ -737,7 +766,7 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
         p.angle += dt * (1.6 / Math.sqrt(p.orbitRadius));
         p.planet.position.set(Math.cos(p.angle) * p.orbitRadius, Math.sin(p.angle) * p.orbitRadius, 0);
         p.planet.material.opacity = sunFade;
-        p.ring.material.opacity = sunFade * 0.35;
+        p.ring.material.opacity = sunFade * 0.6;
         p.atmosphere.material.uniforms.uOpacity.value = sunFade * 0.9;
         if (p.saturnRing) p.saturnRing.material.opacity = sunFade * 0.8;
       });
