@@ -271,8 +271,24 @@ function buildOrbitPlanet(orbitRadius, planetRadius, color, opts = {}) {
   // black; swapped for the real ring alpha texture once loaded.
   let saturnRing = null;
   if (hasRing) {
+    const innerR = planetRadius * 1.35, outerR = planetRadius * 3.1;
+    const ringGeo = new THREE.RingGeometry(innerR, outerR, 96, 1);
+    // RingGeometry's default UVs project each vertex onto a unit circle
+    // (a square-to-disc mapping), not a radial gradient -- a real ring
+    // texture (a thin horizontal strip encoding inner->outer banding) needs
+    // u to actually track radial distance instead, or it renders as a
+    // faint, mostly-flat wash rather than Saturn's visible concentric
+    // bands. Remap manually: u = normalized radius, v unused (constant).
+    const posAttr = ringGeo.attributes.position;
+    const uvAttr = ringGeo.attributes.uv;
+    const v3 = new THREE.Vector3();
+    for (let i = 0; i < posAttr.count; i++) {
+      v3.fromBufferAttribute(posAttr, i);
+      const r = v3.length();
+      uvAttr.setXY(i, THREE.MathUtils.clamp((r - innerR) / (outerR - innerR), 0, 1), 0.5);
+    }
     saturnRing = new THREE.Mesh(
-      new THREE.RingGeometry(planetRadius * 1.5, planetRadius * 2.6, 48),
+      ringGeo,
       new THREE.MeshBasicMaterial({ color: 0xd8c79a, transparent: true, opacity: 0, side: THREE.DoubleSide })
     );
     saturnRing.rotation.x = Math.PI / 2.5;
@@ -572,6 +588,14 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
     solarPlanets.forEach((p, i) => loadInto(p.planet.material, PLANET_TEXTURE_URLS[i]));
     loadInto(solarPlanets[4].saturnRing.material, '/planets/saturn_ring.png');
 
+    // Hover targets + display names for the sun/planet name label below --
+    // tagged via userData rather than a parallel lookup array so the
+    // raycast hit can read its own name directly.
+    const PLANET_NAMES = ['Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune'];
+    sun.core.userData.label = 'The Sun';
+    solarPlanets.forEach((p, i) => { p.planet.userData.label = PLANET_NAMES[i]; });
+    const planetHoverTargets = [sun.core, ...solarPlanets.map(p => p.planet)];
+
     let raf = null;
     let scrollProgress = 0; // 0 = top of hero, 1 = scrolled a full viewport past it
 
@@ -771,9 +795,21 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
         if (p.saturnRing) p.saturnRing.material.opacity = sunFade * 0.8;
       });
 
-      camera.position.z = 34 + scrollProgress * 18 + zoomLevel * 245;
-      camera.position.y = -scrollProgress * 6 - zoomLevel * 18;
-      camera.lookAt(planetGroup.position.x * 0.4 * (1 - zoomLevel * 0.7), 0, -zoomLevel * 95);
+      camera.position.z = 34 + scrollProgress * 18 + zoomLevel * 150;
+      camera.position.y = -scrollProgress * 6 - zoomLevel * 12;
+      camera.lookAt(planetGroup.position.x * 0.4 * (1 - zoomLevel * 0.7), 0, -zoomLevel * 100);
+      // Widen the field of view as the zoom-out progresses so the whole
+      // system (Neptune's orbit is ~110 units out) actually fits in frame
+      // at max zoom, instead of pulling the camera back so far that
+      // Earth/the sun shrink to near-invisible dots just to include the
+      // outer orbit rings. (First pass pulled the camera back much
+      // farther *and* widened the FOV a lot -- the two compounded and
+      // shrank everything to tiny specks; this is a smaller nudge on both.)
+      const targetFov = 45 + zoomLevel * 10;
+      if (Math.abs(camera.fov - targetFov) > 0.05) {
+        camera.fov = targetFov;
+        camera.updateProjectionMatrix();
+      }
       camera.getWorldDirection(camDir);
 
       const mountRect = mount.getBoundingClientRect();
@@ -803,15 +839,26 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
       if (elapsed - lastCountryCheck > 0.1) {
         lastCountryCheck = elapsed;
         countryRaycaster.setFromCamera(countryNDC, camera);
-        const hit = countryRaycaster.intersectObject(globe, false)[0];
         let name = null;
-        if (hit && countries.length > 0) {
-          hitPointLocal.copy(hit.point);
-          globe.worldToLocal(hitPointLocal);
-          const r = hitPointLocal.length();
-          const lat = THREE.MathUtils.radToDeg(Math.asin(THREE.MathUtils.clamp(hitPointLocal.y / r, -1, 1)));
-          const lon = THREE.MathUtils.radToDeg(Math.atan2(-hitPointLocal.z, hitPointLocal.x));
-          name = findCountryAt(countries, lon, lat);
+        // Only worth testing the sun/planets once they're actually
+        // visible/faded in -- at zoomLevel 0 they're invisible, tiny
+        // placeholder-colored spheres sitting behind the hero content, and
+        // raycasting them there would pop up a name label with nothing
+        // for it to point at.
+        if (zoomLevel > 0.12) {
+          const planetHit = countryRaycaster.intersectObjects(planetHoverTargets, false)[0];
+          if (planetHit) name = planetHit.object.userData.label;
+        }
+        if (!name) {
+          const hit = countryRaycaster.intersectObject(globe, false)[0];
+          if (hit && countries.length > 0) {
+            hitPointLocal.copy(hit.point);
+            globe.worldToLocal(hitPointLocal);
+            const r = hitPointLocal.length();
+            const lat = THREE.MathUtils.radToDeg(Math.asin(THREE.MathUtils.clamp(hitPointLocal.y / r, -1, 1)));
+            const lon = THREE.MathUtils.radToDeg(Math.atan2(-hitPointLocal.z, hitPointLocal.x));
+            name = findCountryAt(countries, lon, lat);
+          }
         }
         if (name) {
           countryLabelEl.textContent = name;
