@@ -422,6 +422,11 @@ function buildMarker(radius, latDeg, lonDeg, colorHex) {
 export default function Globe3D({ scrollContainerId, markers = [] }) {
   const mountRef = useRef(null);
   const markersKey = markers.map(m => `${m.color}${m.label}${m.lat}${m.lon}`).join(',');
+  // Persists across the effect re-running (the GDACS live-marker fetch
+  // resolving after mount changes `markersKey`, which re-triggers this
+  // whole effect) so the intro plays exactly once per real page load,
+  // not a second time once real marker data replaces the fallback pins.
+  const introPlayedRef = useRef(false);
 
   useEffect(() => {
     const mount = mountRef.current;
@@ -691,6 +696,29 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
     };
     mount.addEventListener('wheel', onWheelZoom, { passive: false });
 
+    // ── Opening intro — reveal the full solar system, hold briefly, then
+    // zoom into Earth, once per real page load. Just drives the same
+    // `zoomTarget` the manual Ctrl+scroll gesture above does (the render
+    // loop's existing easing does the actual animating); a later manual
+    // scroll simply overrides it like any other zoomTarget change.
+    const introTimers = [];
+    if (!introPlayedRef.current) {
+      // Mark played from inside the timer rather than synchronously here:
+      // React StrictMode (dev only) mounts this effect, tears it straight
+      // back down, then mounts it again -- setting the ref synchronously
+      // would make the *first, torn-down* run claim the intro played,
+      // leaving the real kept instance thinking it already had and
+      // silently skipping it. Marking it from the timer means the
+      // torn-down run's cleanup cancels its timer before this ever fires,
+      // so only a run that actually survives gets to claim it.
+      introTimers.push(setTimeout(() => {
+        if (cancelled) return;
+        introPlayedRef.current = true;
+        zoomTarget = 1;
+      }, 300));
+      introTimers.push(setTimeout(() => { zoomTarget = 0; }, 2900));
+    }
+
     // Small discoverability hint for the gesture above -- otherwise nothing
     // on screen suggests it exists. Only shown while hovering the globe and
     // still fully zoomed in.
@@ -884,6 +912,7 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
 
     return () => {
       cancelled = true;
+      introTimers.forEach(clearTimeout);
       document.body.style.userSelect = '';
       cancelAnimationFrame(raf);
       window.removeEventListener('resize', onResize);
