@@ -135,7 +135,7 @@ function rasterizeLandToDots(geojson) {
   const dotCanvas = document.createElement('canvas');
   dotCanvas.width = W; dotCanvas.height = H;
   const dctx = dotCanvas.getContext('2d');
-  dctx.fillStyle = '#4fd9ff';
+  dctx.fillStyle = '#eaf2ff';
   const step = 6;
   // See note above: (lon+90)/360 is THREE's actual UV convention, which is
   // this toXY's (lon+180)/360 shifted by -90deg (=-0.25 of the width, i.e.
@@ -303,6 +303,9 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
       const { group, halo, localPos } = buildMarker(10.15, lat, lon, m.color);
       globe.add(group);
 
+      // Solid dark pill badge, matching the reference site's actual label
+      // style (confirmed directly against a reference screenshot -- multiple
+      // labels visible at once, solid background, not hover-gated).
       const el = document.createElement('div');
       el.textContent = m.label;
       el.style.cssText = `
@@ -322,13 +325,12 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
     // once there are 3+), each with a traveling light particle -- children
     // of `globe` so they rotate together with the markers they connect.
     const arcs = [];
-    const ARC_COLORS = [0xff6b00, 0x2fa5ff];
     if (markerObjs.length >= 2) {
       const pairCount = markerObjs.length >= 3 ? markerObjs.length : 1;
       for (let i = 0; i < pairCount; i++) {
         const a = markerObjs[i].localPos;
         const b = markerObjs[(i + 1) % markerObjs.length].localPos;
-        const { line, particle, curve } = buildArc(a, b, ARC_COLORS[i % ARC_COLORS.length]);
+        const { line, particle, curve } = buildArc(a, b, 0xff8a3d);
         globe.add(line);
         globe.add(particle);
         arcs.push({ curve, line, particle, phase: i / pairCount, speed: 0.18 });
@@ -363,7 +365,7 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
     // them sitting still while the dots/markers/arcs spin underneath.
     const orbitGroup = new THREE.Group();
     orbitGroup.add(buildOrbitRing(13.5, 1.05, 0.35, 0xff8a3d));
-    orbitGroup.add(buildOrbitRing(15.5, 0.85, -0.5, 0x4a86ff));
+    orbitGroup.add(buildOrbitRing(15.5, 0.85, -0.5, 0xffb066));
     globe.add(orbitGroup);
 
     // Starfield stays centered on the whole viewport, not offset with the planet.
