@@ -475,14 +475,73 @@ const ALERTS_DATA = [
   { color: '#3B82F6', badge: 'MODERATE', badgeBg: '#2563EB', icon: 'fa-water', title: 'Flash Flood Warning', meta: 'Mumbai Region — 12 districts', detail: 'Heavy rainfall expected for next 6 hours. Avoid low-lying areas and river banks.', status: 'Watch Active', source: 'India Meteorological Dept', updated: '12 minutes ago' },
 ];
 
-const RESOURCES_DATA = [
-  { icon: 'fa-house-chimney-medical', title: 'Emergency Shelters', desc: '420+ shelters mapped across India with live capacity data. Find the nearest open shelter.', color: '#1E3A5F', link: '#' },
-  { icon: 'fa-truck-medical', title: 'Relief Camps', desc: 'Active relief camps with food, water, and medical aid. Updated every 30 minutes by field teams.', color: '#1E3A5F', link: '#' },
-  { icon: 'fa-phone-volume', title: 'Helpline Numbers', desc: 'NDMA: 1078 | Police: 100 | Ambulance: 108 | Fire: 101 | Flood Control: 1070', color: '#B91C1C', link: '#' },
-  { icon: 'fa-map-location-dot', title: 'Evacuation Routes', desc: 'Real-time road closure data and safe evacuation corridors updated by traffic authorities.', color: '#1E3A5F', link: '#' },
-  { icon: 'fa-droplet', title: 'Water & Supplies', desc: 'Locate nearest clean water distribution points and essential supply depots in your area.', color: '#1E3A5F', link: '#' },
-  { icon: 'fa-hospital', title: 'Medical Facilities', desc: 'Hospitals and medical camps accepting disaster victims. Includes blood bank availability.', color: '#1E3A5F', link: '#' },
+const RESOURCES_META = [
+  { icon: 'fa-house-chimney-medical', color: '#1E3A5F', link: '#' },
+  { icon: 'fa-truck-medical', color: '#1E3A5F', link: '#' },
+  { icon: 'fa-phone-volume', color: '#B91C1C', link: '#' },
+  { icon: 'fa-map-location-dot', color: '#1E3A5F', link: '#' },
+  { icon: 'fa-droplet', color: '#1E3A5F', link: '#' },
+  { icon: 'fa-hospital', color: '#1E3A5F', link: '#' },
 ];
+
+const RESOURCES_DATA_BY_LANG = {
+  English: [
+    { title: 'Emergency Shelters', desc: '420+ shelters mapped across India with live capacity data. Find the nearest open shelter.' },
+    { title: 'Relief Camps', desc: 'Active relief camps with food, water, and medical aid. Updated every 30 minutes by field teams.' },
+    { title: 'Helpline Numbers', desc: 'NDMA: 1078 | Police: 100 | Ambulance: 108 | Fire: 101 | Flood Control: 1070' },
+    { title: 'Evacuation Routes', desc: 'Real-time road closure data and safe evacuation corridors updated by traffic authorities.' },
+    { title: 'Water & Supplies', desc: 'Locate nearest clean water distribution points and essential supply depots in your area.' },
+    { title: 'Medical Facilities', desc: 'Hospitals and medical camps accepting disaster victims. Includes blood bank availability.' },
+  ],
+  Hindi: [
+    { title: 'आपातकालीन आश्रय स्थल', desc: 'पूरे भारत में 420+ आश्रय स्थल लाइव क्षमता डेटा के साथ मैप किए गए। निकटतम खुला आश्रय स्थल खोजें।' },
+    { title: 'राहत शिविर', desc: 'भोजन, पानी और चिकित्सा सहायता वाले सक्रिय राहत शिविर। फील्ड टीमों द्वारा हर 30 मिनट में अपडेट किया जाता है।' },
+    { title: 'हेल्पलाइन नंबर', desc: 'NDMA: 1078 | पुलिस: 100 | एम्बुलेंस: 108 | फायर: 101 | बाढ़ नियंत्रण: 1070' },
+    { title: 'निकासी मार्ग', desc: 'यातायात अधिकारियों द्वारा अपडेट की गई रीयल-टाइम सड़क बंद होने की जानकारी और सुरक्षित निकासी मार्ग।' },
+    { title: 'पानी और आपूर्ति', desc: 'अपने क्षेत्र में निकटतम स्वच्छ जल वितरण केंद्र और आवश्यक आपूर्ति डिपो खोजें।' },
+    { title: 'चिकित्सा सुविधाएं', desc: 'आपदा पीड़ितों को स्वीकार करने वाले अस्पताल और चिकित्सा शिविर। ब्लड बैंक उपलब्धता शामिल है।' },
+  ],
+  Kannada: [
+    { title: 'ತುರ್ತು ಆಶ್ರಯ ತಾಣಗಳು', desc: 'ಭಾರತದಾದ್ಯಂತ 420+ ಆಶ್ರಯ ತಾಣಗಳು ಲೈವ್ ಸಾಮರ್ಥ್ಯ ಡೇಟಾದೊಂದಿಗೆ ಮ್ಯಾಪ್ ಮಾಡಲಾಗಿದೆ. ಹತ್ತಿರದ ತೆರೆದ ಆಶ್ರಯ ಹುಡುಕಿ.' },
+    { title: 'ಪರಿಹಾರ ಶಿಬಿರಗಳು', desc: 'ಆಹಾರ, ನೀರು ಮತ್ತು ವೈದ್ಯಕೀಯ ನೆರವಿನೊಂದಿಗೆ ಸಕ್ರಿಯ ಪರಿಹಾರ ಶಿಬಿರಗಳು. ಕ್ಷೇತ್ರ ತಂಡಗಳಿಂದ ಪ್ರತಿ 30 ನಿಮಿಷಗಳಿಗೊಮ್ಮೆ ನವೀಕರಿಸಲಾಗುತ್ತದೆ.' },
+    { title: 'ಸಹಾಯವಾಣಿ ಸಂಖ್ಯೆಗಳು', desc: 'NDMA: 1078 | ಪೊಲೀಸ್: 100 | ಆಂಬ್ಯುಲೆನ್ಸ್: 108 | ಅಗ್ನಿಶಾಮಕ: 101 | ಪ್ರವಾಹ ನಿಯಂತ್ರಣ: 1070' },
+    { title: 'ಸ್ಥಳಾಂತರ ಮಾರ್ಗಗಳು', desc: 'ಸಂಚಾರ ಅಧಿಕಾರಿಗಳು ನವೀಕರಿಸಿದ ರಿಯಲ್-ಟೈಮ್ ರಸ್ತೆ ಮುಚ್ಚುವಿಕೆ ಡೇಟಾ ಮತ್ತು ಸುರಕ್ಷಿತ ಸ್ಥಳಾಂತರ ಕಾರಿಡಾರ್‌ಗಳು.' },
+    { title: 'ನೀರು ಮತ್ತು ಸರಬರಾಜು', desc: 'ನಿಮ್ಮ ಪ್ರದೇಶದಲ್ಲಿ ಹತ್ತಿರದ ಶುದ್ಧ ನೀರಿನ ವಿತರಣಾ ಕೇಂದ್ರಗಳು ಮತ್ತು ಅಗತ್ಯ ಸರಬರಾಜು ಡಿಪೋಗಳನ್ನು ಪತ್ತೆ ಮಾಡಿ.' },
+    { title: 'ವೈದ್ಯಕೀಯ ಸೌಲಭ್ಯಗಳು', desc: 'ವಿಪತ್ತು ಸಂತ್ರಸ್ತರನ್ನು ಸ್ವೀಕರಿಸುವ ಆಸ್ಪತ್ರೆಗಳು ಮತ್ತು ವೈದ್ಯಕೀಯ ಶಿಬಿರಗಳು. ರಕ್ತ ಬ್ಯಾಂಕ್ ಲಭ್ಯತೆ ಸೇರಿದೆ.' },
+  ],
+  Tamil: [
+    { title: 'அவசர தங்குமிடங்கள்', desc: 'இந்தியா முழுவதும் 420+ தங்குமிடங்கள் நேரடி கொள்ளளவு தரவுடன் வரைபடமாக்கப்பட்டுள்ளன. அருகிலுள்ள திறந்த தங்குமிடத்தைக் கண்டறியவும்.' },
+    { title: 'நிவாரண முகாம்கள்', desc: 'உணவு, தண்ணீர் மற்றும் மருத்துவ உதவியுடன் செயலில் உள்ள நிவாரண முகாம்கள். கள குழுக்களால் ஒவ்வொரு 30 நிமிடங்களுக்கும் புதுப்பிக்கப்படுகிறது.' },
+    { title: 'உதவி எண்கள்', desc: 'NDMA: 1078 | காவல்துறை: 100 | ஆம்புலன்ஸ்: 108 | தீயணைப்பு: 101 | வெள்ள கட்டுப்பாடு: 1070' },
+    { title: 'வெளியேற்ற வழிகள்', desc: 'போக்குவரத்து அதிகாரிகளால் புதுப்பிக்கப்பட்ட நேரடி சாலை மூடல் தரவு மற்றும் பாதுகாப்பான வெளியேற்ற பாதைகள்.' },
+    { title: 'தண்ணீர் & பொருட்கள்', desc: 'உங்கள் பகுதியில் அருகிலுள்ள சுத்தமான தண்ணீர் விநியோக மையங்கள் மற்றும் அத்தியாவசிய பொருட்கள் கிடங்குகளைக் கண்டறியவும்.' },
+    { title: 'மருத்துவ வசதிகள்', desc: 'பேரிடர் பாதிக்கப்பட்டோரை ஏற்கும் மருத்துவமனைகள் மற்றும் மருத்துவ முகாம்கள். இரத்த வங்கி கிடைப்பது உட்பட.' },
+  ],
+  Marathi: [
+    { title: 'आपत्कालीन निवारे', desc: 'संपूर्ण भारतात 420+ निवारे लाइव्ह क्षमता डेटासह मॅप केलेले आहेत. जवळचे उघडे निवारे शोधा.' },
+    { title: 'मदत छावण्या', desc: 'अन्न, पाणी आणि वैद्यकीय मदतीसह सक्रिय मदत छावण्या. फील्ड टीमद्वारे दर 30 मिनिटांनी अद्ययावत केले जाते.' },
+    { title: 'हेल्पलाइन क्रमांक', desc: 'NDMA: 1078 | पोलीस: 100 | रुग्णवाहिका: 108 | अग्निशमन: 101 | पूर नियंत्रण: 1070' },
+    { title: 'निर्वासन मार्ग', desc: 'वाहतूक अधिकाऱ्यांनी अद्ययावत केलेली रिअल-टाइम रस्ता बंद माहिती आणि सुरक्षित निर्वासन मार्ग.' },
+    { title: 'पाणी आणि साहित्य', desc: 'तुमच्या भागातील जवळचे स्वच्छ पाणी वितरण केंद्र आणि आवश्यक साहित्य डेपो शोधा.' },
+    { title: 'वैद्यकीय सुविधा', desc: 'आपत्ती पीडितांना स्वीकारणारी रुग्णालये आणि वैद्यकीय छावण्या. रक्तपेढी उपलब्धतेसह.' },
+  ],
+  Gujarati: [
+    { title: 'કટોકટી આશ્રયસ્થાનો', desc: 'સમગ્ર ભારતમાં 420+ આશ્રયસ્થાનો લાઇવ ક્ષમતા ડેટા સાથે મેપ કરવામાં આવ્યા છે. નજીકનું ખુલ્લું આશ્રયસ્થાન શોધો.' },
+    { title: 'રાહત શિબિરો', desc: 'ખોરાક, પાણી અને તબીબી સહાય સાથે સક્રિય રાહત શિબિરો. ફિલ્ડ ટીમો દ્વારા દર 30 મિનિટે અપડેટ કરવામાં આવે છે.' },
+    { title: 'હેલ્પલાઇન નંબરો', desc: 'NDMA: 1078 | પોલીસ: 100 | એમ્બ્યુલન્સ: 108 | ફાયર: 101 | પૂર નિયંત્રણ: 1070' },
+    { title: 'સ્થળાંતર માર્ગો', desc: 'ટ્રાફિક અધિકારીઓ દ્વારા અપડેટ કરાયેલ રીઅલ-ટાઇમ રોડ બંધ ડેટા અને સલામત સ્થળાંતર માર્ગો.' },
+    { title: 'પાણી અને પુરવઠો', desc: 'તમારા વિસ્તારમાં નજીકના સ્વચ્છ પાણી વિતરણ કેન્દ્રો અને આવશ્યક પુરવઠા ડેપો શોધો.' },
+    { title: 'તબીબી સુવિધાઓ', desc: 'આપત્તિ પીડિતોને સ્વીકારતી હોસ્પિટલો અને તબીબી શિબિરો. બ્લડ બેંક ઉપલબ્ધતા સહિત.' },
+  ],
+  Telugu: [
+    { title: 'అత్యవసర ఆశ్రయాలు', desc: 'భారతదేశం అంతటా 420+ ఆశ్రయాలు లైవ్ కెపాసిటీ డేటాతో మ్యాప్ చేయబడ్డాయి. సమీప తెరిచిన ఆశ్రయాన్ని కనుగొనండి.' },
+    { title: 'సహాయ శిబిరాలు', desc: 'ఆహారం, నీరు మరియు వైద్య సహాయంతో క్రియాశీల సహాయ శిబిరాలు. ఫీల్డ్ బృందాలచే ప్రతి 30 నిమిషాలకు నవీకరించబడుతుంది.' },
+    { title: 'హెల్ప్‌లైన్ నంబర్లు', desc: 'NDMA: 1078 | పోలీస్: 100 | అంబులెన్స్: 108 | అగ్నిమాపక: 101 | వరద నియంత్రణ: 1070' },
+    { title: 'తరలింపు మార్గాలు', desc: 'ట్రాఫిక్ అధికారులు నవీకరించిన రియల్-టైమ్ రోడ్ మూసివేత డేటా మరియు సురక్షిత తరలింపు మార్గాలు.' },
+    { title: 'నీరు & సామాగ్రి', desc: 'మీ ప్రాంతంలో సమీప స్వచ్ఛమైన నీటి పంపిణీ కేంద్రాలు మరియు అవసరమైన సామాగ్రి డిపోలను గుర్తించండి.' },
+    { title: 'వైద్య సదుపాయాలు', desc: 'విపత్తు బాధితులను స్వీకరించే ఆసుపత్రులు మరియు వైద్య శిబిరాలు. బ్లడ్ బ్యాంక్ లభ్యతతో సహా.' },
+  ],
+};
 
 const PREPAREDNESS_META = [
   { icon: 'fa-list-check', color: '#1E3A5F' },
@@ -844,13 +903,15 @@ function AlertsAndStats({ lang }) {
 // ── Resources Section ────────────────────────────────────────────────
 function Resources({ lang }) {
   const t = T[lang];
+  const items = (RESOURCES_DATA_BY_LANG[lang] || RESOURCES_DATA_BY_LANG.English)
+    .map((r, i) => ({ ...r, ...RESOURCES_META[i] }));
   return (
     <>
       <div style={{ marginBottom: '1.75rem' }}>
         <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)' }}>{t.resourcesDesc}</p>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem' }}>
-        {RESOURCES_DATA.map((r, i) => (
+        {items.map((r, i) => (
           <Reveal key={i} delay={i * 100}>
             <a href={r.link}
               className="card-hover"

@@ -324,7 +324,7 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
       const rect = mount.getBoundingClientRect();
       const nx = ((e.clientX - rect.left) / rect.width) * 2 - 1;
       const ny = ((e.clientY - rect.top) / rect.height) * 2 - 1;
-      targetTiltY = THREE.MathUtils.clamp(nx, -1, 1) * Math.PI;
+      targetTiltY = THREE.MathUtils.clamp(nx, -1, 1) * 0.35;
       targetTiltX = THREE.MathUtils.clamp(-ny, -1, 1) * 0.35;
     };
     // Ease back to the default aligned axis (0, 0) once the cursor leaves
