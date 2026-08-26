@@ -3,6 +3,7 @@ import DisasterNewsBanner from './DisasterNewsBanner';
 import DisasterMap from './DisasterMap';
 import NewsArticles from './NewsArticles';
 import RedditVideos from './RedditVideos';
+import OarfinLogo from './Logo';
 
 export default function Dashboard({ user, onLogout }) {
   const [activeView, setActiveView] = useState('map');
@@ -19,7 +20,7 @@ export default function Dashboard({ user, onLogout }) {
       <nav style={{ background: '#1E3A5F', boxShadow: '0 2px 6px rgba(0,0,0,0.2)', position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ maxWidth: '100%', padding: '0 1.5rem', display: 'flex', alignItems: 'center', height: 56, gap: '1.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
-            <i className="fa-solid fa-shield-halved" style={{ color: '#fff', fontSize: '1.2rem' }}></i>
+            <OarfinLogo size={22} color="#fff" />
             <span style={{ fontWeight: 800, fontSize: '1rem', color: '#fff', letterSpacing: '0.05em' }}>OARFIN</span>
           </div>
 

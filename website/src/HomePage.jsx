@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import Lenis from 'lenis';
 import Globe3D from './Globe3D';
+import OarfinLogo from './Logo';
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3000';
 
@@ -165,65 +166,305 @@ const T = {
     preparednessTitle: 'आपदा तैयारी',
     preparednessDesc: 'आपदा आने से पहले तैयार रहें। अपनी और अपने परिवार की रक्षा के लिए इन दिशानिर्देशों का पालन करें।',
   },
-  Spanish: {
-    activeAlerts: 'ALERTAS ACTIVAS: 3',
+  Kannada: {
+    activeAlerts: 'ಸಕ್ರಿಯ ಎಚ್ಚರಿಕೆಗಳು: 3',
     ticker: [
-      'Huracán Maya — Categoría 4 — Evacuación ordenada en zonas costeras',
-      'Incendio CA-47 — 15,240 acres — 35% contenido — Actualizado hace 4 min',
-      'Alerta de inundación repentina — Región de Mumbai — 12 distritos afectados',
+      'ಚಂಡಮಾರುತ ಮಾಯಾ — ವರ್ಗ 4 — ಕರಾವಳಿ ಪ್ರದೇಶಗಳಿಗೆ ಸ್ಥಳಾಂತರ ಆದೇಶ',
+      'ಕಾಡ್ಗಿಚ್ಚು CA-47 — 15,240 ಎಕರೆ — 35% ನಿಯಂತ್ರಣದಲ್ಲಿ — 4 ನಿಮಿಷಗಳ ಹಿಂದೆ ನವೀಕರಿಸಲಾಗಿದೆ',
+      'ಹಠಾತ್ ಪ್ರವಾಹ ಎಚ್ಚರಿಕೆ — ಮುಂಬೈ ಪ್ರದೇಶ — 12 ಜಿಲ್ಲೆಗಳು ಬಾಧಿತ',
     ],
-    navLinks: ['Panel', 'Alertas', 'Recursos', 'Preparación', 'Acerca de'],
-    signIn: 'Iniciar sesión', emergencyLogin: 'Acceso de emergencia',
-    heroTitle1: 'Protegiendo Comunidades',
-    heroTitle2: 'Antes del Desastre',
-    heroDesc: 'Plataforma oficial de coordinación de emergencias. Alertas en tiempo real, órdenes de evacuación y gestión de recursos.',
-    viewDashboard: 'Ver Panel en Vivo',
-    reportEmergency: 'Reportar Emergencia',
-    operatedBy: 'Operado por OARFIN',
-    monitoring: 'Monitoreo 24/7',
-    uptime: '98.5% Disponibilidad',
-    currentDeclarations: 'Declaraciones de Emergencia Actuales',
-    viewArchive: 'Ver Archivo',
-    quickActions: 'Acciones Rápidas',
-    statsLabels: ['Personas Protegidas', 'Alertas Enviadas', 'Refugios Mapeados', 'Tiempo Promedio de Alerta'],
-    footerDesc: 'Plataforma oficial de gestión de emergencias. Operada 24/7 por coordinadores certificados.',
-    footerRights: '© 2026 Plataforma de Gestión de Emergencias OARFIN. Todos los derechos reservados.',
-    footerNote: 'Este es un sistema oficial de gestión de emergencias. El uso no autorizado está prohibido.',
-    platform: 'Plataforma', support: 'Soporte',
-    platformLinks: ['Panel', 'Alertas en Vivo', 'Mapa de Incidentes', 'Recursos'],
-    supportLinks: ['Centro de Ayuda', 'Contáctenos', 'Accesibilidad', 'Política de Privacidad'],
-    learnMore: 'Saber más',
-    updatedAgo: 'Actualizado hace 2 min',
-    secureSystem: 'Este es un sistema gubernamental seguro. El uso no autorizado está prohibido.',
-    signInBtn: 'Iniciar sesión', createAccount: 'Crear cuenta',
-    emailLabel: 'Correo electrónico', passwordLabel: 'Contraseña',
-    keepSignedIn: 'Mantenerme conectado', forgotPassword: '¿Olvidó su contraseña?',
-    firstName: 'Nombre', lastName: 'Apellido',
-    mobileLabel: 'Número de móvil (requerido para alertas)',
-    confirmPassword: 'Confirmar contraseña', userTypeLabel: 'Tipo de usuario',
-    selectUserType: 'Seleccionar tipo de usuario',
-    civilian: 'Civil', responder: 'Primer respondedor',
-    agency: 'Agencia gubernamental', ngo: 'ONG / Organización de ayuda',
-    termsText: 'Acepto los Términos de Servicio y la Política de Privacidad',
-    pleaseWait: 'Por favor espere...',
-    systemOperational: 'SISTEMA OPERATIVO — 98.5% DISPONIBILIDAD',
-    liveMap: 'Mapa de Incidentes Activos', live: 'En vivo',
-    aboutTitle: 'Acerca de OARFIN',
-    aboutDesc: 'OARFIN es una plataforma de gestión de desastres en tiempo real construida para proteger comunidades en toda la India.',
-    aboutMission: 'Nuestra Misión',
-    aboutMissionDesc: 'Reducir las víctimas relacionadas con desastres proporcionando información oportuna y precisa y permitiendo una coordinación más rápida.',
-    aboutFeatures: ['Alertas de desastres en tiempo real de IMD, NDMA y fuentes globales', 'Mapa interactivo de incidentes con navegación a lugares seguros', 'Localizador de refugios de emergencia con datos de capacidad en vivo', 'Coordinación de recursos para agencias de ayuda', 'Soporte multilingüe para mayor alcance', 'Diseño móvil para respondedores de campo'],
-    aboutTeam: 'Construido como Proyecto de Tesis de Licenciatura — enfocado en implementación real.',
-    aboutAchievement: 'Subcampeón — Hackathon HackCrux',
-    aboutLiveDeployments: 'Implementaciones en Vivo',
-    aboutWebsiteLink: 'Sitio web (Vercel)',
-    aboutServerLink: 'Servidor API (Render)',
-    alertsTitle: 'Feed de Alertas en Vivo',
-    alertsDesc: 'Todas las declaraciones de emergencia activas se monitorean en tiempo real.',
-    resourcesTitle: 'Recursos de Emergencia',
-    resourcesDesc: 'Acceda a recursos críticos para la preparación y respuesta ante desastres.',
-    preparednessTitle: 'Preparación para Desastres',
-    preparednessDesc: 'Esté listo antes de que ocurra un desastre. Siga estas pautas para protegerse.',
+    navLinks: ['ಡ್ಯಾಶ್‌ಬೋರ್ಡ್', 'ಎಚ್ಚರಿಕೆಗಳು', 'ಸಂಪನ್ಮೂಲಗಳು', 'ಸಿದ್ಧತೆ', 'ನಮ್ಮ ಬಗ್ಗೆ'],
+    signIn: 'ಸೈನ್ ಇನ್', emergencyLogin: 'ತುರ್ತು ಲಾಗಿನ್',
+    heroTitle1: 'ಸಮುದಾಯಗಳನ್ನು ರಕ್ಷಿಸುವುದು',
+    heroTitle2: 'ವಿಪತ್ತು ಸಂಭವಿಸುವ ಮೊದಲು',
+    heroDesc: 'ಅಧಿಕೃತ ತುರ್ತು ಸಮನ್ವಯ ವೇದಿಕೆ. ರಿಯಲ್-ಟೈಮ್ ಎಚ್ಚರಿಕೆಗಳು, ಸ್ಥಳಾಂತರ ಆದೇಶಗಳು ಮತ್ತು ಸಂಪನ್ಮೂಲ ನಿರ್ವಹಣೆ.',
+    viewDashboard: 'ಲೈವ್ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್ ವೀಕ್ಷಿಸಿ',
+    reportEmergency: 'ತುರ್ತುಸ್ಥಿತಿ ವರದಿ ಮಾಡಿ',
+    operatedBy: 'OARFIN ನಿಂದ ನಿರ್ವಹಿಸಲ್ಪಡುತ್ತದೆ',
+    monitoring: '24/7 ಮೇಲ್ವಿಚಾರಣೆ',
+    uptime: '98.5% ಅಪ್‌ಟೈಮ್',
+    currentDeclarations: 'ಪ್ರಸ್ತುತ ತುರ್ತು ಘೋಷಣೆಗಳು',
+    viewArchive: 'ಆರ್ಕೈವ್ ವೀಕ್ಷಿಸಿ',
+    quickActions: 'ತ್ವರಿತ ಕ್ರಿಯೆಗಳು',
+    statsLabels: ['ರಕ್ಷಿಸಲ್ಪಟ್ಟ ಜನರು', 'ಕಳುಹಿಸಿದ ಎಚ್ಚರಿಕೆಗಳು', 'ಮ್ಯಾಪ್ ಮಾಡಿದ ಆಶ್ರಯಗಳು', 'ಸರಾಸರಿ ಎಚ್ಚರಿಕೆ ಸಮಯ'],
+    footerDesc: 'ಅಧಿಕೃತ ತುರ್ತು ನಿರ್ವಹಣಾ ವೇದಿಕೆ. ಪ್ರಮಾಣೀಕೃತ ಸಮನ್ವಯಕಾರರಿಂದ 24/7 ನಿರ್ವಹಿಸಲ್ಪಡುತ್ತದೆ.',
+    footerRights: '© 2026 OARFIN ತುರ್ತು ನಿರ್ವಹಣಾ ವೇದಿಕೆ. ಎಲ್ಲಾ ಹಕ್ಕುಗಳನ್ನು ಕಾಯ್ದಿರಿಸಲಾಗಿದೆ.',
+    footerNote: 'ಇದು ಅಧಿಕೃತ ತುರ್ತು ನಿರ್ವಹಣಾ ವ್ಯವಸ್ಥೆ. ಅನಧಿಕೃತ ಬಳಕೆ ನಿಷಿದ್ಧ.',
+    platform: 'ವೇದಿಕೆ', support: 'ಬೆಂಬಲ',
+    platformLinks: ['ಡ್ಯಾಶ್‌ಬೋರ್ಡ್', 'ಲೈವ್ ಎಚ್ಚರಿಕೆಗಳು', 'ಘಟನೆ ನಕ್ಷೆ', 'ಸಂಪನ್ಮೂಲಗಳು'],
+    supportLinks: ['ಸಹಾಯ ಕೇಂದ್ರ', 'ನಮ್ಮನ್ನು ಸಂಪರ್ಕಿಸಿ', 'ಪ್ರವೇಶಿಸುವಿಕೆ', 'ಗೌಪ್ಯತೆ ನೀತಿ'],
+    learnMore: 'ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ',
+    updatedAgo: '2 ನಿಮಿಷಗಳ ಹಿಂದೆ ನವೀಕರಿಸಲಾಗಿದೆ',
+    secureSystem: 'ಇದು ಸುರಕ್ಷಿತ ಸರ್ಕಾರಿ ವ್ಯವಸ್ಥೆ. ಅನಧಿಕೃತ ಬಳಕೆ ನಿಷಿದ್ಧ.',
+    signInBtn: 'ಸೈನ್ ಇನ್', createAccount: 'ಖಾತೆ ರಚಿಸಿ',
+    emailLabel: 'ಇಮೇಲ್ ವಿಳಾಸ', passwordLabel: 'ಪಾಸ್‌ವರ್ಡ್',
+    keepSignedIn: 'ನನ್ನನ್ನು ಸೈನ್ ಇನ್ ಆಗಿ ಇರಿಸಿ', forgotPassword: 'ಪಾಸ್‌ವರ್ಡ್ ಮರೆತಿರಾ?',
+    firstName: 'ಮೊದಲ ಹೆಸರು', lastName: 'ಕೊನೆಯ ಹೆಸರು',
+    mobileLabel: 'ಮೊಬೈಲ್ ಸಂಖ್ಯೆ (ಎಚ್ಚರಿಕೆಗಳಿಗಾಗಿ ಅಗತ್ಯ)',
+    confirmPassword: 'ಪಾಸ್‌ವರ್ಡ್ ದೃಢೀಕರಿಸಿ', userTypeLabel: 'ಬಳಕೆದಾರ ಪ್ರಕಾರ',
+    selectUserType: 'ಬಳಕೆದಾರ ಪ್ರಕಾರ ಆಯ್ಕೆಮಾಡಿ',
+    civilian: 'ನಾಗರಿಕ', responder: 'ಪ್ರಥಮ ಪ್ರತಿಸ್ಪಂದಕ',
+    agency: 'ಸರ್ಕಾರಿ ಸಂಸ್ಥೆ', ngo: 'ಎನ್‌ಜಿಒ / ಪರಿಹಾರ ಸಂಸ್ಥೆ',
+    termsText: 'ನಾನು ಸೇವಾ ನಿಯಮಗಳು ಮತ್ತು ಗೌಪ್ಯತೆ ನೀತಿಗೆ ಒಪ್ಪುತ್ತೇನೆ',
+    pleaseWait: 'ದಯವಿಟ್ಟು ಕಾಯಿರಿ...',
+    systemOperational: 'ಸಿಸ್ಟಮ್ ಕಾರ್ಯಾಚರಣೆಯಲ್ಲಿದೆ — 98.5% ಅಪ್‌ಟೈಮ್',
+    liveMap: 'ಸಕ್ರಿಯ ಘಟನೆ ನಕ್ಷೆ', live: 'ಲೈವ್',
+    aboutTitle: 'OARFIN ಬಗ್ಗೆ',
+    aboutDesc: 'OARFIN ಭಾರತದಾದ್ಯಂತ ಸಮುದಾಯಗಳನ್ನು ರಕ್ಷಿಸಲು ನಿರ್ಮಿಸಲಾದ ರಿಯಲ್-ಟೈಮ್ ವಿಪತ್ತು ನಿರ್ವಹಣಾ ವೇದಿಕೆಯಾಗಿದೆ.',
+    aboutMission: 'ನಮ್ಮ ಧ್ಯೇಯ',
+    aboutMissionDesc: 'ಸಕಾಲಿಕ, ನಿಖರವಾದ ಮಾಹಿತಿಯನ್ನು ಒದಗಿಸುವ ಮೂಲಕ ಮತ್ತು ಸರ್ಕಾರಿ ಸಂಸ್ಥೆಗಳು, ಪ್ರಥಮ ಪ್ರತಿಸ್ಪಂದಕರು ಮತ್ತು ಸಾರ್ವಜನಿಕರ ನಡುವೆ ವೇಗದ ಸಮನ್ವಯವನ್ನು ಸಕ್ರಿಯಗೊಳಿಸುವ ಮೂಲಕ ವಿಪತ್ತು ಸಂಬಂಧಿತ ಸಾವುನೋವುಗಳನ್ನು ಕಡಿಮೆ ಮಾಡುವುದು.',
+    aboutFeatures: ['IMD, NDMA ಮತ್ತು ಜಾಗತಿಕ ಮೂಲಗಳಿಂದ ರಿಯಲ್-ಟೈಮ್ ವಿಪತ್ತು ಎಚ್ಚರಿಕೆಗಳು', 'ಸುರಕ್ಷಿತ ಸ್ಥಳ ಸಂಚರಣೆಯೊಂದಿಗೆ ಸಂವಾದಾತ್ಮಕ ಘಟನೆ ನಕ್ಷೆ', 'ಲೈವ್ ಸಾಮರ್ಥ್ಯ ಡೇಟಾದೊಂದಿಗೆ ತುರ್ತು ಆಶ್ರಯ ಶೋಧಕ', 'ಪರಿಹಾರ ಸಂಸ್ಥೆಗಳಿಗೆ ಸಂಪನ್ಮೂಲ ಸಮನ್ವಯ', 'ವಿಶಾಲ ವ್ಯಾಪ್ತಿಗಾಗಿ ಬಹು-ಭಾಷಾ ಬೆಂಬಲ', 'ಕ್ಷೇತ್ರ ಪ್ರತಿಸ್ಪಂದಕರಿಗಾಗಿ ಮೊಬೈಲ್-ಫಸ್ಟ್ ವಿನ್ಯಾಸ'],
+    aboutTeam: 'ಬ್ಯಾಚುಲರ್ ಥೀಸಿಸ್ ಯೋಜನೆಯಾಗಿ ನಿರ್ಮಿಸಲಾಗಿದೆ — ನೈಜ-ಜಗತ್ತಿನ ನಿಯೋಜನೆ ಮತ್ತು ಪ್ರಭಾವದ ಮೇಲೆ ಕೇಂದ್ರೀಕರಿಸಲಾಗಿದೆ.',
+    aboutAchievement: 'ರನ್ನರ್-ಅಪ್ — ಹ್ಯಾಕ್‌ಕ್ರಕ್ಸ್ ಹ್ಯಾಕಥಾನ್',
+    aboutLiveDeployments: 'ಲೈವ್ ನಿಯೋಜನೆಗಳು',
+    aboutWebsiteLink: 'ವೆಬ್‌ಸೈಟ್ (Vercel)',
+    aboutServerLink: 'API ಸರ್ವರ್ (Render)',
+    alertsTitle: 'ಲೈವ್ ಎಚ್ಚರಿಕೆ ಫೀಡ್',
+    alertsDesc: 'ಎಲ್ಲಾ ಸಕ್ರಿಯ ತುರ್ತು ಘೋಷಣೆಗಳನ್ನು ರಿಯಲ್ ಟೈಮ್‌ನಲ್ಲಿ ಮೇಲ್ವಿಚಾರಣೆ ಮಾಡಲಾಗುತ್ತದೆ.',
+    resourcesTitle: 'ತುರ್ತು ಸಂಪನ್ಮೂಲಗಳು',
+    resourcesDesc: 'ವಿಪತ್ತು ಸಿದ್ಧತೆ ಮತ್ತು ಪ್ರತಿಕ್ರಿಯೆಗಾಗಿ ನಿರ್ಣಾಯಕ ಸಂಪನ್ಮೂಲಗಳನ್ನು ಪ್ರವೇಶಿಸಿ.',
+    preparednessTitle: 'ವಿಪತ್ತು ಸಿದ್ಧತೆ',
+    preparednessDesc: 'ವಿಪತ್ತು ಸಂಭವಿಸುವ ಮೊದಲು ಸಿದ್ಧರಾಗಿರಿ. ನಿಮ್ಮನ್ನು ಮತ್ತು ನಿಮ್ಮ ಕುಟುಂಬವನ್ನು ರಕ್ಷಿಸಲು ಈ ಮಾರ್ಗಸೂಚಿಗಳನ್ನು ಅನುಸರಿಸಿ.',
+  },
+  Tamil: {
+    activeAlerts: 'செயலில் உள்ள எச்சரிக்கைகள்: 3',
+    ticker: [
+      'சூறாவளி மாயா — வகை 4 — கடலோர பகுதிகளுக்கு வெளியேற்ற உத்தரவு',
+      'காட்டுத் தீ CA-47 — 15,240 ஏக்கர் — 35% கட்டுப்பாட்டில் — 4 நிமிடங்களுக்கு முன் புதுப்பிக்கப்பட்டது',
+      'திடீர் வெள்ள எச்சரிக்கை — மும்பை பகுதி — 12 மாவட்டங்கள் பாதிக்கப்பட்டுள்ளன',
+    ],
+    navLinks: ['டாஷ்போர்டு', 'எச்சரிக்கைகள்', 'வளங்கள்', 'தயார்நிலை', 'எங்களைப் பற்றி'],
+    signIn: 'உள்நுழைக', emergencyLogin: 'அவசர உள்நுழைவு',
+    heroTitle1: 'சமூகங்களைப் பாதுகாத்தல்',
+    heroTitle2: 'பேரிடர் ஏற்படுவதற்கு முன்',
+    heroDesc: 'அதிகாரப்பூர்வ அவசரகால ஒருங்கிணைப்பு தளம். நிகழ்நேர எச்சரிக்கைகள், வெளியேற்ற உத்தரவுகள் மற்றும் வள மேலாண்மை.',
+    viewDashboard: 'நேரடி டாஷ்போர்டைக் காண்க',
+    reportEmergency: 'அவசரநிலையை புகாரளிக்கவும்',
+    operatedBy: 'OARFIN ஆல் இயக்கப்படுகிறது',
+    monitoring: '24/7 கண்காணிப்பு',
+    uptime: '98.5% இயங்குநேரம்',
+    currentDeclarations: 'தற்போதைய அவசரகால அறிவிப்புகள்',
+    viewArchive: 'காப்பகத்தைக் காண்க',
+    quickActions: 'விரைவு செயல்கள்',
+    statsLabels: ['பாதுகாக்கப்பட்ட மக்கள்', 'அனுப்பப்பட்ட எச்சரிக்கைகள்', 'வரைபடமிடப்பட்ட தங்குமிடங்கள்', 'சராசரி எச்சரிக்கை நேரம்'],
+    footerDesc: 'அதிகாரப்பூர்வ அவசரகால மேலாண்மை தளம். சான்றளிக்கப்பட்ட ஒருங்கிணைப்பாளர்களால் 24/7 இயக்கப்படுகிறது.',
+    footerRights: '© 2026 OARFIN அவசரகால மேலாண்மை தளம். அனைத்து உரிமைகளும் பாதுகாக்கப்பட்டவை.',
+    footerNote: 'இது ஒரு அதிகாரப்பூர்வ அவசரகால மேலாண்மை அமைப்பு. அங்கீகரிக்கப்படாத பயன்பாடு தடைசெய்யப்பட்டுள்ளது.',
+    platform: 'தளம்', support: 'ஆதரவு',
+    platformLinks: ['டாஷ்போர்டு', 'நேரடி எச்சரிக்கைகள்', 'சம்பவ வரைபடம்', 'வளங்கள்'],
+    supportLinks: ['உதவி மையம்', 'எங்களை தொடர்பு கொள்ள', 'அணுகல்தன்மை', 'தனியுரிமைக் கொள்கை'],
+    learnMore: 'மேலும் அறிக',
+    updatedAgo: '2 நிமிடங்களுக்கு முன் புதுப்பிக்கப்பட்டது',
+    secureSystem: 'இது ஒரு பாதுகாப்பான அரசாங்க அமைப்பு. அங்கீகரிக்கப்படாத பயன்பாடு தடைசெய்யப்பட்டுள்ளது.',
+    signInBtn: 'உள்நுழைக', createAccount: 'கணக்கை உருவாக்கவும்',
+    emailLabel: 'மின்னஞ்சல் முகவரி', passwordLabel: 'கடவுச்சொல்',
+    keepSignedIn: 'என்னை உள்நுழைந்தே வைத்திரு', forgotPassword: 'கடவுச்சொல் மறந்துவிட்டதா?',
+    firstName: 'முதல் பெயர்', lastName: 'கடைசி பெயர்',
+    mobileLabel: 'மொபைல் எண் (எச்சரிக்கைகளுக்கு தேவை)',
+    confirmPassword: 'கடவுச்சொல்லை உறுதிப்படுத்தவும்', userTypeLabel: 'பயனர் வகை',
+    selectUserType: 'பயனர் வகையைத் தேர்ந்தெடுக்கவும்',
+    civilian: 'குடிமகன்', responder: 'முதல் பதிலளிப்பாளர்',
+    agency: 'அரசு நிறுவனம்', ngo: 'என்ஜிஓ / நிவாரண அமைப்பு',
+    termsText: 'சேவை விதிமுறைகள் மற்றும் தனியுரிமைக் கொள்கையை ஏற்கிறேன்',
+    pleaseWait: 'தயவுசெய்து காத்திருக்கவும்...',
+    systemOperational: 'அமைப்பு இயங்குகிறது — 98.5% இயங்குநேரம்',
+    liveMap: 'செயலில் உள்ள சம்பவ வரைபடம்', live: 'நேரலை',
+    aboutTitle: 'OARFIN பற்றி',
+    aboutDesc: 'OARFIN என்பது இந்தியா முழுவதும் உள்ள சமூகங்களைப் பாதுகாக்க உருவாக்கப்பட்ட நிகழ்நேர பேரிடர் மேலாண்மை தளமாகும்.',
+    aboutMission: 'எங்கள் நோக்கம்',
+    aboutMissionDesc: 'சரியான நேரத்தில் துல்லியமான தகவல்களை வழங்குவதன் மூலமும், அரசு நிறுவனங்கள், முதல் பதிலளிப்பாளர்கள் மற்றும் பொதுமக்களிடையே விரைவான ஒருங்கிணைப்பை செயல்படுத்துவதன் மூலமும் பேரிடர் தொடர்பான உயிரிழப்புகளைக் குறைத்தல்.',
+    aboutFeatures: ['IMD, NDMA மற்றும் உலகளாவிய ஆதாரங்களிலிருந்து நிகழ்நேர பேரிடர் எச்சரிக்கைகள்', 'பாதுகாப்பான இட வழிசெலுத்தலுடன் ஊடாடும் சம்பவ வரைபடம்', 'நேரடி கொள்ளளவு தரவுடன் அவசர தங்குமிட கண்டுபிடிப்பான்', 'நிவாரண நிறுவனங்களுக்கான வள ஒருங்கிணைப்பு', 'பரந்த சென்றடைவதற்கான பல்மொழி ஆதரவு', 'கள பதிலளிப்பாளர்களுக்கான மொபைல்-முதல் வடிவமைப்பு'],
+    aboutTeam: 'இளங்கலை ஆய்வுக்கட்டுரை திட்டமாக உருவாக்கப்பட்டது — நிஜ-உலக வரிசைப்படுத்தல் மற்றும் தாக்கத்தில் கவனம் செலுத்துகிறது.',
+    aboutAchievement: 'இரண்டாமிடம் — ஹேக்க்ரக்ஸ் ஹேக்கத்தான்',
+    aboutLiveDeployments: 'நேரடி வரிசைப்படுத்தல்கள்',
+    aboutWebsiteLink: 'இணையதளம் (Vercel)',
+    aboutServerLink: 'API சர்வர் (Render)',
+    alertsTitle: 'நேரடி எச்சரிக்கை ஊட்டம்',
+    alertsDesc: 'அனைத்து செயலில் உள்ள அவசரகால அறிவிப்புகளும் நிகழ்நேரத்தில் கண்காணிக்கப்படுகின்றன.',
+    resourcesTitle: 'அவசரகால வளங்கள்',
+    resourcesDesc: 'பேரிடர் தயார்நிலை மற்றும் பதிலளிப்பிற்கான முக்கியமான வளங்களை அணுகவும்.',
+    preparednessTitle: 'பேரிடர் தயார்நிலை',
+    preparednessDesc: 'பேரிடர் ஏற்படுவதற்கு முன் தயாராக இருங்கள். உங்களையும் உங்கள் குடும்பத்தையும் பாதுகாக்க இந்த வழிகாட்டுதல்களைப் பின்பற்றவும்.',
+  },
+  Marathi: {
+    activeAlerts: 'सक्रिय इशारे: 3',
+    ticker: [
+      'चक्रीवादळ माया — श्रेणी 4 — किनारपट्टी भागांसाठी स्थलांतराचा आदेश',
+      'वणवा CA-47 — 15,240 एकर — 35% नियंत्रणात — 4 मिनिटांपूर्वी अद्यतनित',
+      'अचानक पूर इशारा — मुंबई प्रदेश — 12 जिल्हे प्रभावित',
+    ],
+    navLinks: ['डॅशबोर्ड', 'इशारे', 'संसाधने', 'सज्जता', 'आमच्याबद्दल'],
+    signIn: 'साइन इन', emergencyLogin: 'आपत्कालीन लॉगिन',
+    heroTitle1: 'समुदायांचे संरक्षण',
+    heroTitle2: 'आपत्ती येण्यापूर्वी',
+    heroDesc: 'अधिकृत आपत्कालीन समन्वय व्यासपीठ. रिअल-टाइम इशारे, स्थलांतर आदेश आणि संसाधन व्यवस्थापन.',
+    viewDashboard: 'लाइव्ह डॅशबोर्ड पहा',
+    reportEmergency: 'आपत्कालीन स्थिती नोंदवा',
+    operatedBy: 'OARFIN द्वारे संचालित',
+    monitoring: '24/7 देखरेख',
+    uptime: '98.5% अपटाइम',
+    currentDeclarations: 'सध्याच्या आपत्कालीन घोषणा',
+    viewArchive: 'संग्रह पहा',
+    quickActions: 'त्वरित कृती',
+    statsLabels: ['संरक्षित लोक', 'पाठवलेले इशारे', 'नकाशित निवारे', 'सरासरी इशारा वेळ'],
+    footerDesc: 'अधिकृत आपत्कालीन व्यवस्थापन व्यासपीठ. प्रमाणित समन्वयकांद्वारे 24/7 संचालित.',
+    footerRights: '© 2026 OARFIN आपत्कालीन व्यवस्थापन व्यासपीठ. सर्व हक्क राखीव.',
+    footerNote: 'ही एक अधिकृत आपत्कालीन व्यवस्थापन प्रणाली आहे. अनधिकृत वापर प्रतिबंधित आहे.',
+    platform: 'व्यासपीठ', support: 'समर्थन',
+    platformLinks: ['डॅशबोर्ड', 'लाइव्ह इशारे', 'घटना नकाशा', 'संसाधने'],
+    supportLinks: ['मदत केंद्र', 'आमच्याशी संपर्क साधा', 'सुलभता', 'गोपनीयता धोरण'],
+    learnMore: 'अधिक जाणून घ्या',
+    updatedAgo: '2 मिनिटांपूर्वी अद्यतनित',
+    secureSystem: 'ही एक सुरक्षित सरकारी प्रणाली आहे. अनधिकृत वापर प्रतिबंधित आहे.',
+    signInBtn: 'साइन इन', createAccount: 'खाते तयार करा',
+    emailLabel: 'ईमेल पत्ता', passwordLabel: 'पासवर्ड',
+    keepSignedIn: 'मला साइन इन ठेवा', forgotPassword: 'पासवर्ड विसरलात?',
+    firstName: 'पहिले नाव', lastName: 'आडनाव',
+    mobileLabel: 'मोबाइल नंबर (इशाऱ्यांसाठी आवश्यक)',
+    confirmPassword: 'पासवर्डची पुष्टी करा', userTypeLabel: 'वापरकर्ता प्रकार',
+    selectUserType: 'वापरकर्ता प्रकार निवडा',
+    civilian: 'नागरिक', responder: 'प्रथम प्रतिसादकर्ता',
+    agency: 'सरकारी संस्था', ngo: 'एनजीओ / मदत संस्था',
+    termsText: 'मी सेवा अटी आणि गोपनीयता धोरणाशी सहमत आहे',
+    pleaseWait: 'कृपया प्रतीक्षा करा...',
+    systemOperational: 'प्रणाली कार्यरत — 98.5% अपटाइम',
+    liveMap: 'सक्रिय घटना नकाशा', live: 'लाइव्ह',
+    aboutTitle: 'OARFIN बद्दल',
+    aboutDesc: 'OARFIN हे संपूर्ण भारतातील समुदायांचे संरक्षण करण्यासाठी तयार केलेले रिअल-टाइम आपत्ती व्यवस्थापन व्यासपीठ आहे.',
+    aboutMission: 'आमचे ध्येय',
+    aboutMissionDesc: 'वेळेवर, अचूक माहिती पुरवून आणि सरकारी संस्था, प्रथम प्रतिसादकर्ते आणि जनता यांच्यातील जलद समन्वय सक्षम करून आपत्तीशी संबंधित मृत्यू कमी करणे.',
+    aboutFeatures: ['IMD, NDMA आणि जागतिक स्रोतांकडून रिअल-टाइम आपत्ती इशारे', 'सुरक्षित स्थान नेव्हिगेशनसह परस्परसंवादी घटना नकाशा', 'लाइव्ह क्षमता डेटासह आपत्कालीन निवारा शोधक', 'मदत संस्थांसाठी संसाधन समन्वय', 'व्यापक पोहोचण्यासाठी बहुभाषिक समर्थन', 'क्षेत्रीय प्रतिसादकर्त्यांसाठी मोबाइल-फर्स्ट डिझाइन'],
+    aboutTeam: 'बॅचलर थीसिस प्रकल्प म्हणून तयार — वास्तविक-जगातील तैनाती आणि परिणामावर केंद्रित.',
+    aboutAchievement: 'उपविजेता — हॅककृक्स हॅकाथॉन',
+    aboutLiveDeployments: 'लाइव्ह तैनाती',
+    aboutWebsiteLink: 'वेबसाइट (Vercel)',
+    aboutServerLink: 'API सर्व्हर (Render)',
+    alertsTitle: 'लाइव्ह इशारा फीड',
+    alertsDesc: 'सर्व सक्रिय आपत्कालीन घोषणांचे रिअल टाइममध्ये निरीक्षण केले जाते.',
+    resourcesTitle: 'आपत्कालीन संसाधने',
+    resourcesDesc: 'आपत्ती सज्जता आणि प्रतिसादासाठी महत्त्वाच्या संसाधनांमध्ये प्रवेश करा.',
+    preparednessTitle: 'आपत्ती सज्जता',
+    preparednessDesc: 'आपत्ती येण्यापूर्वी सज्ज रहा. स्वतःचे आणि आपल्या कुटुंबाचे संरक्षण करण्यासाठी या मार्गदर्शक तत्त्वांचे पालन करा.',
+  },
+  Gujarati: {
+    activeAlerts: 'સક્રિય ચેતવણીઓ: 3',
+    ticker: [
+      'વાવાઝોડું માયા — શ્રેણી 4 — દરિયાકાંઠાના વિસ્તારો માટે સ્થળાંતરનો આદેશ',
+      'જંગલની આગ CA-47 — 15,240 એકર — 35% નિયંત્રણમાં — 4 મિનિટ પહેલા અપડેટ',
+      'અચાનક પૂરની ચેતવણી — મુંબઈ પ્રદેશ — 12 જિલ્લાઓ અસરગ્રસ્ત',
+    ],
+    navLinks: ['ડેશબોર્ડ', 'ચેતવણીઓ', 'સંસાધનો', 'તૈયારી', 'અમારા વિશે'],
+    signIn: 'સાઇન ઇન', emergencyLogin: 'ઇમરજન્સી લોગિન',
+    heroTitle1: 'સમુદાયોનું રક્ષણ',
+    heroTitle2: 'આપત્તિ આવે તે પહેલાં',
+    heroDesc: 'સત્તાવાર કટોકટી સંકલન પ્લેટફોર્મ. રીઅલ-ટાઇમ ચેતવણીઓ, સ્થળાંતર આદેશો અને સંસાધન વ્યવસ્થાપન.',
+    viewDashboard: 'લાઇવ ડેશબોર્ડ જુઓ',
+    reportEmergency: 'કટોકટીની જાણ કરો',
+    operatedBy: 'OARFIN દ્વારા સંચાલિત',
+    monitoring: '24/7 મોનિટરિંગ',
+    uptime: '98.5% અપટાઇમ',
+    currentDeclarations: 'હાલની કટોકટી ઘોષણાઓ',
+    viewArchive: 'આર્કાઇવ જુઓ',
+    quickActions: 'ઝડપી ક્રિયાઓ',
+    statsLabels: ['સુરક્ષિત લોકો', 'મોકલેલી ચેતવણીઓ', 'મેપ કરેલા આશ્રયસ્થાનો', 'સરેરાશ ચેતવણી સમય'],
+    footerDesc: 'સત્તાવાર કટોકટી વ્યવસ્થાપન પ્લેટફોર્મ. પ્રમાણિત સંયોજકો દ્વારા 24/7 સંચાલિત.',
+    footerRights: '© 2026 OARFIN કટોકટી વ્યવસ્થાપન પ્લેટફોર્મ. તમામ હકો અનામત.',
+    footerNote: 'આ એક સત્તાવાર કટોકટી વ્યવસ્થાપન સિસ્ટમ છે. અનધિકૃત ઉપયોગ પ્રતિબંધિત છે.',
+    platform: 'પ્લેટફોર્મ', support: 'સપોર્ટ',
+    platformLinks: ['ડેશબોર્ડ', 'લાઇવ ચેતવણીઓ', 'ઘટના નકશો', 'સંસાધનો'],
+    supportLinks: ['સહાય કેન્દ્ર', 'અમારો સંપર્ક કરો', 'સુલભતા', 'ગોપનીયતા નીતિ'],
+    learnMore: 'વધુ જાણો',
+    updatedAgo: '2 મિનિટ પહેલા અપડેટ',
+    secureSystem: 'આ એક સુરક્ષિત સરકારી સિસ્ટમ છે. અનધિકૃત ઉપયોગ પ્રતિબંધિત છે.',
+    signInBtn: 'સાઇન ઇન', createAccount: 'ખાતું બનાવો',
+    emailLabel: 'ઈમેલ સરનામું', passwordLabel: 'પાસવર્ડ',
+    keepSignedIn: 'મને સાઇન ઇન રાખો', forgotPassword: 'પાસવર્ડ ભૂલી ગયા?',
+    firstName: 'પ્રથમ નામ', lastName: 'છેલ્લું નામ',
+    mobileLabel: 'મોબાઇલ નંબર (ચેતવણીઓ માટે જરૂરી)',
+    confirmPassword: 'પાસવર્ડની પુષ્ટિ કરો', userTypeLabel: 'વપરાશકર્તા પ્રકાર',
+    selectUserType: 'વપરાશકર્તા પ્રકાર પસંદ કરો',
+    civilian: 'નાગરિક', responder: 'પ્રથમ પ્રતિસાદકર્તા',
+    agency: 'સરકારી એજન્સી', ngo: 'એનજીઓ / રાહત સંસ્થા',
+    termsText: 'હું સેવાની શરતો અને ગોપનીયતા નીતિ સાથે સંમત છું',
+    pleaseWait: 'કૃપા કરી રાહ જુઓ...',
+    systemOperational: 'સિસ્ટમ કાર્યરત — 98.5% અપટાઇમ',
+    liveMap: 'સક્રિય ઘટના નકશો', live: 'લાઇવ',
+    aboutTitle: 'OARFIN વિશે',
+    aboutDesc: 'OARFIN એ સમગ્ર ભારતમાં સમુદાયોનું રક્ષણ કરવા માટે બનાવવામાં આવેલ રીઅલ-ટાઇમ આપત્તિ વ્યવસ્થાપન પ્લેટફોર્મ છે.',
+    aboutMission: 'અમારું મિશન',
+    aboutMissionDesc: 'સમયસર, સચોટ માહિતી પ્રદાન કરીને અને સરકારી એજન્સીઓ, પ્રથમ પ્રતિસાદકર્તાઓ અને જનતા વચ્ચે ઝડપી સંકલન સક્ષમ કરીને આપત્તિ સંબંધિત જાનહાનિ ઘટાડવી.',
+    aboutFeatures: ['IMD, NDMA અને વૈશ્વિક સ્ત્રોતોમાંથી રીઅલ-ટાઇમ આપત્તિ ચેતવણીઓ', 'સુરક્ષિત સ્થળ નેવિગેશન સાથે ઇન્ટરેક્ટિવ ઘટના નકશો', 'લાઇવ ક્ષમતા ડેટા સાથે કટોકટી આશ્રય શોધક', 'રાહત એજન્સીઓ માટે સંસાધન સંકલન', 'વ્યાપક પહોંચ માટે બહુભાષી સપોર્ટ', 'ફિલ્ડ પ્રતિસાદકર્તાઓ માટે મોબાઇલ-ફર્સ્ટ ડિઝાઇન'],
+    aboutTeam: 'બેચલર થીસીસ પ્રોજેક્ટ તરીકે બનાવેલ — વાસ્તવિક-વિશ્વ પરિનિયોજન અને અસર પર કેન્દ્રિત.',
+    aboutAchievement: 'રનર-અપ — હેકક્રક્સ હેકાથોન',
+    aboutLiveDeployments: 'લાઇવ ડિપ્લોયમેન્ટ્સ',
+    aboutWebsiteLink: 'વેબસાઇટ (Vercel)',
+    aboutServerLink: 'API સર્વર (Render)',
+    alertsTitle: 'લાઇવ ચેતવણી ફીડ',
+    alertsDesc: 'બધી સક્રિય કટોકટી ઘોષણાઓનું રીઅલ ટાઇમમાં નિરીક્ષણ કરવામાં આવે છે.',
+    resourcesTitle: 'કટોકટી સંસાધનો',
+    resourcesDesc: 'આપત્તિ તૈયારી અને પ્રતિભાવ માટે મહત્વપૂર્ણ સંસાધનોને ઍક્સેસ કરો.',
+    preparednessTitle: 'આપત્તિ તૈયારી',
+    preparednessDesc: 'આપત્તિ આવે તે પહેલાં તૈયાર રહો. તમારી અને તમારા પરિવારની સુરક્ષા માટે આ માર્ગદર્શિકાઓનું પાલન કરો.',
+  },
+  Telugu: {
+    activeAlerts: 'క్రియాశీల హెచ్చరికలు: 3',
+    ticker: [
+      'తుఫాను మాయా — వర్గం 4 — తీర ప్రాంతాలకు తరలింపు ఆదేశం',
+      'అడవి మంటలు CA-47 — 15,240 ఎకరాలు — 35% నియంత్రణలో — 4 నిమిషాల క్రితం నవీకరించబడింది',
+      'ఆకస్మిక వరద హెచ్చరిక — ముంబై ప్రాంతం — 12 జిల్లాలు ప్రభావితమయ్యాయి',
+    ],
+    navLinks: ['డాష్‌బోర్డ్', 'హెచ్చరికలు', 'వనరులు', 'సంసిద్ధత', 'మా గురించి'],
+    signIn: 'సైన్ ఇన్', emergencyLogin: 'అత్యవసర లాగిన్',
+    heroTitle1: 'సమాజాలను రక్షించడం',
+    heroTitle2: 'విపత్తు సంభవించే ముందు',
+    heroDesc: 'అధికారిక అత్యవసర సమన్వయ వేదిక. రియల్-టైమ్ హెచ్చరికలు, తరలింపు ఆదేశాలు మరియు వనరుల నిర్వహణ.',
+    viewDashboard: 'లైవ్ డాష్‌బోర్డ్ చూడండి',
+    reportEmergency: 'అత్యవసర పరిస్థితిని నివేదించండి',
+    operatedBy: 'OARFIN ద్వారా నిర్వహించబడుతుంది',
+    monitoring: '24/7 పర్యవేక్షణ',
+    uptime: '98.5% అప్‌టైమ్',
+    currentDeclarations: 'ప్రస్తుత అత్యవసర ప్రకటనలు',
+    viewArchive: 'ఆర్కైవ్ చూడండి',
+    quickActions: 'త్వరిత చర్యలు',
+    statsLabels: ['రక్షించబడిన ప్రజలు', 'పంపిన హెచ్చరికలు', 'మ్యాప్ చేసిన ఆశ్రయాలు', 'సగటు హెచ్చరిక సమయం'],
+    footerDesc: 'అధికారిక అత్యవసర నిర్వహణ వేదిక. ధృవీకరించబడిన సమన్వయకర్తలచే 24/7 నిర్వహించబడుతుంది.',
+    footerRights: '© 2026 OARFIN అత్యవసర నిర్వహణ వేదిక. అన్ని హక్కులు రిజర్వ్ చేయబడ్డాయి.',
+    footerNote: 'ఇది అధికారిక అత్యవసర నిర్వహణ వ్యవస్థ. అనధికార వినియోగం నిషేధించబడింది.',
+    platform: 'వేదిక', support: 'మద్దతు',
+    platformLinks: ['డాష్‌బోర్డ్', 'లైవ్ హెచ్చరికలు', 'సంఘటన మ్యాప్', 'వనరులు'],
+    supportLinks: ['సహాయ కేంద్రం', 'మమ్మల్ని సంప్రదించండి', 'ప్రాప్యత', 'గోప్యతా విధానం'],
+    learnMore: 'మరింత తెలుసుకోండి',
+    updatedAgo: '2 నిమిషాల క్రితం నవీకరించబడింది',
+    secureSystem: 'ఇది సురక్షితమైన ప్రభుత్వ వ్యవస్థ. అనధికార వినియోగం నిషేధించబడింది.',
+    signInBtn: 'సైన్ ఇన్', createAccount: 'ఖాతా సృష్టించండి',
+    emailLabel: 'ఇమెయిల్ చిరునామా', passwordLabel: 'పాస్‌వర్డ్',
+    keepSignedIn: 'నన్ను సైన్ ఇన్‌గా ఉంచండి', forgotPassword: 'పాస్‌వర్డ్ మర్చిపోయారా?',
+    firstName: 'మొదటి పేరు', lastName: 'చివరి పేరు',
+    mobileLabel: 'మొబైల్ నంబర్ (హెచ్చరికల కోసం అవసరం)',
+    confirmPassword: 'పాస్‌వర్డ్‌ను నిర్ధారించండి', userTypeLabel: 'వినియోగదారు రకం',
+    selectUserType: 'వినియోగదారు రకాన్ని ఎంచుకోండి',
+    civilian: 'పౌరుడు', responder: 'ప్రథమ స్పందనదారు',
+    agency: 'ప్రభుత్వ సంస్థ', ngo: 'ఎన్జీవో / సహాయ సంస్థ',
+    termsText: 'నేను సేవా నిబంధనలు మరియు గోప్యతా విధానానికి అంగీకరిస్తున్నాను',
+    pleaseWait: 'దయచేసి వేచి ఉండండి...',
+    systemOperational: 'సిస్టమ్ పనిచేస్తోంది — 98.5% అప్‌టైమ్',
+    liveMap: 'క్రియాశీల సంఘటన మ్యాప్', live: 'ప్రత్యక్ష ప్రసారం',
+    aboutTitle: 'OARFIN గురించి',
+    aboutDesc: 'OARFIN అనేది భారతదేశం అంతటా సమాజాలను రక్షించడానికి నిర్మించబడిన రియల్-టైమ్ విపత్తు నిర్వహణ వేదిక.',
+    aboutMission: 'మా లక్ష్యం',
+    aboutMissionDesc: 'సకాలంలో, ఖచ్చితమైన సమాచారాన్ని అందించడం ద్వారా మరియు ప్రభుత్వ సంస్థలు, ప్రథమ స్పందనదారులు మరియు ప్రజల మధ్య వేగవంతమైన సమన్వయాన్ని ఎనేబుల్ చేయడం ద్వారా విపత్తు సంబంధిత మరణాలను తగ్గించడం.',
+    aboutFeatures: ['IMD, NDMA మరియు గ్లోబల్ మూలాల నుండి రియల్-టైమ్ విపత్తు హెచ్చరికలు', 'సురక్షిత స్థల నావిగేషన్‌తో ఇంటరాక్టివ్ సంఘటన మ్యాప్', 'లైవ్ కెపాసిటీ డేటాతో అత్యవసర ఆశ్రయ లొకేటర్', 'సహాయ సంస్థల కోసం వనరుల సమన్వయం', 'విస్తృత చేరువ కోసం బహుభాషా మద్దతు', 'ఫీల్డ్ స్పందనదారుల కోసం మొబైల్-ఫస్ట్ డిజైన్'],
+    aboutTeam: 'బ్యాచిలర్ థీసిస్ ప్రాజెక్ట్‌గా నిర్మించబడింది — నిజ-ప్రపంచ విస్తరణ మరియు ప్రభావంపై దృష్టి సారించింది.',
+    aboutAchievement: 'రన్నర్-అప్ — హ్యాక్‌క్రక్స్ హ్యాకథాన్',
+    aboutLiveDeployments: 'లైవ్ డిప్లాయ్‌మెంట్‌లు',
+    aboutWebsiteLink: 'వెబ్‌సైట్ (Vercel)',
+    aboutServerLink: 'API సర్వర్ (Render)',
+    alertsTitle: 'లైవ్ హెచ్చరిక ఫీడ్',
+    alertsDesc: 'అన్ని క్రియాశీల అత్యవసర ప్రకటనలు రియల్ టైమ్‌లో పర్యవేక్షించబడతాయి.',
+    resourcesTitle: 'అత్యవసర వనరులు',
+    resourcesDesc: 'విపత్తు సంసిద్ధత మరియు స్పందన కోసం కీలకమైన వనరులను యాక్సెస్ చేయండి.',
+    preparednessTitle: 'విపత్తు సంసిద్ధత',
+    preparednessDesc: 'విపత్తు సంభవించే ముందు సిద్ధంగా ఉండండి. మిమ్మల్ని మరియు మీ కుటుంబాన్ని రక్షించుకోవడానికి ఈ మార్గదర్శకాలను అనుసరించండి.',
   },
 };
 
@@ -243,56 +484,57 @@ const RESOURCES_DATA = [
   { icon: 'fa-hospital', title: 'Medical Facilities', desc: 'Hospitals and medical camps accepting disaster victims. Includes blood bank availability.', color: '#1E3A5F', link: '#' },
 ];
 
-const PREPAREDNESS_DATA = [
-  { icon: 'fa-list-check', title: 'Make a Family Plan', steps: ['Identify two meeting points — one near home, one outside your neighborhood', 'Save emergency contacts on every family member\'s phone', 'Assign roles: who carries the kit, who checks on elderly neighbors', 'Practice your evacuation route at least once a year'], color: '#1E3A5F' },
-  { icon: 'fa-kit-medical', title: 'Build a 72-Hour Kit', steps: ['3 days of water (1 gallon per person per day)', 'Non-perishable food, manual can opener, utensils', 'First aid kit, prescription medications, copies of documents', 'Flashlight, batteries, whistle, dust masks, local maps'], color: '#1E3A5F' },
-  { icon: 'fa-mobile-screen', title: 'Stay Informed', steps: ['Register on OARFIN for SMS alerts in your area', 'Follow IMD and NDMA on official channels', 'Know your district\'s warning siren signals', 'Keep a battery-powered or hand-crank radio'], color: '#1E3A5F' },
-  { icon: 'fa-house-flood-water', title: 'Flood Preparedness', steps: ['Know your flood zone — check NDMA flood maps', 'Move valuables and documents to higher floors', 'Never walk or drive through floodwater', 'Turn off electricity at the breaker if flooding is imminent'], color: '#1E3A5F' },
+const PREPAREDNESS_META = [
+  { icon: 'fa-list-check', color: '#1E3A5F' },
+  { icon: 'fa-kit-medical', color: '#1E3A5F' },
+  { icon: 'fa-mobile-screen', color: '#1E3A5F' },
+  { icon: 'fa-house-flood-water', color: '#1E3A5F' },
 ];
 
-
-// ── TopBar ───────────────────────────────────────────────────────────
-function TopBar({ onDarkToggle, darkMode, lang, onLangChange }) {
-  const t = T[lang];
-  const [idx, setIdx] = useState(0);
-  useEffect(() => {
-    const timer = setInterval(() => setIdx(i => (i + 1) % t.ticker.length), 4000);
-    return () => clearInterval(timer);
-  }, [t.ticker.length]);
-
-  return (
-    <div style={{ background: 'var(--topbar-bg)', borderBottom: '1px solid var(--topbar-border)', transition: 'background 0.4s ease' }}>
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0.45rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flex: 1, overflow: 'hidden' }}>
-          <span style={{ background: '#D32F2F', color: '#fff', fontSize: '0.68rem', fontWeight: 800, padding: '0.15rem 0.5rem', borderRadius: 3, whiteSpace: 'nowrap', letterSpacing: '0.04em' }}>
-            ● {t.activeAlerts}
-          </span>
-          <span style={{ fontSize: '0.83rem', fontWeight: 600, color: 'var(--topbar-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', transition: 'color 0.4s ease' }}>
-            {t.ticker[idx]}
-          </span>
-        </div>
-        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', whiteSpace: 'nowrap' }}>
-          <select
-            value={lang}
-            onChange={e => onLangChange(e.target.value)}
-            style={{ width: 'auto', padding: '0.2rem 0.5rem', fontSize: '0.78rem', borderRadius: 4, background: 'var(--bg-card)', color: 'var(--text-primary)', border: '1px solid var(--border-active)', cursor: 'pointer' }}>
-            <option>English</option>
-            <option>Hindi</option>
-            <option>Spanish</option>
-          </select>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            <i className="fa-solid fa-sun" style={{ fontSize: '0.75rem', color: 'var(--topbar-text)', opacity: darkMode ? 0.4 : 1, transition: 'opacity 0.3s' }}></i>
-            <button className={`theme-toggle ${darkMode ? 'active' : ''}`} onClick={onDarkToggle} title="Toggle Dark Mode" aria-label="Toggle dark mode" />
-            <i className="fa-solid fa-moon" style={{ fontSize: '0.75rem', color: 'var(--topbar-text)', opacity: darkMode ? 1 : 0.4, transition: 'opacity 0.3s' }}></i>
-            <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--topbar-text)', marginLeft: '0.2rem' }}>
-              {darkMode ? 'Dark' : 'Light'}
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+const PREPAREDNESS_DATA_BY_LANG = {
+  English: [
+    { title: 'Make a Family Plan', steps: ['Identify two meeting points — one near home, one outside your neighborhood', 'Save emergency contacts on every family member\'s phone', 'Assign roles: who carries the kit, who checks on elderly neighbors', 'Practice your evacuation route at least once a year'] },
+    { title: 'Build a 72-Hour Kit', steps: ['3 days of water (1 gallon per person per day)', 'Non-perishable food, manual can opener, utensils', 'First aid kit, prescription medications, copies of documents', 'Flashlight, batteries, whistle, dust masks, local maps'] },
+    { title: 'Stay Informed', steps: ['Register on OARFIN for SMS alerts in your area', 'Follow IMD and NDMA on official channels', 'Know your district\'s warning siren signals', 'Keep a battery-powered or hand-crank radio'] },
+    { title: 'Flood Preparedness', steps: ['Know your flood zone — check NDMA flood maps', 'Move valuables and documents to higher floors', 'Never walk or drive through floodwater', 'Turn off electricity at the breaker if flooding is imminent'] },
+  ],
+  Hindi: [
+    { title: 'पारिवारिक योजना बनाएं', steps: ['दो मिलन बिंदु तय करें — एक घर के पास, एक अपने मोहल्ले के बाहर', 'हर परिवार के सदस्य के फोन में आपातकालीन संपर्क सेव करें', 'भूमिकाएं तय करें: किट कौन ले जाएगा, बुज़ुर्ग पड़ोसियों की जांच कौन करेगा', 'साल में कम से कम एक बार निकासी मार्ग का अभ्यास करें'] },
+    { title: '72 घंटे की किट बनाएं', steps: ['3 दिन का पानी (प्रति व्यक्ति प्रति दिन 1 गैलन)', 'बिना खराब होने वाला भोजन, हाथ से चलने वाला कैन ओपनर, बर्तन', 'फर्स्ट एड किट, ज़रूरी दवाइयां, दस्तावेज़ों की प्रतियां', 'टॉर्च, बैटरी, सीटी, धूल मास्क, स्थानीय नक्शे'] },
+    { title: 'सूचित रहें', steps: ['अपने क्षेत्र में SMS अलर्ट के लिए OARFIN पर रजिस्टर करें', 'IMD और NDMA के आधिकारिक चैनल फॉलो करें', 'अपने ज़िले के चेतावनी सायरन संकेत जानें', 'बैटरी या हैंड-क्रैंक रेडियो पास रखें'] },
+    { title: 'बाढ़ की तैयारी', steps: ['अपना बाढ़ क्षेत्र जानें — NDMA के बाढ़ मानचित्र देखें', 'कीमती सामान और दस्तावेज़ ऊंची मंज़िलों पर रखें', 'बाढ़ के पानी में कभी न चलें और न वाहन चलाएं', 'बाढ़ की आशंका होने पर ब्रेकर से बिजली बंद कर दें'] },
+  ],
+  Kannada: [
+    { title: 'ಕುಟುಂಬ ಯೋಜನೆ ರೂಪಿಸಿ', steps: ['ಎರಡು ಭೇಟಿ ಸ್ಥಳಗಳನ್ನು ಗುರುತಿಸಿ — ಒಂದು ಮನೆಯ ಬಳಿ, ಇನ್ನೊಂದು ನಿಮ್ಮ ನೆರೆಹೊರೆಯ ಹೊರಗೆ', 'ಪ್ರತಿ ಕುಟುಂಬ ಸದಸ್ಯರ ಫೋನ್‌ನಲ್ಲಿ ತುರ್ತು ಸಂಪರ್ಕಗಳನ್ನು ಉಳಿಸಿ', 'ಪಾತ್ರಗಳನ್ನು ನಿಗದಿಪಡಿಸಿ: ಕಿಟ್ ಯಾರು ಒಯ್ಯುತ್ತಾರೆ, ಹಿರಿಯ ನೆರೆಹೊರೆಯವರನ್ನು ಯಾರು ಪರಿಶೀಲಿಸುತ್ತಾರೆ', 'ವರ್ಷಕ್ಕೊಮ್ಮೆಯಾದರೂ ನಿಮ್ಮ ಸ್ಥಳಾಂತರ ಮಾರ್ಗವನ್ನು ಅಭ್ಯಾಸ ಮಾಡಿ'] },
+    { title: '72-ಗಂಟೆಗಳ ಕಿಟ್ ಸಿದ್ಧಪಡಿಸಿ', steps: ['3 ದಿನಗಳ ನೀರು (ಪ್ರತಿ ವ್ಯಕ್ತಿಗೆ ಪ್ರತಿ ದಿನ 1 ಗ್ಯಾಲನ್)', 'ಹಾಳಾಗದ ಆಹಾರ, ಕೈಯಾರೆ ಕ್ಯಾನ್ ಓಪನರ್, ಪಾತ್ರೆಗಳು', 'ಪ್ರಥಮ ಚಿಕಿತ್ಸಾ ಕಿಟ್, ಔಷಧಿಗಳು, ದಾಖಲೆಗಳ ಪ್ರತಿಗಳು', 'ಟಾರ್ಚ್, ಬ್ಯಾಟರಿಗಳು, ಸೀಟಿ, ಧೂಳಿನ ಮಾಸ್ಕ್‌ಗಳು, ಸ್ಥಳೀಯ ನಕ್ಷೆಗಳು'] },
+    { title: 'ಮಾಹಿತಿ ಪಡೆಯುತ್ತಿರಿ', steps: ['ನಿಮ್ಮ ಪ್ರದೇಶದ SMS ಎಚ್ಚರಿಕೆಗಳಿಗಾಗಿ OARFIN ನಲ್ಲಿ ನೋಂದಾಯಿಸಿ', 'IMD ಮತ್ತು NDMA ಅಧಿಕೃತ ಚಾನೆಲ್‌ಗಳನ್ನು ಅನುಸರಿಸಿ', 'ನಿಮ್ಮ ಜಿಲ್ಲೆಯ ಎಚ್ಚರಿಕೆ ಸೈರನ್ ಸಂಕೇತಗಳನ್ನು ತಿಳಿಯಿರಿ', 'ಬ್ಯಾಟರಿ ಅಥವಾ ಕೈ-ಚಾಲಿತ ರೇಡಿಯೊ ಇಟ್ಟುಕೊಳ್ಳಿ'] },
+    { title: 'ಪ್ರವಾಹ ಸನ್ನದ್ಧತೆ', steps: ['ನಿಮ್ಮ ಪ್ರವಾಹ ವಲಯ ತಿಳಿಯಿರಿ — NDMA ಪ್ರವಾಹ ನಕ್ಷೆಗಳನ್ನು ಪರಿಶೀಲಿಸಿ', 'ಬೆಲೆಬಾಳುವ ವಸ್ತುಗಳು ಮತ್ತು ದಾಖಲೆಗಳನ್ನು ಎತ್ತರದ ಮಹಡಿಗಳಿಗೆ ಸ್ಥಳಾಂತರಿಸಿ', 'ಪ್ರವಾಹದ ನೀರಿನಲ್ಲಿ ಎಂದಿಗೂ ನಡೆಯಬೇಡಿ ಅಥವಾ ವಾಹನ ಚಲಾಯಿಸಬೇಡಿ', 'ಪ್ರವಾಹದ ಭೀತಿಯಿದ್ದರೆ ಬ್ರೇಕರ್‌ನಲ್ಲಿ ವಿದ್ಯುತ್ ಆಫ್ ಮಾಡಿ'] },
+  ],
+  Tamil: [
+    { title: 'குடும்பத் திட்டம் தயாரிக்கவும்', steps: ['இரண்டு சந்திப்பு இடங்களைக் குறிக்கவும் — ஒன்று வீட்டிற்கு அருகில், மற்றொன்று உங்கள் வட்டாரத்திற்கு வெளியே', 'ஒவ்வொரு குடும்ப உறுப்பினரின் தொலைபேசியிலும் அவசர தொடர்புகளைச் சேமிக்கவும்', 'பொறுப்புகளை நிர்ணயிக்கவும்: கிட் யார் எடுத்துச் செல்வார்கள், வயதான அண்டை வீட்டாரை யார் பார்த்துக்கொள்வார்கள்', 'ஆண்டுக்கு ஒருமுறையாவது வெளியேற்ற வழியைப் பயிற்சி செய்யவும்'] },
+    { title: '72 மணி நேர கிட் தயாரிக்கவும்', steps: ['3 நாட்களுக்கான தண்ணீர் (ஒரு நபருக்கு ஒரு நாளைக்கு 1 காலன்)', 'கெடாத உணவு, கை கேன் ஓப்பனர், பாத்திரங்கள்', 'முதலுதவி பெட்டி, மருந்துகள், ஆவணங்களின் நகல்கள்', 'டார்ச், பேட்டரிகள், விசில், தூசி முகக்கவசங்கள், உள்ளூர் வரைபடங்கள்'] },
+    { title: 'தகவல் அறிந்திருங்கள்', steps: ['உங்கள் பகுதியில் SMS எச்சரிக்கைகளுக்கு OARFIN இல் பதிவு செய்யவும்', 'IMD மற்றும் NDMA அதிகாரப்பூர்வ சேனல்களைப் பின்பற்றவும்', 'உங்கள் மாவட்டத்தின் எச்சரிக்கை சைரன் சமிக்ஞைகளை அறிந்திருங்கள்', 'பேட்டரி அல்லது கை-சுழற்சி ரேடியோவை வைத்திருங்கள்'] },
+    { title: 'வெள்ளத் தயார்நிலை', steps: ['உங்கள் வெள்ள மண்டலத்தை அறியவும் — NDMA வெள்ள வரைபடங்களைச் சரிபார்க்கவும்', 'மதிப்புமிக்க பொருட்களையும் ஆவணங்களையும் உயரமான தளங்களுக்கு நகர்த்தவும்', 'வெள்ள நீரில் ஒருபோதும் நடக்கவோ வாகனம் ஓட்டவோ வேண்டாம்', 'வெள்ளம் ஏற்படும் அபாயம் இருந்தால் பிரேக்கரில் மின்சாரத்தை அணைக்கவும்'] },
+  ],
+  Marathi: [
+    { title: 'कौटुंबिक योजना तयार करा', steps: ['दोन भेटीची ठिकाणे ठरवा — एक घराजवळ, एक तुमच्या परिसराबाहेर', 'प्रत्येक कुटुंब सदस्याच्या फोनमध्ये आपत्कालीन संपर्क साठवा', 'भूमिका ठरवा: किट कोण घेऊन जाईल, वृद्ध शेजाऱ्यांची काळजी कोण घेईल', 'वर्षातून किमान एकदा निर्वासन मार्गाचा सराव करा'] },
+    { title: '72 तासांची किट तयार करा', steps: ['3 दिवसांचे पाणी (प्रति व्यक्ती प्रति दिन 1 गॅलन)', 'न खराब होणारे अन्न, हाताने चालणारा कॅन ओपनर, भांडी', 'फर्स्ट एड किट, आवश्यक औषधे, कागदपत्रांच्या प्रती', 'टॉर्च, बॅटरी, शिट्टी, धूळ मास्क, स्थानिक नकाशे'] },
+    { title: 'माहितीपूर्ण रहा', steps: ['तुमच्या भागातील SMS सूचनांसाठी OARFIN वर नोंदणी करा', 'IMD आणि NDMA च्या अधिकृत माध्यमांचे अनुसरण करा', 'तुमच्या जिल्ह्याचे इशारा सायरन संकेत जाणून घ्या', 'बॅटरी किंवा हात-चलित रेडिओ जवळ ठेवा'] },
+    { title: 'पूर सज्जता', steps: ['तुमचा पूर क्षेत्र जाणून घ्या — NDMA पूर नकाशे तपासा', 'मौल्यवान वस्तू आणि कागदपत्रे उंच मजल्यांवर हलवा', 'पुराच्या पाण्यातून कधीही चालू नका किंवा वाहन चालवू नका', 'पूर येण्याची शक्यता असल्यास ब्रेकरवरून वीज बंद करा'] },
+  ],
+  Gujarati: [
+    { title: 'કૌટુંબિક યોજના બનાવો', steps: ['બે મળવાના સ્થળો નક્કી કરો — એક ઘરની નજીક, એક તમારા પડોશની બહાર', 'દરેક કુટુંબના સભ્યના ફોનમાં કટોકટીના સંપર્કો સાચવો', 'ભૂમિકાઓ સોંપો: કિટ કોણ લઈ જશે, વૃદ્ધ પડોશીઓની તપાસ કોણ કરશે', 'વર્ષમાં ઓછામાં ઓછું એકવાર તમારા બહાર નીકળવાના માર્ગનો અભ્યાસ કરો'] },
+    { title: '72-કલાકની કિટ બનાવો', steps: ['3 દિવસનું પાણી (વ્યક્તિ દીઠ દિવસ દીઠ 1 ગેલન)', 'ન બગડે તેવો ખોરાક, હાથથી ચાલતું કેન ઓપનર, વાસણો', 'ફર્સ્ટ એઇડ કિટ, જરૂરી દવાઓ, દસ્તાવેજોની નકલો', 'ટોર્ચ, બેટરી, સીટી, ધૂળ માસ્ક, સ્થાનિક નકશા'] },
+    { title: 'માહિતગાર રહો', steps: ['તમારા વિસ્તારમાં SMS ચેતવણીઓ માટે OARFIN પર નોંધણી કરો', 'IMD અને NDMA ના સત્તાવાર ચેનલોને અનુસરો', 'તમારા જિલ્લાના ચેતવણી સાયરન સંકેતો જાણો', 'બેટરી અથવા હેન્ડ-ક્રેન્ક રેડિયો પાસે રાખો'] },
+    { title: 'પૂર માટેની તૈયારી', steps: ['તમારો પૂર ઝોન જાણો — NDMA પૂર નકશા તપાસો', 'કિંમતી ચીજવસ્તુઓ અને દસ્તાવેજો ઊંચા માળે ખસેડો', 'પૂરના પાણીમાં ક્યારેય ચાલશો નહીં કે વાહન ચલાવશો નહીં', 'પૂરની શક્યતા હોય તો બ્રેકરથી વીજળી બંધ કરો'] },
+  ],
+  Telugu: [
+    { title: 'కుటుంబ ప్రణాళిక రూపొందించండి', steps: ['రెండు కలిసే ప్రదేశాలను గుర్తించండి — ఒకటి ఇంటికి దగ్గర, ఒకటి మీ పరిసర ప్రాంతానికి బయట', 'ప్రతి కుటుంబ సభ్యుని ఫోన్‌లో అత్యవసర సంప్రదింపులను సేవ్ చేయండి', 'పాత్రలను నిర్ణయించండి: కిట్ ఎవరు తీసుకువెళతారు, వృద్ధ పొరుగువారిని ఎవరు చూసుకుంటారు', 'సంవత్సరానికి కనీసం ఒకసారి మీ తరలింపు మార్గాన్ని సాధన చేయండి'] },
+    { title: '72-గంటల కిట్ తయారు చేయండి', steps: ['3 రోజుల నీరు (వ్యక్తికి రోజుకు 1 గ్యాలన్)', 'పాడవని ఆహారం, చేతి కాన్ ఓపెనర్, పాత్రలు', 'ఫస్ట్ ఎయిడ్ కిట్, అవసరమైన మందులు, పత్రాల నకళ్లు', 'టార్చ్, బ్యాటరీలు, విజిల్, డస్ట్ మాస్క్‌లు, స్థానిక మ్యాప్‌లు'] },
+    { title: 'సమాచారం తెలుసుకోండి', steps: ['మీ ప్రాంతంలో SMS హెచ్చరికల కోసం OARFIN లో నమోదు చేసుకోండి', 'IMD మరియు NDMA అధికారిక ఛానెల్‌లను అనుసరించండి', 'మీ జిల్లా హెచ్చరిక సైరన్ సంకేతాలను తెలుసుకోండి', 'బ్యాటరీ లేదా హ్యాండ్-క్రాంక్ రేడియోను అందుబాటులో ఉంచుకోండి'] },
+    { title: 'వరద సన్నద్ధత', steps: ['మీ వరద జోన్‌ను తెలుసుకోండి — NDMA వరద మ్యాప్‌లను తనిఖీ చేయండి', 'విలువైన వస్తువులను మరియు పత్రాలను ఎత్తైన అంతస్తులకు తరలించండి', 'వరద నీటిలో ఎప్పుడూ నడవవద్దు లేదా వాహనం నడపవద్దు', 'వరద ముంచెత్తే ప్రమాదం ఉంటే బ్రేకర్ వద్ద విద్యుత్తును ఆపివేయండి'] },
+  ],
+};
 
 
 // ── Navbar ───────────────────────────────────────────────────────────
@@ -320,7 +562,7 @@ function Navbar({ onLoginClick, onRegisterClick, lang, onNavClick, hidden }) {
     <nav style={{ background: 'var(--nav-bg)', borderBottom: '1px solid var(--border-subtle)', position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, boxShadow: scrolled ? '0 2px 12px rgba(0,0,0,0.08)' : 'none', opacity: hidden ? 0 : 1, transform: hidden ? 'translateY(-100%)' : 'translateY(0)', pointerEvents: hidden ? 'none' : 'auto', transition: 'transform 0.4s cubic-bezier(0.16,1,0.3,1), opacity 0.3s ease, box-shadow 0.3s ease' }}>
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1.5rem', display: 'flex', alignItems: 'center', height: 62, gap: '2rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
-          <i className="fa-solid fa-shield-halved" style={{ color: 'var(--color-primary)', fontSize: '1.4rem' }}></i>
+          <OarfinLogo size={26} color="var(--color-primary)" />
           <span style={{ fontWeight: 800, fontSize: '1.15rem', color: 'var(--text-primary)', letterSpacing: '0.06em' }}>OARFIN</span>
         </div>
         <div style={{ display: 'flex', gap: '0.1rem', flex: 1, justifyContent: 'center' }} className="desktop-nav">
@@ -374,7 +616,7 @@ function VerticalNav({ lang, onNavClick, darkMode = true }) {
   return (
     <div className="vertical-nav" style={{ position: 'absolute', top: '1.75rem', left: '1.75rem', zIndex: 3, display: 'flex', alignItems: 'center', gap: '2rem', flexWrap: 'wrap', pointerEvents: 'auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
-        <i className="fa-solid fa-shield-halved" style={{ color: base, fontSize: '1.25rem' }}></i>
+        <OarfinLogo size={22} color={base} />
         <span style={{ fontWeight: 800, fontSize: '1rem', color: base, letterSpacing: '0.06em' }}>OARFIN</span>
       </div>
       <div style={{ display: 'flex', flexDirection: 'row', gap: '1.6rem', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -460,7 +702,11 @@ function Hero({ onLoginClick, onRegisterClick, onNavClick, lang, onLangChange, s
           style={{ width: 'auto', padding: '0.35rem 0.5rem', fontSize: '0.78rem', borderRadius: 6, background: heroBtnBg, color: heroText, border: `1px solid ${heroBtnBorder}`, cursor: 'pointer' }}>
           <option style={{ color: '#111' }}>English</option>
           <option style={{ color: '#111' }}>Hindi</option>
-          <option style={{ color: '#111' }}>Spanish</option>
+          <option style={{ color: '#111' }}>Kannada</option>
+          <option style={{ color: '#111' }}>Tamil</option>
+          <option style={{ color: '#111' }}>Marathi</option>
+          <option style={{ color: '#111' }}>Gujarati</option>
+          <option style={{ color: '#111' }}>Telugu</option>
         </select>
         <button onClick={onDarkToggle} title="Toggle Dark Mode" aria-label="Toggle dark mode"
           style={{ background: heroBtnBg, border: `1px solid ${heroBtnBorder}`, borderRadius: '50%', width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center', color: heroText, cursor: 'pointer', fontSize: '0.85rem' }}>
@@ -628,13 +874,15 @@ function Resources({ lang }) {
 // ── Preparedness Section ─────────────────────────────────────────────
 function Preparedness({ lang }) {
   const t = T[lang];
+  const items = (PREPAREDNESS_DATA_BY_LANG[lang] || PREPAREDNESS_DATA_BY_LANG.English)
+    .map((item, i) => ({ ...item, ...PREPAREDNESS_META[i] }));
   return (
     <>
       <div style={{ marginBottom: '1.75rem' }}>
         <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)' }}>{t.preparednessDesc}</p>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem' }}>
-        {PREPAREDNESS_DATA.map((item, i) => (
+        {items.map((item, i) => (
           <Reveal key={i} delay={i * 100}>
             <div className="card-hover"
               style={{ background: 'var(--bg-card)', border: '1px solid var(--card-border)', borderRadius: 12, padding: '1.5rem', transition: 'background 0.4s ease' }}>
@@ -763,7 +1011,7 @@ function Footer({ lang }) {
         <div style={{ display: 'flex', gap: '3rem', flexWrap: 'wrap', marginBottom: '2rem' }}>
           <div style={{ flex: '1 1 200px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
-              <i className="fa-solid fa-shield-halved" style={{ color: 'var(--color-primary)', fontSize: '1.2rem' }}></i>
+              <OarfinLogo size={24} color="var(--color-primary)" />
               <span style={{ color: '#fff', fontWeight: 800, fontSize: '1rem', letterSpacing: '0.06em' }}>OARFIN</span>
             </div>
             <p style={{ fontSize: '0.82rem', lineHeight: 1.7, color: 'var(--footer-text)' }}>{t.footerDesc}</p>
@@ -869,7 +1117,7 @@ function AuthModal({ tab, onClose, onSuccess, lang }) {
       <div onClick={e => e.stopPropagation()} data-lenis-prevent className="animate-slide-up" style={{ background: 'var(--modal-bg)', borderRadius: 14, width: '100%', maxWidth: 480, maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 25px 60px rgba(0,0,0,0.3)', border: '1px solid var(--border-subtle)', transition: 'background 0.4s ease' }}>
         <div style={{ padding: '1.25rem 1.5rem 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <i className="fa-solid fa-shield-halved" style={{ color: 'var(--color-primary)', fontSize: '1.1rem' }}></i>
+            <OarfinLogo size={20} color="var(--color-primary)" />
             <span style={{ fontWeight: 800, color: 'var(--text-primary)', fontSize: '1rem', letterSpacing: '0.05em' }}>OARFIN</span>
           </div>
           <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '1.1rem', color: 'var(--text-secondary)', padding: '0.25rem', cursor: 'pointer' }}>

@@ -1,16 +1,21 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 
-// Thin decorative orbit rings around the globe. Earlier tilt values (near
-// Math.PI/2, i.e. nearly edge-on to the camera) made these render as
-// straight-looking diagonal lines cutting across the globe instead of
-// visible ellipses -- keeping tiltX well short of edge-on (~35-55 deg from
-// face-on) keeps them readable as rings from the camera's fixed viewpoint.
+// Decorative equatorial orbit ring around the globe. Earlier tilt values
+// (near Math.PI/2, i.e. nearly edge-on to the camera) made this render as
+// a straight-looking diagonal line cutting across the globe instead of a
+// visible ellipse -- keeping tiltX well short of edge-on (~35-55 deg from
+// face-on) keeps it readable as a ring from the camera's fixed viewpoint.
+// Built as a thin TubeGeometry rather than a plain Line: browsers ignore
+// LineBasicMaterial's linewidth (always render 1px) regardless of what's
+// set, so a genuinely thicker ring needs real 3D geometry -- a modest tube
+// radius, not thick enough to read as Saturn-style rings.
 function buildOrbitRing(radius, tiltX, tiltZ, color) {
   const curve = new THREE.EllipseCurve(0, 0, radius, radius, 0, Math.PI * 2, false, 0);
   const points = curve.getPoints(128).map(p => new THREE.Vector3(p.x, p.y, 0));
-  const geo = new THREE.BufferGeometry().setFromPoints(points);
-  const ring = new THREE.LineLoop(geo, new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.3 }));
+  const path = new THREE.CatmullRomCurve3(points, true);
+  const geo = new THREE.TubeGeometry(path, 128, 0.035, 8, true);
+  const ring = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.4 }));
   ring.rotation.x = tiltX;
   ring.rotation.z = tiltZ;
   return ring;
@@ -232,14 +237,13 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
       }
     }
 
-    // Decorative orbit rings, tilted enough to read clearly as ellipses
-    // rather than the near-edge-on lines the earlier tilt values produced.
-    // Child of `globe` (not `planetGroup`) so drag-to-rotate -- which only
-    // touches globe.rotation -- carries the rings along with it, instead of
-    // them sitting still while the dots/markers/arcs spin underneath.
+    // Single decorative equatorial orbit ring, tilted enough to read
+    // clearly as an ellipse rather than a near-edge-on line. Child of
+    // `globe` (not `planetGroup`) so drag-to-rotate -- which only touches
+    // globe.rotation -- carries the ring along with it, instead of it
+    // sitting still while the dots/markers/arcs spin underneath.
     const orbitGroup = new THREE.Group();
     orbitGroup.add(buildOrbitRing(13.5, 1.05, 0.35, 0xff8a3d));
-    orbitGroup.add(buildOrbitRing(15.5, 0.85, -0.5, 0xffb066));
     globe.add(orbitGroup);
 
     // Starfield stays centered on the whole viewport, not offset with the planet.
@@ -318,7 +322,12 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
       targetTiltY = THREE.MathUtils.clamp(nx, -1, 1) * Math.PI;
       targetTiltX = THREE.MathUtils.clamp(-ny, -1, 1) * 0.35;
     };
+    // Ease back to the default aligned axis (0, 0) once the cursor leaves
+    // the hero -- without this the globe just stayed wherever the last
+    // mousemove left it, even with no one actually pointing at it anymore.
+    const onMouseTiltLeave = () => { targetTiltX = 0; targetTiltY = 0; };
     mount.addEventListener('mousemove', onMouseTilt);
+    mount.addEventListener('mouseleave', onMouseTiltLeave);
 
     // ── Hover-to-country-name — raycasts the cursor against the actual dot
     // sphere, converts the 3D hit point back to lat/lon, and looks that up
@@ -471,6 +480,7 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
       window.removeEventListener('mousemove', onPointerMove);
       window.removeEventListener('mouseup', onPointerUp);
       mount.removeEventListener('mousemove', onMouseTilt);
+      mount.removeEventListener('mouseleave', onMouseTiltLeave);
       mount.removeEventListener('mousemove', onCountryHoverMove);
       mount.removeEventListener('mouseleave', onCountryHoverLeave);
       mount.removeChild(renderer.domElement);
