@@ -366,21 +366,23 @@ function Navbar({ onLoginClick, onRegisterClick, lang, onNavClick, hidden }) {
 // treatment as the original stacked-column version (no background box, just
 // upright letter-spaced text that brightens on hover) -- only the layout
 // direction changed, column -> row.
-function VerticalNav({ lang, onNavClick }) {
+function VerticalNav({ lang, onNavClick, darkMode = true }) {
   const t = T[lang];
   const navKeys = ['dashboard', 'alerts', 'resources', 'preparedness', 'about'];
+  const base = darkMode ? '#fff' : '#0f172a';
+  const dim = darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(15,23,42,0.65)';
   return (
     <div className="vertical-nav" style={{ position: 'absolute', top: '1.75rem', left: '1.75rem', zIndex: 3, display: 'flex', alignItems: 'center', gap: '2rem', flexWrap: 'wrap', pointerEvents: 'auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
-        <i className="fa-solid fa-shield-halved" style={{ color: '#fff', fontSize: '1.25rem' }}></i>
-        <span style={{ fontWeight: 800, fontSize: '1rem', color: '#fff', letterSpacing: '0.06em' }}>OARFIN</span>
+        <i className="fa-solid fa-shield-halved" style={{ color: base, fontSize: '1.25rem' }}></i>
+        <span style={{ fontWeight: 800, fontSize: '1rem', color: base, letterSpacing: '0.06em' }}>OARFIN</span>
       </div>
       <div style={{ display: 'flex', flexDirection: 'row', gap: '1.6rem', alignItems: 'center', flexWrap: 'wrap' }}>
         {t.navLinks.map((l, i) => (
           <button key={l} onClick={() => onNavClick(navKeys[i])}
-            style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.7)', fontSize: '0.78rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer', padding: '0.15rem 0', textAlign: 'left', transition: 'color 0.2s', whiteSpace: 'nowrap' }}
-            onMouseEnter={e => { e.currentTarget.style.color = '#fff'; }}
-            onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.7)'; }}>
+            style={{ background: 'none', border: 'none', color: dim, fontSize: '0.78rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer', padding: '0.15rem 0', textAlign: 'left', transition: 'color 0.2s', whiteSpace: 'nowrap' }}
+            onMouseEnter={e => { e.currentTarget.style.color = base; }}
+            onMouseLeave={e => { e.currentTarget.style.color = dim; }}>
             {l}
           </button>
         ))}
@@ -437,42 +439,51 @@ function Hero({ onLoginClick, onRegisterClick, onNavClick, lang, onLangChange, s
     return () => { cancelled = true; };
   }, []);
 
+  const heroText = darkMode ? '#fff' : '#0f172a';
+  const heroTextMuted = darkMode ? 'rgba(255,255,255,0.75)' : 'rgba(15,23,42,0.72)';
+  const heroTextFaint = darkMode ? 'rgba(255,255,255,0.6)' : 'rgba(15,23,42,0.6)';
+  const heroTextStrong = darkMode ? 'rgba(255,255,255,0.85)' : 'rgba(15,23,42,0.85)';
+  const heroPillBg = darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(15,23,42,0.05)';
+  const heroPillBorder = darkMode ? 'rgba(255,255,255,0.14)' : 'rgba(15,23,42,0.14)';
+  const heroBtnBg = darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(15,23,42,0.06)';
+  const heroBtnBorder = darkMode ? 'rgba(255,255,255,0.16)' : 'rgba(15,23,42,0.16)';
+
   return (
-    <section id="dashboard-section" style={{ position: 'relative', overflow: 'hidden', background: 'radial-gradient(ellipse at 65% 90%, #150f08 0%, #05060a 45%, #000000 100%)', minHeight: '100vh', display: 'flex', alignItems: 'center' }}>
+    <section id="dashboard-section" style={{ position: 'relative', overflow: 'hidden', background: darkMode ? 'radial-gradient(ellipse at 65% 90%, #0c1024 0%, #05060f 45%, #000000 100%)' : 'linear-gradient(180deg, #eef7ff 0%, #cfe9fb 45%, #9cd3f2 100%)', minHeight: '100vh', display: 'flex', alignItems: 'center' }}>
       <Globe3D scrollContainerId="dashboard-section" markers={pins} />
-      {showVerticalNav && <VerticalNav lang={lang} onNavClick={onNavClick} onLoginClick={onLoginClick} />}
+      {showVerticalNav && <VerticalNav lang={lang} onNavClick={onNavClick} onLoginClick={onLoginClick} darkMode={darkMode} />}
       <div style={{ position: 'absolute', top: '1.75rem', right: '1.75rem', zIndex: 4, display: 'flex', alignItems: 'center', gap: '0.9rem' }}>
         <select
           value={lang}
           onChange={e => onLangChange(e.target.value)}
           aria-label="Language"
-          style={{ width: 'auto', padding: '0.35rem 0.5rem', fontSize: '0.78rem', borderRadius: 6, background: 'rgba(255,255,255,0.08)', color: '#fff', border: '1px solid rgba(255,255,255,0.16)', cursor: 'pointer' }}>
+          style={{ width: 'auto', padding: '0.35rem 0.5rem', fontSize: '0.78rem', borderRadius: 6, background: heroBtnBg, color: heroText, border: `1px solid ${heroBtnBorder}`, cursor: 'pointer' }}>
           <option style={{ color: '#111' }}>English</option>
           <option style={{ color: '#111' }}>Hindi</option>
           <option style={{ color: '#111' }}>Spanish</option>
         </select>
         <button onClick={onDarkToggle} title="Toggle Dark Mode" aria-label="Toggle dark mode"
-          style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.16)', borderRadius: '50%', width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', cursor: 'pointer', fontSize: '0.85rem' }}>
+          style={{ background: heroBtnBg, border: `1px solid ${heroBtnBorder}`, borderRadius: '50%', width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center', color: heroText, cursor: 'pointer', fontSize: '0.85rem' }}>
           <i className={`fa-solid ${darkMode ? 'fa-moon' : 'fa-sun'}`}></i>
         </button>
-        <button className="btn-modern" onClick={onLoginClick} style={{ background: 'none', border: 'none', color: '#fff', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', padding: '0.4rem 0.2rem' }}>
+        <button className="btn-modern" onClick={onLoginClick} style={{ background: 'none', border: 'none', color: heroText, fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', padding: '0.4rem 0.2rem' }}>
           {t.signIn}
         </button>
-        <button className="btn-modern" onClick={onRegisterClick} style={{ background: '#fff', color: '#0a1e4d', border: 'none', borderRadius: 999, padding: '0.55rem 1.2rem', fontWeight: 700, fontSize: '0.83rem', cursor: 'pointer' }}>
+        <button className="btn-modern" onClick={onRegisterClick} style={{ background: darkMode ? '#fff' : '#0f172a', color: darkMode ? '#0a1e4d' : '#fff', border: 'none', borderRadius: 999, padding: '0.55rem 1.2rem', fontWeight: 700, fontSize: '0.83rem', cursor: 'pointer' }}>
           {t.createAccount}
         </button>
       </div>
       <div style={{ position: 'relative', zIndex: 1, maxWidth: 1200, margin: '0 auto', padding: '5rem 1.5rem', width: '100%', pointerEvents: 'none' }}>
         <div style={{ flex: '0 1 590px', maxWidth: 590, pointerEvents: 'none' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.14)', borderRadius: 20, padding: '0.3rem 0.9rem', marginBottom: '1.5rem', backdropFilter: 'blur(6px)' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: heroPillBg, border: `1px solid ${heroPillBorder}`, borderRadius: 20, padding: '0.3rem 0.9rem', marginBottom: '1.5rem', backdropFilter: 'blur(6px)' }}>
             <span className="animate-pulse-dot" style={{ width: 8, height: 8, borderRadius: '50%', background: '#10B981', display: 'inline-block' }}></span>
-            <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.85)', fontWeight: 600, letterSpacing: '0.04em' }}>{t.systemOperational}</span>
+            <span style={{ fontSize: '0.78rem', color: heroTextStrong, fontWeight: 600, letterSpacing: '0.04em' }}>{t.systemOperational}</span>
           </div>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.6rem, 2.9vw, 2.6rem)', fontWeight: 600, textTransform: 'uppercase', color: '#fff', lineHeight: 1.18, marginBottom: '1.3rem', letterSpacing: '0.005em', overflowWrap: 'break-word' }}>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.6rem, 2.9vw, 2.6rem)', fontWeight: 600, textTransform: 'uppercase', color: heroText, lineHeight: 1.18, marginBottom: '1.3rem', letterSpacing: '0.005em', overflowWrap: 'break-word' }}>
             {t.heroTitle1}<br />
-            <span style={{ color: '#5b8fff' }}>{t.heroTitle2}</span>
+            <span style={{ color: darkMode ? '#5b8fff' : '#2563eb' }}>{t.heroTitle2}</span>
           </h1>
-          <p style={{ fontSize: '1.05rem', color: 'rgba(255,255,255,0.75)', marginBottom: '2rem', maxWidth: 480, lineHeight: 1.7 }}>{t.heroDesc}</p>
+          <p style={{ fontSize: '1.05rem', color: heroTextMuted, marginBottom: '2rem', maxWidth: 480, lineHeight: 1.7 }}>{t.heroDesc}</p>
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '2.25rem' }} className="animate-fade-in delay-200">
             <button className="btn-modern" onClick={onLoginClick} style={{ pointerEvents: 'auto', background: 'var(--color-primary)', color: '#fff', border: 'none', borderRadius: 10, padding: '0.75rem 1.6rem', fontWeight: 700, fontSize: '0.95rem', boxShadow: '0 4px 14px rgba(37,99,235,0.3)', cursor: 'pointer' }}>
               <i className="fa-solid fa-gauge-high" style={{ marginRight: '0.5rem' }}></i>{t.viewDashboard}
@@ -485,8 +496,8 @@ function Hero({ onLoginClick, onRegisterClick, onNavClick, lang, onLangChange, s
           </div>
           <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', marginBottom: '1.75rem' }}>
             {[['fa-building-columns', t.operatedBy], ['fa-clock', t.monitoring], ['fa-server', t.uptime]].map(([icon, text]) => (
-              <div key={text} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.82rem', color: 'rgba(255,255,255,0.6)' }}>
-                <i className={`fa-solid ${icon}`} style={{ color: '#5b8fff' }}></i>{text}
+              <div key={text} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.82rem', color: heroTextFaint }}>
+                <i className={`fa-solid ${icon}`} style={{ color: darkMode ? '#5b8fff' : '#2563eb' }}></i>{text}
               </div>
             ))}
           </div>

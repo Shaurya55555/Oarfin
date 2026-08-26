@@ -1,115 +1,6 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 
-// Reusable atmosphere-glow fresnel shader — cheap approximation of the
-// reference site's sunlit-limb look. Important fix: the top (warm) and
-// bottom (cool) glows are two INDEPENDENT falloffs that each fade to zero
-// well before reaching the opposite pole, combined additively -- not a
-// single mix(bottomColor, topColor, t) sweeping across the whole sphere.
-// Linearly interpolating orange toward blue in RGB passes through muddy
-// red/magenta/purple at the midpoint (that's a real color-mixing artifact,
-// not a rendering bug), which is exactly the "rainbow border" look that
-// didn't match the reference. The reference doesn't blend hue-to-hue at
-// all -- each glow fades to plain darkness on its own before they'd ever
-// meet, so the sides of the globe stay near-black.
-const GLOW_VERTEX = `
-  varying vec3 vNormal;
-  varying vec3 vPosition;
-  void main() {
-    vNormal = normalize(normalMatrix * normal);
-    vPosition = position;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-  }
-`;
-const GLOW_FRAGMENT = `
-  varying vec3 vNormal;
-  varying vec3 vPosition;
-  uniform vec3 topColor;
-  uniform vec3 bottomColor;
-  uniform vec3 peakColor;
-  uniform float intensityMul;
-  void main() {
-    float rim = pow(0.55 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 2.5);
-    float topGlow = smoothstep(2.0, 8.0, vPosition.y);
-    float peak = smoothstep(5.0, 9.5, vPosition.y);
-    float bottomGlow = 1.0 - smoothstep(-8.0, -2.0, vPosition.y);
-    vec3 warm = mix(topColor, peakColor, peak);
-    vec3 glowColor = warm * topGlow + bottomColor * bottomGlow;
-    float alpha = rim * clamp(topGlow + bottomGlow, 0.0, 1.0) * intensityMul;
-    gl_FragColor = vec4(glowColor, alpha);
-  }
-`;
-
-// Several concentric copies of the glow shell, each larger and dimmer than
-// the last, approximate the soft blurred "bloom" halo the reference site
-// has around its rim -- real post-processing bloom (UnrealBloomPass)
-// rendered fully black in this environment for reasons that didn't throw
-// any catchable error, so this layered-shell technique (a well-established
-// fallback for faking bloom in cheap Three.js scenes) gets the same soft
-// falloff without depending on a fragile render-target pipeline.
-function buildGlowShells(baseRadius, topColor, bottomColor, peakColor) {
-  const layers = [
-    { radius: baseRadius, intensity: 1.0 },
-    { radius: baseRadius * 1.09, intensity: 0.45 },
-    { radius: baseRadius * 1.22, intensity: 0.22 },
-    { radius: baseRadius * 1.4, intensity: 0.1 },
-  ];
-  return layers.map(({ radius, intensity }) => new THREE.Mesh(
-    new THREE.SphereGeometry(radius, 64, 64),
-    new THREE.ShaderMaterial({
-      vertexShader: GLOW_VERTEX,
-      fragmentShader: GLOW_FRAGMENT,
-      uniforms: {
-        topColor: { value: new THREE.Color(topColor) },
-        bottomColor: { value: new THREE.Color(bottomColor) },
-        peakColor: { value: new THREE.Color(peakColor) },
-        intensityMul: { value: intensity },
-      },
-      blending: THREE.AdditiveBlending,
-      side: THREE.BackSide,
-      transparent: true,
-      depthWrite: false,
-    })
-  ));
-}
-
-// Dot-matrix layer shader: samples the same rasterized land texture as
-// before, but modulates each dot's color/brightness by how close it sits to
-// the sphere's silhouette edge (the same fresnel term the atmosphere shell
-// uses) -- dots near the horizon pick up the rim's tint and glow brighter,
-// dots facing the camera stay their plain white/pale color. Same
-// independent-falloff approach as the glow shell above, for the same reason.
-const DOT_VERTEX = `
-  varying vec3 vNormal;
-  varying vec3 vPosition;
-  varying vec2 vUv;
-  void main() {
-    vNormal = normalize(normalMatrix * normal);
-    vPosition = position;
-    vUv = uv;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-  }
-`;
-const DOT_FRAGMENT = `
-  uniform sampler2D dotMap;
-  uniform vec3 topColor;
-  uniform vec3 bottomColor;
-  varying vec3 vNormal;
-  varying vec3 vPosition;
-  varying vec2 vUv;
-  void main() {
-    vec4 tex = texture2D(dotMap, vUv);
-    if (tex.a < 0.1) discard;
-    float rim = pow(1.0 - abs(dot(vNormal, vec3(0.0, 0.0, 1.0))), 3.0);
-    float topGlow = smoothstep(2.0, 8.0, vPosition.y);
-    float bottomGlow = 1.0 - smoothstep(-8.0, -2.0, vPosition.y);
-    vec3 tint = topColor * topGlow + bottomColor * bottomGlow;
-    float tintAmount = rim * clamp(topGlow + bottomGlow, 0.0, 1.0);
-    vec3 finalColor = mix(tex.rgb, tint, tintAmount * 0.8);
-    gl_FragColor = vec4(finalColor * (1.0 + rim * 1.4), tex.a);
-  }
-`;
-
 // Thin decorative orbit rings around the globe. Earlier tilt values (near
 // Math.PI/2, i.e. nearly edge-on to the camera) made these render as
 // straight-looking diagonal lines cutting across the globe instead of
@@ -125,7 +16,7 @@ function buildOrbitRing(radius, tiltX, tiltZ, color) {
   return ring;
 }
 
-function buildStarfield(count) {
+function buildStarPoints(count, size, opacity, colorHex) {
   const positions = new Float32Array(count * 3);
   for (let i = 0; i < count; i++) {
     const r = 60 + Math.random() * 140;
@@ -137,73 +28,20 @@ function buildStarfield(count) {
   }
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  return new THREE.Points(geo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.35, transparent: true, opacity: 0.7, sizeAttenuation: true }));
+  return new THREE.Points(geo, new THREE.PointsMaterial({ color: colorHex, size, transparent: true, opacity, sizeAttenuation: true }));
 }
 
-// Rasterizes real land-polygon GeoJSON (fetched from /world-land.geojson,
-// Natural Earth 110m land data) into an equirectangular dot-matrix canvas
-// texture — the actual "stippled world map" look, using real coastlines
-// instead of an approximation.
-function rasterizeLandToDots(geojson) {
-  const W = 1400, H = 700;
-  const landCanvas = document.createElement('canvas');
-  landCanvas.width = W; landCanvas.height = H;
-  const lctx = landCanvas.getContext('2d');
-  lctx.fillStyle = '#fff';
-  // Rasterize with the standard equirectangular seam at lon=+-180 (mostly
-  // open ocean/Bering Strait -- safe for polygon fill: a ring that crosses
-  // this seam jumps from x~W to x~0 mid-path, and Canvas2D's lineTo just
-  // draws a stray connecting line across the fill for whatever it clips).
-  // A first attempt at the THREE-UV alignment fix (see below) baked a +90
-  // degree offset directly into this coordinate, which relocated that same
-  // seam-crossing hazard to lon=-90 -- right through North America instead
-  // of the Pacific -- tearing up that landmass's shape. The alignment
-  // shift is applied afterwards instead, as a pure pixel offset on the
-  // already-rasterized dot image, which can't corrupt any vector paths.
-  const toXY = (lon, lat) => [(lon + 180) / 360 * W, (90 - lat) / 180 * H];
-
-  const drawRing = (ring) => {
-    ring.forEach(([lon, lat], i) => {
-      const [x, y] = toXY(lon, lat);
-      i === 0 ? lctx.moveTo(x, y) : lctx.lineTo(x, y);
-    });
-  };
-  const drawPolygon = (rings) => rings.forEach(drawRing);
-
-  lctx.beginPath();
-  geojson.features.forEach(f => {
-    const g = f.geometry;
-    if (g.type === 'Polygon') drawPolygon(g.coordinates);
-    else if (g.type === 'MultiPolygon') g.coordinates.forEach(drawPolygon);
-  });
-  lctx.fill('evenodd');
-  const landData = lctx.getImageData(0, 0, W, H).data;
-
-  const dotCanvas = document.createElement('canvas');
-  dotCanvas.width = W; dotCanvas.height = H;
-  const dctx = dotCanvas.getContext('2d');
-  dctx.fillStyle = '#eaf2ff';
-  const step = 6;
-  // See note above: (lon+90)/360 is THREE's actual UV convention, which is
-  // this toXY's (lon+180)/360 shifted by -90deg (=-0.25 of the width, i.e.
-  // +0.75W mod W) -- applied here per-dot on already-rasterized alpha data,
-  // not as a coordinate change during path construction.
-  const shiftPx = Math.round(W * 0.75);
-  for (let y = 0; y < H; y += step) {
-    for (let x = 0; x < W; x += step) {
-      const idx = (y * W + x) * 4;
-      if (landData[idx + 3] > 128) {
-        const jx = ((x + shiftPx) % W) + (Math.random() - 0.5) * 1.5;
-        const jy = y + (Math.random() - 0.5) * 1.5;
-        dctx.beginPath();
-        dctx.arc(jx, jy, 1, 0, Math.PI * 2);
-        dctx.fill();
-      }
-    }
-  }
-  const tex = new THREE.CanvasTexture(dotCanvas);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  return tex;
+// Three layered star fields (dense/dim, mid, sparse/bright) instead of one
+// uniform field -- reads as genuine depth in a starfield rather than a flat
+// scatter of identical dots. The bright layer also gets a gentle twinkle
+// (opacity oscillation) in the render loop below.
+function buildStarfield() {
+  const group = new THREE.Group();
+  const dim = buildStarPoints(2600, 0.16, 0.45, 0xffffff);
+  const mid = buildStarPoints(700, 0.32, 0.7, 0xcfe0ff);
+  const bright = buildStarPoints(70, 0.75, 0.9, 0xffffff);
+  group.add(dim, mid, bright);
+  return { group, dim, mid, bright };
 }
 
 // Glowing flight-path arc between two surface points, lifted above the
@@ -286,14 +124,16 @@ function buildMarker(radius, latDeg, lonDeg, colorHex) {
 
 /**
  * Full-bleed animated hero background: a rotating globe (offset well to the
- * right of the viewport so it never sits under the headline column) with a
- * real dot-matrix world map (rasterized from actual coastline data), orbit
- * shipping-route trails, a starfield, and real markers on the globe surface
- * for each entry in `markers` ({ color, label }). Each marker gets a
- * floating HTML label (like the reference site's country-name pills) that
- * fades in only while that marker is rotated toward the camera. The globe
- * auto-rotates, pulls back on scroll, and can be dragged with the cursor
- * (mouse/touch) to spin it manually, with momentum on release.
+ * right of the viewport so it never sits under the headline column) textured
+ * with a real photographic Earth map, plus orbit/flight-path trails, a
+ * starfield, and real markers on the globe surface for each entry in
+ * `markers` ({ color, label, lat, lon }). Each marker gets a floating HTML
+ * label (like the reference site's country-name pills) that fades in only
+ * while that marker is rotated toward the camera. Hovering anywhere on the
+ * globe also shows the real country name under the cursor (point-in-polygon
+ * lookup against Natural Earth boundaries). The globe auto-rotates, pulls
+ * back on scroll, and can be dragged with the cursor (mouse/touch) to spin
+ * it manually, with momentum on release.
  */
 export default function Globe3D({ scrollContainerId, markers = [] }) {
   const mountRef = useRef(null);
@@ -322,45 +162,25 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
     planetGroup.scale.setScalar(1.35);
     scene.add(planetGroup);
 
-    // Globe body — mostly-dark sphere, matching the reference's night-side look.
+    // Globe body — real photographic Earth imagery (three.js's own bundled
+    // NASA-imagery example texture; a standard equirectangular map whose
+    // UVs already match SphereGeometry's native mapping, no custom rotation
+    // math needed) instead of the dot-matrix look used earlier this session.
     const globe = new THREE.Mesh(
       new THREE.SphereGeometry(10, 64, 64),
       new THREE.MeshBasicMaterial({ color: 0x050b16 })
     );
     planetGroup.add(globe);
 
-    // Dot-matrix world map shell — filled in asynchronously once the real
-    // land geometry loads (see fetch below); starts blank so nothing pops.
-    // Seeded with a 1x1 transparent texture rather than null so the sampler
-    // is never unbound (avoids a WebGL "texture unit" warning every frame).
-    const blankTexture = new THREE.DataTexture(new Uint8Array([0, 0, 0, 0]), 1, 1);
-    blankTexture.needsUpdate = true;
-    const dotEarth = new THREE.Mesh(
-      new THREE.SphereGeometry(10.03, 64, 64),
-      new THREE.ShaderMaterial({
-        vertexShader: DOT_VERTEX,
-        fragmentShader: DOT_FRAGMENT,
-        uniforms: {
-          dotMap: { value: blankTexture },
-          topColor: { value: new THREE.Color(0xff8a3d) },
-          bottomColor: { value: new THREE.Color(0x1a8cff) },
-        },
-        transparent: true,
-        blending: THREE.AdditiveBlending,
-      })
-    );
-    globe.add(dotEarth);
-
-    let dotTexture = null;
-    fetch('/world-land.geojson')
-      .then(r => r.json())
-      .then(geojson => {
-        if (cancelled) return;
-        dotTexture = rasterizeLandToDots(geojson);
-        dotEarth.material.uniforms.dotMap.value = dotTexture;
-        dotEarth.material.needsUpdate = true;
-      })
-      .catch(() => { /* decorative only — fine to skip if it fails to load */ });
+    let earthTexture = null;
+    new THREE.TextureLoader().load('/earth_map.jpg', tex => {
+      if (cancelled) return;
+      tex.colorSpace = THREE.SRGBColorSpace;
+      earthTexture = tex;
+      globe.material.map = tex;
+      globe.material.color.set(0xffffff);
+      globe.material.needsUpdate = true;
+    });
 
     // Real per-country boundaries (Natural Earth 110m admin-0, trimmed to
     // just name+geometry) for the hover-to-country-name lookup below.
@@ -412,13 +232,6 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
       }
     }
 
-    // Atmosphere glow: neon blue at the bottom, through vivid orange, up to
-    // a warm yellow-white peak highlight at the top crest -- layered as
-    // multiple concentric shells (see buildGlowShells) to fake a soft
-    // bloom-like blur around the rim.
-    const glowShells = buildGlowShells(10.6, 0xffa64d, 0x0066ff, 0xffe9b0);
-    glowShells.forEach(shell => planetGroup.add(shell));
-
     // Decorative orbit rings, tilted enough to read clearly as ellipses
     // rather than the near-edge-on lines the earlier tilt values produced.
     // Child of `globe` (not `planetGroup`) so drag-to-rotate -- which only
@@ -430,7 +243,7 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
     globe.add(orbitGroup);
 
     // Starfield stays centered on the whole viewport, not offset with the planet.
-    const stars = buildStarfield(1800);
+    const { group: stars, bright: brightStars } = buildStarfield();
     scene.add(stars);
 
     let raf = null;
@@ -490,17 +303,20 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
     window.addEventListener('mousemove', onPointerMove);
     window.addEventListener('mouseup', onPointerUp);
 
-    // ── Mouse-follow tilt — a gentle passive tilt of the whole planet
-    // group (separate from the globe's own spin/drag rotation) that eases
-    // toward the cursor position, suspended while actively dragging.
+    // ── Mouse-follow tilt — passive rotation of the whole planet group
+    // (separate from the globe's own auto-spin/drag rotation) that eases
+    // toward the cursor position, suspended while actively dragging. Full
+    // horizontal range now (+-PI = a full 360deg swing across the hero's
+    // width) instead of the original few-degree nudge; vertical stays
+    // modest since a full vertical flip rarely looks good.
     let targetTiltX = 0, targetTiltY = 0;
     const onMouseTilt = (e) => {
       if (dragging) return;
       const rect = mount.getBoundingClientRect();
       const nx = ((e.clientX - rect.left) / rect.width) * 2 - 1;
       const ny = ((e.clientY - rect.top) / rect.height) * 2 - 1;
-      targetTiltY = THREE.MathUtils.clamp(nx, -1, 1) * 0.12;
-      targetTiltX = THREE.MathUtils.clamp(-ny, -1, 1) * 0.08;
+      targetTiltY = THREE.MathUtils.clamp(nx, -1, 1) * Math.PI;
+      targetTiltX = THREE.MathUtils.clamp(-ny, -1, 1) * 0.35;
     };
     mount.addEventListener('mousemove', onMouseTilt);
 
@@ -567,6 +383,7 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
       }
       orbitGroup.rotation.y += dt * 0.03;
       stars.rotation.y += dt * 0.005;
+      brightStars.material.opacity = 0.75 + 0.2 * Math.sin(elapsed * 1.3);
 
       planetGroup.rotation.x += (targetTiltX - planetGroup.rotation.x) * 0.05;
       planetGroup.rotation.y += (targetTiltY - planetGroup.rotation.y) * 0.05;
@@ -608,11 +425,11 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
       if (elapsed - lastCountryCheck > 0.1) {
         lastCountryCheck = elapsed;
         countryRaycaster.setFromCamera(countryNDC, camera);
-        const hit = countryRaycaster.intersectObject(dotEarth, false)[0];
+        const hit = countryRaycaster.intersectObject(globe, false)[0];
         let name = null;
         if (hit && countries.length > 0) {
           hitPointLocal.copy(hit.point);
-          dotEarth.worldToLocal(hitPointLocal);
+          globe.worldToLocal(hitPointLocal);
           const r = hitPointLocal.length();
           const lat = THREE.MathUtils.radToDeg(Math.asin(THREE.MathUtils.clamp(hitPointLocal.y / r, -1, 1)));
           const lon = THREE.MathUtils.radToDeg(Math.atan2(hitPointLocal.x, hitPointLocal.z));
@@ -659,11 +476,10 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
       mount.removeChild(renderer.domElement);
       labelEls.forEach(el => el.remove());
       countryLabelEl.remove();
-      dotTexture?.dispose();
-      blankTexture.dispose();
-      const disposables = [globe, dotEarth, stars, ...orbitGroup.children, ...glowShells];
+      earthTexture?.dispose();
+      const disposables = [globe, ...stars.children, ...orbitGroup.children];
       arcs.forEach(a => { disposables.push(a.line, a.particle); });
-      globe.children.forEach(child => { if (child !== dotEarth) child.children.forEach(c => disposables.push(c)); });
+      globe.children.forEach(child => { child.children.forEach(c => disposables.push(c)); });
       disposables.forEach(obj => {
         obj.geometry?.dispose();
         if (Array.isArray(obj.material)) obj.material.forEach(m => m.dispose());
