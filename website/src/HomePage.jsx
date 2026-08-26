@@ -390,14 +390,53 @@ function VerticalNav({ lang, onNavClick }) {
 }
 
 
+// GDACS event-type -> marker styling, matching the color language used
+// elsewhere in the app (ALERTS_DATA/DisasterFilter).
+const GDACS_TYPE_STYLE = {
+  EQ: { color: '#A78BFA', label: 'Earthquake' },
+  FL: { color: '#3B82F6', label: 'Flood' },
+  TC: { color: '#EF4444', label: 'Cyclone' },
+  VO: { color: '#F97316', label: 'Volcano' },
+  DR: { color: '#CA8A04', label: 'Drought' },
+  WF: { color: '#F59E0B', label: 'Wildfire' },
+};
+// Real on-land fallback (Gulf Coast FL / Southern CA / Bangladesh delta,
+// verified earlier against actual coastline data) used only if the live
+// GDACS fetch fails or is empty, so the globe never has to show nothing.
+const FALLBACK_PINS = [
+  { color: '#EF4444', label: 'Hurricane', lat: 26, lon: -81 },
+  { color: '#F59E0B', label: 'Wildfire', lat: 36, lon: -119 },
+  { color: '#3B82F6', label: 'Flood', lat: 23, lon: 90 },
+];
+
 // ── Hero ─────────────────────────────────────────────────────────────
 function Hero({ onLoginClick, onRegisterClick, onNavClick, lang, onLangChange, showVerticalNav = true, darkMode, onDarkToggle }) {
   const t = T[lang];
-  const pins = [
-    { color: '#EF4444', label: 'Hurricane' },
-    { color: '#F59E0B', label: 'Wildfire' },
-    { color: '#3B82F6', label: 'Flood' },
-  ];
+  const [pins, setPins] = useState(FALLBACK_PINS);
+
+  useEffect(() => {
+    let cancelled = false;
+    const fromDate = new Date();
+    fromDate.setDate(fromDate.getDate() - 14);
+    axios.get(
+      `https://www.gdacs.org/gdacsapi/api/events/geteventlist/SEARCH?eventlist=EQ,FL,TC,VO,DR,WF&fromdate=${fromDate.toISOString().split('T')[0]}&todate=&alertlevel=&country=&limit=50`
+    ).then(res => {
+      if (cancelled) return;
+      const features = res.data?.features || [];
+      const realPins = features
+        .filter(f => Array.isArray(f.geometry?.coordinates) && f.geometry.coordinates.length >= 2)
+        .slice(0, 6)
+        .map(f => {
+          const type = f.properties?.eventtype;
+          const style = GDACS_TYPE_STYLE[type] || { color: '#94A3B8', label: type || 'Event' };
+          const [lon, lat] = f.geometry.coordinates;
+          return { ...style, lat, lon };
+        });
+      if (realPins.length > 0) setPins(realPins);
+    }).catch(() => { /* keep the fallback pins */ });
+    return () => { cancelled = true; };
+  }, []);
+
   return (
     <section id="dashboard-section" style={{ position: 'relative', overflow: 'hidden', background: 'radial-gradient(ellipse at 65% 90%, #150f08 0%, #05060a 45%, #000000 100%)', minHeight: '100vh', display: 'flex', alignItems: 'center' }}>
       <Globe3D scrollContainerId="dashboard-section" markers={pins} />

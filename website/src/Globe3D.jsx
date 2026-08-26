@@ -297,7 +297,7 @@ function buildMarker(radius, latDeg, lonDeg, colorHex) {
  */
 export default function Globe3D({ scrollContainerId, markers = [] }) {
   const mountRef = useRef(null);
-  const markersKey = markers.map(m => m.color + m.label).join(',');
+  const markersKey = markers.map(m => `${m.color}${m.label}${m.lat}${m.lon}`).join(',');
 
   useEffect(() => {
     const mount = mountRef.current;
@@ -370,19 +370,12 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
       .then(geojson => { if (!cancelled) countries = geojson.features; })
       .catch(() => { /* hover label just won't resolve names if this fails */ });
 
-    // Real disaster-type markers on the globe surface, spread across
-    // different hemispheres so rotation reveals them one at a time.
-    // Coordinates picked to actually land on ground plausible for each
-    // type (a wildfire pin sitting in open ocean made no sense): Gulf
-    // Coast Florida for hurricane, Southern California for wildfire,
-    // Bangladesh's river delta for flood.
-    const markerLatLon = [
-      [26, -81], [36, -119], [23, 90],
-    ];
+    // Real disaster markers on the globe surface, at each disaster's actual
+    // reported lat/lon (see the `markers` prop -- fetched live from GDACS
+    // by the parent, same feed the Dashboard's map uses).
     const labelEls = [];
-    const markerObjs = markers.slice(0, markerLatLon.length).map((m, i) => {
-      const [lat, lon] = markerLatLon[i];
-      const { group, halo, localPos } = buildMarker(10.15, lat, lon, m.color);
+    const markerObjs = markers.map((m) => {
+      const { group, halo, localPos } = buildMarker(10.15, m.lat, m.lon, m.color);
       globe.add(group);
 
       // Solid dark pill badge, matching the reference site's actual label
