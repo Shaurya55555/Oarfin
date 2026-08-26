@@ -192,6 +192,33 @@ function buildArc(p1, p2, color) {
   return { line, particle, curve };
 }
 
+// Point-in-polygon (ray casting) test against a GeoJSON ring, used for the
+// hover-to-country-name lookup below -- real per-country boundary matching,
+// not an approximation.
+function pointInRing(pt, ring) {
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const xi = ring[i][0], yi = ring[i][1], xj = ring[j][0], yj = ring[j][1];
+    const intersect = ((yi > pt[1]) !== (yj > pt[1])) && (pt[0] < (xj - xi) * (pt[1] - yi) / (yj - yi) + xi);
+    if (intersect) inside = !inside;
+  }
+  return inside;
+}
+function pointInPolygon(pt, rings) {
+  if (!pointInRing(pt, rings[0])) return false;
+  for (let k = 1; k < rings.length; k++) if (pointInRing(pt, rings[k])) return false;
+  return true;
+}
+function findCountryAt(countries, lon, lat) {
+  const pt = [lon, lat];
+  for (const f of countries) {
+    const g = f.geometry;
+    if (g.type === 'Polygon') { if (pointInPolygon(pt, g.coordinates)) return f.properties.name; }
+    else if (g.type === 'MultiPolygon') { for (const poly of g.coordinates) if (pointInPolygon(pt, poly)) return f.properties.name; }
+  }
+  return null;
+}
+
 function latLonToVector3(radius, latDeg, lonDeg) {
   const lat = THREE.MathUtils.degToRad(latDeg);
   const lon = THREE.MathUtils.degToRad(lonDeg);
@@ -300,6 +327,14 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
         dotEarth.material.needsUpdate = true;
       })
       .catch(() => { /* decorative only — fine to skip if it fails to load */ });
+
+    // Real per-country boundaries (Natural Earth 110m admin-0, trimmed to
+    // just name+geometry) for the hover-to-country-name lookup below.
+    let countries = [];
+    fetch('/world-countries.geojson')
+      .then(r => r.json())
+      .then(geojson => { if (!cancelled) countries = geojson.features; })
+      .catch(() => { /* hover label just won't resolve names if this fails */ });
 
     // Real disaster-type markers on the globe surface, spread across
     // different hemispheres so rotation reveals them one at a time.
@@ -456,6 +491,39 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
     };
     mount.addEventListener('mousemove', onMouseTilt);
 
+    // ── Hover-to-country-name — raycasts the cursor against the actual dot
+    // sphere, converts the 3D hit point back to lat/lon, and looks that up
+    // against real country boundaries (not the 3 disaster markers -- any
+    // country dot anywhere on the globe). Transparent text, no background
+    // card, positioned right above the cursor; throttled to ~10/sec since
+    // the point-in-polygon search walks up to 177 countries' rings.
+    const countryRaycaster = new THREE.Raycaster();
+    const countryNDC = new THREE.Vector2(-10, -10);
+    let hoverX = 0, hoverY = 0;
+    const onCountryHoverMove = (e) => {
+      const rect = mount.getBoundingClientRect();
+      hoverX = e.clientX - rect.left;
+      hoverY = e.clientY - rect.top;
+      countryNDC.x = (hoverX / rect.width) * 2 - 1;
+      countryNDC.y = -(hoverY / rect.height) * 2 + 1;
+    };
+    const onCountryHoverLeave = () => { countryNDC.set(-10, -10); };
+    mount.addEventListener('mousemove', onCountryHoverMove);
+    mount.addEventListener('mouseleave', onCountryHoverLeave);
+
+    const countryLabelEl = document.createElement('div');
+    countryLabelEl.style.cssText = `
+      position: absolute; top: 0; left: 0; transform: translate(-50%, -140%);
+      background: transparent; color: #fff; font-size: 12px; font-weight: 700;
+      letter-spacing: 0.04em; text-transform: uppercase; padding: 0; border: none;
+      white-space: nowrap; pointer-events: none; z-index: 2;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.95), 0 0 10px rgba(0,0,0,0.75);
+      transition: opacity 0.12s ease; opacity: 0;
+    `;
+    mount.appendChild(countryLabelEl);
+    const hitPointLocal = new THREE.Vector3();
+    let lastCountryCheck = 0;
+
     const clock = new THREE.Clock();
     const worldPos = new THREE.Vector3();
     const worldNormal = new THREE.Vector3();
@@ -524,6 +592,29 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
         }
       });
 
+      if (elapsed - lastCountryCheck > 0.1) {
+        lastCountryCheck = elapsed;
+        countryRaycaster.setFromCamera(countryNDC, camera);
+        const hit = countryRaycaster.intersectObject(dotEarth, false)[0];
+        let name = null;
+        if (hit && countries.length > 0) {
+          hitPointLocal.copy(hit.point);
+          dotEarth.worldToLocal(hitPointLocal);
+          const r = hitPointLocal.length();
+          const lat = THREE.MathUtils.radToDeg(Math.asin(THREE.MathUtils.clamp(hitPointLocal.y / r, -1, 1)));
+          const lon = THREE.MathUtils.radToDeg(Math.atan2(hitPointLocal.x, hitPointLocal.z));
+          name = findCountryAt(countries, lon, lat);
+        }
+        if (name) {
+          countryLabelEl.textContent = name;
+          countryLabelEl.style.left = `${hoverX}px`;
+          countryLabelEl.style.top = `${hoverY}px`;
+          countryLabelEl.style.opacity = '1';
+        } else {
+          countryLabelEl.style.opacity = '0';
+        }
+      }
+
       renderer.render(scene, camera);
     };
     animate();
@@ -550,8 +641,11 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
       window.removeEventListener('mousemove', onPointerMove);
       window.removeEventListener('mouseup', onPointerUp);
       mount.removeEventListener('mousemove', onMouseTilt);
+      mount.removeEventListener('mousemove', onCountryHoverMove);
+      mount.removeEventListener('mouseleave', onCountryHoverLeave);
       mount.removeChild(renderer.domElement);
       labelEls.forEach(el => el.remove());
+      countryLabelEl.remove();
       dotTexture?.dispose();
       blankTexture.dispose();
       const disposables = [globe, dotEarth, glow, stars, ...orbitGroup.children];
