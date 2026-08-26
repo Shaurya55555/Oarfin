@@ -96,13 +96,16 @@ function findCountryAt(countries, lon, lat) {
   return null;
 }
 
+// Matches THREE.SphereGeometry's own UV convention (phi = u * 2π, u=0.5 at
+// the texture's center seam) so lat/lon placed here line up with where the
+// equirectangular earth_map.jpg actually paints that location.
 function latLonToVector3(radius, latDeg, lonDeg) {
   const lat = THREE.MathUtils.degToRad(latDeg);
   const lon = THREE.MathUtils.degToRad(lonDeg);
   return new THREE.Vector3(
-    radius * Math.cos(lat) * Math.sin(lon),
+    radius * Math.cos(lat) * Math.cos(lon),
     radius * Math.sin(lat),
-    radius * Math.cos(lat) * Math.cos(lon)
+    -radius * Math.cos(lat) * Math.sin(lon)
   );
 }
 
@@ -168,9 +171,11 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
     scene.add(planetGroup);
 
     // Globe body — real photographic Earth imagery (three.js's own bundled
-    // NASA-imagery example texture; a standard equirectangular map whose
-    // UVs already match SphereGeometry's native mapping, no custom rotation
-    // math needed) instead of the dot-matrix look used earlier this session.
+    // NASA-imagery example texture, a standard equirectangular map with the
+    // prime meridian at the texture's horizontal center) instead of the
+    // dot-matrix look used earlier this session. latLonToVector3 below is
+    // derived from THREE.SphereGeometry's own UV formula so markers/hover
+    // line up with what the texture actually paints at that lat/lon.
     const globe = new THREE.Mesh(
       new THREE.SphereGeometry(10, 64, 64),
       new THREE.MeshBasicMaterial({ color: 0x050b16 })
@@ -441,7 +446,7 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
           globe.worldToLocal(hitPointLocal);
           const r = hitPointLocal.length();
           const lat = THREE.MathUtils.radToDeg(Math.asin(THREE.MathUtils.clamp(hitPointLocal.y / r, -1, 1)));
-          const lon = THREE.MathUtils.radToDeg(Math.atan2(hitPointLocal.x, hitPointLocal.z));
+          const lon = THREE.MathUtils.radToDeg(Math.atan2(-hitPointLocal.z, hitPointLocal.x));
           name = findCountryAt(countries, lon, lat);
         }
         if (name) {
