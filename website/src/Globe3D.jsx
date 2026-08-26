@@ -21,6 +21,41 @@ function buildOrbitRing(radius, tiltX, tiltZ, color) {
   return ring;
 }
 
+// Sun + two simple orbiting planets — the decorative payoff for the
+// Ctrl+scroll/pinch "zoom out" gesture. Everything starts fully transparent
+// (opacity 0) so it stays invisible and inert in the normal close-up hero
+// view, then fades in as the render loop drives opacity up with zoomLevel.
+function buildSun(radius) {
+  const group = new THREE.Group();
+  const core = new THREE.Mesh(
+    new THREE.SphereGeometry(radius, 32, 32),
+    new THREE.MeshBasicMaterial({ color: 0xffd08a, transparent: true, opacity: 0 })
+  );
+  group.add(core);
+  const halos = [0xffb35c, 0xff8a3d].map((color, i) => {
+    const m = new THREE.Mesh(
+      new THREE.SphereGeometry(radius * (1.6 + i * 0.9), 24, 24),
+      new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0, blending: THREE.AdditiveBlending })
+    );
+    group.add(m);
+    return m;
+  });
+  return { group, core, halos };
+}
+
+function buildOrbitPlanet(orbitRadius, planetRadius, color) {
+  const group = new THREE.Group();
+  const ring = buildOrbitRing(orbitRadius, 0, 0, 0x5a6a8a);
+  ring.material.opacity = 0;
+  group.add(ring);
+  const planet = new THREE.Mesh(
+    new THREE.SphereGeometry(planetRadius, 20, 20),
+    new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0 })
+  );
+  group.add(planet);
+  return { group, ring, planet, orbitRadius, angle: Math.random() * Math.PI * 2 };
+}
+
 function buildStarPoints(count, size, opacity, colorHex) {
   const positions = new Float32Array(count * 3);
   for (let i = 0; i < count; i++) {
@@ -255,6 +290,26 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
     const { group: stars, bright: brightStars } = buildStarfield();
     scene.add(stars);
 
+    // Sun + two orbiting planets, parked well behind and to the side of
+    // Earth so pulling the camera back (the zoom-out gesture below) brings
+    // them into frame alongside a shrinking Earth, selling "you were
+    // looking at one planet in a solar system all along". Lives directly
+    // in `scene` (not `planetGroup`) so it doesn't inherit Earth's own
+    // mouse-tilt/drag rotation. rotation.x tilts the whole thing so the
+    // flat orbit rings/planet paths read as ellipses instead of edge-on
+    // lines, same trick as the equatorial ring around Earth itself.
+    const solarGroup = new THREE.Group();
+    solarGroup.position.set(planetGroup.position.x - 20, planetGroup.position.y + 10, -180);
+    solarGroup.rotation.x = 1.05;
+    scene.add(solarGroup);
+    const sun = buildSun(15);
+    solarGroup.add(sun.group);
+    const solarPlanets = [
+      buildOrbitPlanet(34, 3, 0x7fb3ff),
+      buildOrbitPlanet(52, 4.2, 0xd97757),
+    ];
+    solarPlanets.forEach(p => solarGroup.add(p.group));
+
     let raf = null;
     let scrollProgress = 0; // 0 = top of hero, 1 = scrolled a full viewport past it
 
@@ -314,10 +369,9 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
 
     // ── Mouse-follow tilt — passive rotation of the whole planet group
     // (separate from the globe's own auto-spin/drag rotation) that eases
-    // toward the cursor position, suspended while actively dragging. Full
-    // horizontal range now (+-PI = a full 360deg swing across the hero's
-    // width) instead of the original few-degree nudge; vertical stays
-    // modest since a full vertical flip rarely looks good.
+    // toward the cursor position, suspended while actively dragging. Kept
+    // to a subtle +-0.35rad range on both axes -- a full 360deg swing was
+    // tried and reverted, it read as too much motion for a passive nudge.
     let targetTiltX = 0, targetTiltY = 0;
     const onMouseTilt = (e) => {
       if (dragging) return;
@@ -330,9 +384,38 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
     // Ease back to the default aligned axis (0, 0) once the cursor leaves
     // the hero -- without this the globe just stayed wherever the last
     // mousemove left it, even with no one actually pointing at it anymore.
-    const onMouseTiltLeave = () => { targetTiltX = 0; targetTiltY = 0; };
+    const onMouseTiltLeave = () => { targetTiltX = 0; targetTiltY = 0; hovering = false; };
+    let hovering = false;
+    const onMouseEnter = () => { hovering = true; };
     mount.addEventListener('mousemove', onMouseTilt);
     mount.addEventListener('mouseleave', onMouseTiltLeave);
+    mount.addEventListener('mouseenter', onMouseEnter);
+
+    // ── Zoom-out gesture — pinch-zoom on a trackpad (Chrome reports this as
+    // a wheel event with ctrlKey set) or Ctrl+scroll on a mouse pulls the
+    // camera back to reveal the sun and two more planets behind Earth.
+    // Gated behind ctrlKey specifically so plain scrolling over the hero
+    // still scrolls the page normally instead of being hijacked.
+    let zoomTarget = 0;
+    let zoomLevel = 0;
+    const onWheelZoom = (e) => {
+      if (!e.ctrlKey) return;
+      e.preventDefault();
+      zoomTarget = THREE.MathUtils.clamp(zoomTarget + e.deltaY * 0.0025, 0, 1);
+    };
+    mount.addEventListener('wheel', onWheelZoom, { passive: false });
+
+    // Small discoverability hint for the gesture above -- otherwise nothing
+    // on screen suggests it exists. Only shown while hovering the globe and
+    // still fully zoomed in.
+    const hintEl = document.createElement('div');
+    hintEl.textContent = 'Ctrl + scroll to zoom out';
+    hintEl.style.cssText = `
+      position: absolute; right: 14px; bottom: 14px; color: rgba(255,255,255,0.5);
+      font-size: 11px; font-weight: 600; letter-spacing: 0.03em; pointer-events: none;
+      transition: opacity 0.3s ease; opacity: 0; z-index: 2;
+    `;
+    mount.appendChild(hintEl);
 
     // ── Hover-to-country-name — raycasts the cursor against the actual dot
     // sphere, converts the 3D hit point back to lat/lon, and looks that up
@@ -407,9 +490,23 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
         a.curve.getPoint(t, a.particle.position);
       });
 
-      camera.position.z = 34 + scrollProgress * 18;
-      camera.position.y = -scrollProgress * 6;
-      camera.lookAt(planetGroup.position.x * 0.4, 0, 0);
+      zoomLevel += (zoomTarget - zoomLevel) * 0.06;
+      hintEl.style.opacity = (hovering && zoomLevel < 0.05) ? '1' : '0';
+
+      planetGroup.scale.setScalar(1.35 - zoomLevel * 0.85);
+      const sunFade = zoomLevel;
+      sun.core.material.opacity = Math.min(1, sunFade * 1.3);
+      sun.halos.forEach((h, i) => { h.material.opacity = sunFade * (0.5 - i * 0.15); });
+      solarPlanets.forEach(p => {
+        p.angle += dt * 0.05;
+        p.planet.position.set(Math.cos(p.angle) * p.orbitRadius, Math.sin(p.angle) * p.orbitRadius, 0);
+        p.planet.material.opacity = sunFade;
+        p.ring.material.opacity = sunFade * 0.35;
+      });
+
+      camera.position.z = 34 + scrollProgress * 18 + zoomLevel * 165;
+      camera.position.y = -scrollProgress * 6 - zoomLevel * 12;
+      camera.lookAt(planetGroup.position.x * 0.4 * (1 - zoomLevel * 0.6), 0, -zoomLevel * 60);
       camera.getWorldDirection(camDir);
 
       const mountRect = mount.getBoundingClientRect();
@@ -486,14 +583,18 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
       window.removeEventListener('mouseup', onPointerUp);
       mount.removeEventListener('mousemove', onMouseTilt);
       mount.removeEventListener('mouseleave', onMouseTiltLeave);
+      mount.removeEventListener('mouseenter', onMouseEnter);
+      mount.removeEventListener('wheel', onWheelZoom);
       mount.removeEventListener('mousemove', onCountryHoverMove);
       mount.removeEventListener('mouseleave', onCountryHoverLeave);
       mount.removeChild(renderer.domElement);
       labelEls.forEach(el => el.remove());
       countryLabelEl.remove();
+      hintEl.remove();
       earthTexture?.dispose();
-      const disposables = [globe, ...stars.children, ...orbitGroup.children];
+      const disposables = [globe, ...stars.children, ...orbitGroup.children, sun.core, ...sun.halos];
       arcs.forEach(a => { disposables.push(a.line, a.particle); });
+      solarPlanets.forEach(p => { disposables.push(p.ring, p.planet); });
       globe.children.forEach(child => { child.children.forEach(c => disposables.push(c)); });
       disposables.forEach(obj => {
         obj.geometry?.dispose();
