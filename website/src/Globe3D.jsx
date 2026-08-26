@@ -27,6 +27,7 @@ const GLOW_FRAGMENT = `
   uniform vec3 topColor;
   uniform vec3 bottomColor;
   uniform vec3 peakColor;
+  uniform float intensityMul;
   void main() {
     float rim = pow(0.55 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 2.5);
     float topGlow = smoothstep(2.0, 8.0, vPosition.y);
@@ -34,10 +35,43 @@ const GLOW_FRAGMENT = `
     float bottomGlow = 1.0 - smoothstep(-8.0, -2.0, vPosition.y);
     vec3 warm = mix(topColor, peakColor, peak);
     vec3 glowColor = warm * topGlow + bottomColor * bottomGlow;
-    float alpha = rim * clamp(topGlow + bottomGlow, 0.0, 1.0);
+    float alpha = rim * clamp(topGlow + bottomGlow, 0.0, 1.0) * intensityMul;
     gl_FragColor = vec4(glowColor, alpha);
   }
 `;
+
+// Several concentric copies of the glow shell, each larger and dimmer than
+// the last, approximate the soft blurred "bloom" halo the reference site
+// has around its rim -- real post-processing bloom (UnrealBloomPass)
+// rendered fully black in this environment for reasons that didn't throw
+// any catchable error, so this layered-shell technique (a well-established
+// fallback for faking bloom in cheap Three.js scenes) gets the same soft
+// falloff without depending on a fragile render-target pipeline.
+function buildGlowShells(baseRadius, topColor, bottomColor, peakColor) {
+  const layers = [
+    { radius: baseRadius, intensity: 1.0 },
+    { radius: baseRadius * 1.09, intensity: 0.45 },
+    { radius: baseRadius * 1.22, intensity: 0.22 },
+    { radius: baseRadius * 1.4, intensity: 0.1 },
+  ];
+  return layers.map(({ radius, intensity }) => new THREE.Mesh(
+    new THREE.SphereGeometry(radius, 64, 64),
+    new THREE.ShaderMaterial({
+      vertexShader: GLOW_VERTEX,
+      fragmentShader: GLOW_FRAGMENT,
+      uniforms: {
+        topColor: { value: new THREE.Color(topColor) },
+        bottomColor: { value: new THREE.Color(bottomColor) },
+        peakColor: { value: new THREE.Color(peakColor) },
+        intensityMul: { value: intensity },
+      },
+      blending: THREE.AdditiveBlending,
+      side: THREE.BackSide,
+      transparent: true,
+      depthWrite: false,
+    })
+  ));
+}
 
 // Dot-matrix layer shader: samples the same rasterized land texture as
 // before, but modulates each dot's color/brightness by how close it sits to
@@ -385,26 +419,12 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
       }
     }
 
-    // Atmosphere glow shell (fresnel rim light): neon blue at the bottom,
-    // through vivid orange, up to a warm yellow-white peak highlight right
-    // at the top crest -- additive-blended, matching the reference's
-    // sunlit-limb globe rather than a flat single-color glow.
-    const glow = new THREE.Mesh(
-      new THREE.SphereGeometry(10.6, 64, 64),
-      new THREE.ShaderMaterial({
-        vertexShader: GLOW_VERTEX,
-        fragmentShader: GLOW_FRAGMENT,
-        uniforms: {
-          topColor: { value: new THREE.Color(0xffa64d) },
-          bottomColor: { value: new THREE.Color(0x0066ff) },
-          peakColor: { value: new THREE.Color(0xffe9b0) },
-        },
-        blending: THREE.AdditiveBlending,
-        side: THREE.BackSide,
-        transparent: true,
-      })
-    );
-    planetGroup.add(glow);
+    // Atmosphere glow: neon blue at the bottom, through vivid orange, up to
+    // a warm yellow-white peak highlight at the top crest -- layered as
+    // multiple concentric shells (see buildGlowShells) to fake a soft
+    // bloom-like blur around the rim.
+    const glowShells = buildGlowShells(10.6, 0xffa64d, 0x0066ff, 0xffe9b0);
+    glowShells.forEach(shell => planetGroup.add(shell));
 
     // Decorative orbit rings, tilted enough to read clearly as ellipses
     // rather than the near-edge-on lines the earlier tilt values produced.
@@ -648,7 +668,7 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
       countryLabelEl.remove();
       dotTexture?.dispose();
       blankTexture.dispose();
-      const disposables = [globe, dotEarth, glow, stars, ...orbitGroup.children];
+      const disposables = [globe, dotEarth, stars, ...orbitGroup.children, ...glowShells];
       arcs.forEach(a => { disposables.push(a.line, a.particle); });
       globe.children.forEach(child => { if (child !== dotEarth) child.children.forEach(c => disposables.push(c)); });
       disposables.forEach(obj => {
