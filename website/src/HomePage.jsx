@@ -391,7 +391,7 @@ function VerticalNav({ lang, onNavClick }) {
 
 
 // ── Hero ─────────────────────────────────────────────────────────────
-function Hero({ onLoginClick, onRegisterClick, onNavClick, lang, showVerticalNav = true, darkMode, onDarkToggle }) {
+function Hero({ onLoginClick, onRegisterClick, onNavClick, lang, onLangChange, showVerticalNav = true, darkMode, onDarkToggle }) {
   const t = T[lang];
   const pins = [
     { color: '#EF4444', label: 'Hurricane' },
@@ -402,7 +402,16 @@ function Hero({ onLoginClick, onRegisterClick, onNavClick, lang, showVerticalNav
     <section id="dashboard-section" style={{ position: 'relative', overflow: 'hidden', background: 'radial-gradient(ellipse at 70% 100%, #0a1e4d 0%, #060a16 55%, #030408 100%)', minHeight: '100vh', display: 'flex', alignItems: 'center' }}>
       <Globe3D scrollContainerId="dashboard-section" markers={pins} />
       {showVerticalNav && <VerticalNav lang={lang} onNavClick={onNavClick} onLoginClick={onLoginClick} />}
-      <div style={{ position: 'absolute', top: '3.5rem', right: '1.75rem', zIndex: 4, display: 'flex', alignItems: 'center', gap: '0.9rem' }}>
+      <div style={{ position: 'absolute', top: '1.75rem', right: '1.75rem', zIndex: 4, display: 'flex', alignItems: 'center', gap: '0.9rem' }}>
+        <select
+          value={lang}
+          onChange={e => onLangChange(e.target.value)}
+          aria-label="Language"
+          style={{ width: 'auto', padding: '0.35rem 0.5rem', fontSize: '0.78rem', borderRadius: 6, background: 'rgba(255,255,255,0.08)', color: '#fff', border: '1px solid rgba(255,255,255,0.16)', cursor: 'pointer' }}>
+          <option style={{ color: '#111' }}>English</option>
+          <option style={{ color: '#111' }}>Hindi</option>
+          <option style={{ color: '#111' }}>Spanish</option>
+        </select>
         <button onClick={onDarkToggle} title="Toggle Dark Mode" aria-label="Toggle dark mode"
           style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.16)', borderRadius: '50%', width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', cursor: 'pointer', fontSize: '0.85rem' }}>
           <i className={`fa-solid ${darkMode ? 'fa-moon' : 'fa-sun'}`}></i>
@@ -986,7 +995,7 @@ export default function HomePage({ onLogin }) {
     <div className="bg-mesh-flow min-h-screen">
       <Navbar onLoginClick={() => openModal('login')} onRegisterClick={() => openModal('register')} lang={lang} onNavClick={handleNav} hidden={heroVisible && !isMobile} />
       <main>
-        <Hero onLoginClick={() => openModal('login')} onRegisterClick={() => openModal('register')} onNavClick={handleNav} lang={lang} showVerticalNav={!isMobile} darkMode={darkMode} onDarkToggle={() => setDarkMode(d => !d)} />
+        <Hero onLoginClick={() => openModal('login')} onRegisterClick={() => openModal('register')} onNavClick={handleNav} lang={lang} onLangChange={setLang} showVerticalNav={!isMobile} darkMode={darkMode} onDarkToggle={() => setDarkMode(d => !d)} />
         <div style={{ paddingTop: (heroVisible && !isMobile) ? 0 : 62, transition: 'padding-top 0.4s cubic-bezier(0.16,1,0.3,1)' }}>
           <AlertsAndStats lang={lang} />
         </div>

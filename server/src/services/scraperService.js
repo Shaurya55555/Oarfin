@@ -4,6 +4,7 @@ const { isDisasterNews } = require('./llmService');
 const cache = require('./cache');
 
 const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+const REDDIT_USER_AGENT = 'web:oarfin-disaster-platform:v1.0 (by /u/oarfin_platform)';
 
 const CACHE_KEYS = { BBC: 'bbc_news', NDTV: 'ndtv_news', REDDIT: 'reddit_news', GDACS_RSS: 'gdacs_rss' };
 const REDDIT_CACHE = {};
@@ -108,12 +109,81 @@ async function scrapeNDTV() {
   }
 }
 
+// Reddit's own OAuth API (client-credentials grant -- app-only auth, no user
+// login needed, sufficient for reading public subreddit listings). Requires
+// REDDIT_CLIENT_ID/REDDIT_CLIENT_SECRET env vars from a "script" app created
+// at reddit.com/prefs/apps; until those are set this simply returns null and
+// fetchReddit falls back to the Pullpush path below unchanged.
+let redditToken = null;
+async function getRedditAccessToken() {
+  const clientId = process.env.REDDIT_CLIENT_ID;
+  const clientSecret = process.env.REDDIT_CLIENT_SECRET;
+  if (!clientId || !clientSecret) return null;
+
+  if (redditToken && redditToken.expiresAt > Date.now() + 30000) {
+    return redditToken.accessToken;
+  }
+
+  const res = await axios.post(
+    'https://www.reddit.com/api/v1/access_token',
+    'grant_type=client_credentials',
+    {
+      auth: { username: clientId, password: clientSecret },
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': REDDIT_USER_AGENT },
+      timeout: 8000,
+    }
+  );
+  redditToken = {
+    accessToken: res.data.access_token,
+    expiresAt: Date.now() + (res.data.expires_in || 3600) * 1000,
+  };
+  return redditToken.accessToken;
+}
+
+async function fetchRedditViaOAuth(sub) {
+  const token = await getRedditAccessToken();
+  if (!token) return null;
+  const res = await axios.get(`https://oauth.reddit.com/r/${sub}/new`, {
+    params: { limit: 25 },
+    headers: { Authorization: `Bearer ${token}`, 'User-Agent': REDDIT_USER_AGENT },
+    timeout: 10000,
+  });
+  return (res.data?.data?.children || []).map(({ data: post }) => ({
+    id: post.id,
+    title: post.title,
+    type: post.is_video ? 'video' : (/\.(jpg|jpeg|png|gif|webp)$/i.test(post.url || '') ? 'image' : 'link'),
+    post_link: post.url,
+    reddit_link: 'https://reddit.com' + post.permalink,
+    thumbnail: post.thumbnail && post.thumbnail.startsWith('http') ? post.thumbnail : null,
+    score: post.score,
+    comments: post.num_comments,
+    created: new Date((post.created_utc || 0) * 1000).toISOString(),
+    author: post.author,
+    flair: post.link_flair_text || '',
+  })).filter(p => p.title);
+}
+
 async function fetchReddit(sub) {
   sub = sub || 'DisasterUpdate';
   const cacheKey = 'reddit_' + sub;
   const staleKey = cacheKey + '_stale';
   const cached = cache.get(cacheKey);
   if (cached) return cached;
+
+  // Prefer Reddit's own OAuth API when credentials are configured -- it's
+  // the reliable, made-for-this path. Falls through to Pullpush below (with
+  // its own retry/stale-cache handling) if credentials aren't set yet, or
+  // if the OAuth call itself fails for any reason.
+  try {
+    const posts = await fetchRedditViaOAuth(sub);
+    if (posts) {
+      cache.set(cacheKey, posts, CACHE_TTL.REDDIT);
+      cache.set(staleKey, posts, 21600);
+      return posts;
+    }
+  } catch (err) {
+    console.warn('Reddit OAuth fetch failed, falling back to Pullpush:', err.response?.data?.message || err.message);
+  }
 
   // Pullpush (Reddit archive API) is a free public service with an aggressive,
   // often-shared rate limit -- a 429 there is common and not something we can
