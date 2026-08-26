@@ -42,7 +42,7 @@ function makeSeededRandom(seed) {
 // shading and texture directly into the map is what makes them read as
 // actual rendered planets instead.
 function makeSurfaceTexture(baseColorHex, { bands = false, blotches = true, seed = 1, granular = false } = {}) {
-  const size = 128;
+  const size = 256;
   const canvas = document.createElement('canvas');
   canvas.width = size; canvas.height = size;
   const ctx = canvas.getContext('2d');
@@ -55,24 +55,56 @@ function makeSurfaceTexture(baseColorHex, { bands = false, blotches = true, seed
   ctx.fillRect(0, 0, size, size);
 
   if (bands) {
+    // Cloud bands with a little turbulence (soft elongated swirl blobs
+    // layered on each stripe) instead of flat rectangles, closer to how
+    // a real gas giant's banded atmosphere actually looks.
     const bandCount = 9 + Math.floor(rand() * 4);
     for (let i = 0; i < bandCount; i++) {
       const y = (i / bandCount) * size;
       const h = (size / bandCount) * (0.55 + rand() * 0.7);
+      const bandColor = rand() > 0.5 ? light : dark;
       ctx.globalAlpha = 0.1 + rand() * 0.16;
-      ctx.fillStyle = rand() > 0.5 ? `#${light.getHexString()}` : `#${dark.getHexString()}`;
+      ctx.fillStyle = `#${bandColor.getHexString()}`;
       ctx.fillRect(0, y, size, h);
+      const swirls = 2 + Math.floor(rand() * 3);
+      for (let s = 0; s < swirls; s++) {
+        ctx.globalAlpha = 0.08 + rand() * 0.1;
+        ctx.fillStyle = `#${(rand() > 0.5 ? light : dark).getHexString()}`;
+        ctx.save();
+        ctx.translate(rand() * size, y + h * (0.2 + rand() * 0.6));
+        ctx.rotate((rand() - 0.5) * 0.3);
+        ctx.beginPath();
+        ctx.ellipse(0, 0, size * (0.12 + rand() * 0.16), h * (0.3 + rand() * 0.3), 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
     }
     ctx.globalAlpha = 1;
   }
 
   if (blotches) {
-    const count = granular ? 260 : 46;
-    for (let i = 0; i < count; i++) {
-      const x = rand() * size, y = rand() * size, r = granular ? 0.6 + rand() * 1.6 : 1 + rand() * 4;
-      ctx.globalAlpha = granular ? 0.08 + rand() * 0.1 : 0.07 + rand() * 0.12;
-      ctx.fillStyle = rand() > 0.5 ? `#${light.getHexString()}` : `#${dark.getHexString()}`;
-      ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+    if (bands) {
+      const count = granular ? 260 : 46;
+      for (let i = 0; i < count; i++) {
+        const x = rand() * size, y = rand() * size, r = granular ? 1 + rand() * 3 : 2 + rand() * 8;
+        ctx.globalAlpha = granular ? 0.08 + rand() * 0.1 : 0.06 + rand() * 0.1;
+        ctx.fillStyle = rand() > 0.5 ? `#${light.getHexString()}` : `#${dark.getHexString()}`;
+        ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+      }
+    } else {
+      // Rocky-planet craters: a dark shadow rim with a slightly offset
+      // lighter interior, instead of a single flat dot -- reads as an
+      // actual pitted/cratered surface rather than paint speckle.
+      const count = granular ? 90 : 30;
+      for (let i = 0; i < count; i++) {
+        const x = rand() * size, y = rand() * size, r = granular ? 1.2 + rand() * 3 : 2.5 + rand() * 8;
+        ctx.globalAlpha = 0.16 + rand() * 0.12;
+        ctx.fillStyle = `#${dark.getHexString()}`;
+        ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+        ctx.globalAlpha = 0.14 + rand() * 0.1;
+        ctx.fillStyle = `#${light.getHexString()}`;
+        ctx.beginPath(); ctx.arc(x - r * 0.25, y - r * 0.25, r * 0.62, 0, Math.PI * 2); ctx.fill();
+      }
     }
     ctx.globalAlpha = 1;
   }
@@ -80,12 +112,21 @@ function makeSurfaceTexture(baseColorHex, { bands = false, blotches = true, seed
   // Directional shading pass on top -- bright upper-left "sunlit" side
   // fading to a dark limb, the actual cue that reads as a lit sphere
   // rather than a flat painted disc.
-  const grad = ctx.createRadialGradient(size * 0.32, size * 0.3, size * 0.04, size * 0.5, size * 0.5, size * 0.74);
-  grad.addColorStop(0, `rgba(255,255,255,0.55)`);
+  const grad = ctx.createRadialGradient(size * 0.32, size * 0.3, size * 0.06, size * 0.5, size * 0.5, size * 0.74);
+  grad.addColorStop(0, `rgba(255,255,255,0.6)`);
   grad.addColorStop(0.45, `rgba(255,255,255,0)`);
-  grad.addColorStop(0.8, `rgba(0,0,0,0.1)`);
-  grad.addColorStop(1, `rgba(0,0,0,0.55)`);
+  grad.addColorStop(0.8, `rgba(0,0,0,0.14)`);
+  grad.addColorStop(1, `rgba(0,0,0,0.62)`);
   ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, size, size);
+
+  // Small bright specular glint where the "sunlight" would catch the
+  // surface most directly -- the little highlight real rendered/photo
+  // spheres have that a plain gradient alone doesn't give.
+  const glint = ctx.createRadialGradient(size * 0.3, size * 0.26, 0, size * 0.3, size * 0.26, size * 0.12);
+  glint.addColorStop(0, 'rgba(255,255,255,0.35)');
+  glint.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = glint;
   ctx.fillRect(0, 0, size, size);
 
   const tex = new THREE.CanvasTexture(canvas);
@@ -200,27 +241,36 @@ function buildSun(radius) {
 function buildOrbitPlanet(orbitRadius, planetRadius, color, opts = {}) {
   const { hasRing = false, bands = false, seed = 1 } = opts;
   const group = new THREE.Group();
-  const ring = buildOrbitRing(orbitRadius, 0, 0, 0x5a6a8a);
+  // Thin, neutral pale-grey path -- real orbit-diagram lines, not a
+  // colored decoration -- so the eye reads it as a trajectory rather
+  // than part of the planet's own design.
+  const ring = buildOrbitRing(orbitRadius, 0, 0, 0x8a97ad);
   ring.material.opacity = 0;
   group.add(ring);
   const surfaceTex = makeSurfaceTexture(color, { bands, blotches: true, seed });
   const planet = new THREE.Mesh(
-    new THREE.SphereGeometry(planetRadius, 24, 24),
+    new THREE.SphereGeometry(planetRadius, 28, 28),
     new THREE.MeshBasicMaterial({ map: surfaceTex, color: 0xffffff, transparent: true, opacity: 0 })
   );
   group.add(planet);
+  // Faint atmosphere-limb rim in the planet's own color -- the subtle
+  // edge glow a real planet render/photo has, rather than a hard cutoff
+  // silhouette against black space.
+  const atmosphere = buildFresnelGlow(planetRadius * 1.06, color, 2.2);
+  planet.add(atmosphere);
   // Saturn's own ring -- a flat disc tilted relative to its orbital plane,
   // distinct from the thin orbit-path ring above.
   let saturnRing = null;
   if (hasRing) {
+    const ringTex = makeSurfaceTexture(0xd8c79a, { bands: true, blotches: false, seed: seed + 100 });
     saturnRing = new THREE.Mesh(
       new THREE.RingGeometry(planetRadius * 1.5, planetRadius * 2.4, 48),
-      new THREE.MeshBasicMaterial({ color: 0xd8c79a, transparent: true, opacity: 0, side: THREE.DoubleSide })
+      new THREE.MeshBasicMaterial({ map: ringTex, color: 0xffffff, transparent: true, opacity: 0, side: THREE.DoubleSide })
     );
     saturnRing.rotation.x = Math.PI / 2.5;
     planet.add(saturnRing);
   }
-  return { group, ring, planet, saturnRing, orbitRadius, angle: 0 };
+  return { group, ring, planet, atmosphere, saturnRing, orbitRadius, angle: 0 };
 }
 
 function buildStarPoints(count, size, opacity, colorHex) {
@@ -688,6 +738,7 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
         p.planet.position.set(Math.cos(p.angle) * p.orbitRadius, Math.sin(p.angle) * p.orbitRadius, 0);
         p.planet.material.opacity = sunFade;
         p.ring.material.opacity = sunFade * 0.35;
+        p.atmosphere.material.uniforms.uOpacity.value = sunFade * 0.9;
         if (p.saturnRing) p.saturnRing.material.opacity = sunFade * 0.8;
       });
 
@@ -781,7 +832,7 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
       earthTexture?.dispose();
       const disposables = [globe, ...stars.children, ...orbitGroup.children, sun.core, sun.rim, ...sun.halos];
       arcs.forEach(a => { disposables.push(a.line, a.particle); });
-      solarPlanets.forEach(p => { disposables.push(p.ring, p.planet); if (p.saturnRing) disposables.push(p.saturnRing); });
+      solarPlanets.forEach(p => { disposables.push(p.ring, p.planet, p.atmosphere); if (p.saturnRing) disposables.push(p.saturnRing); });
       globe.children.forEach(child => { child.children.forEach(c => disposables.push(c)); });
       disposables.forEach(obj => {
         obj.geometry?.dispose();
