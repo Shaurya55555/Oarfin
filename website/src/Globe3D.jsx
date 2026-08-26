@@ -21,10 +21,14 @@ function buildOrbitRing(radius, tiltX, tiltZ, color) {
   return ring;
 }
 
-// Sun + two simple orbiting planets — the decorative payoff for the
-// Ctrl+scroll/pinch "zoom out" gesture. Everything starts fully transparent
-// (opacity 0) so it stays invisible and inert in the normal close-up hero
-// view, then fades in as the render loop drives opacity up with zoomLevel.
+// Sun + the seven other planets (Earth is the real textured globe itself,
+// not rebuilt here) — the decorative payoff for the Ctrl+scroll/pinch
+// "zoom out" gesture. Everything starts fully transparent (opacity 0) so
+// it stays invisible and inert in the normal close-up hero view, then
+// fades in as the render loop drives opacity up with zoomLevel. Not to
+// real relative scale/distance (nothing here is) -- sized and spaced for
+// a clean readable silhouette, echoing the "whole solar system" reveal
+// look rather than a scientifically accurate orrery.
 function buildSun(radius) {
   const group = new THREE.Group();
   const core = new THREE.Mesh(
@@ -43,7 +47,7 @@ function buildSun(radius) {
   return { group, core, halos };
 }
 
-function buildOrbitPlanet(orbitRadius, planetRadius, color) {
+function buildOrbitPlanet(orbitRadius, planetRadius, color, hasRing) {
   const group = new THREE.Group();
   const ring = buildOrbitRing(orbitRadius, 0, 0, 0x5a6a8a);
   ring.material.opacity = 0;
@@ -53,7 +57,18 @@ function buildOrbitPlanet(orbitRadius, planetRadius, color) {
     new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0 })
   );
   group.add(planet);
-  return { group, ring, planet, orbitRadius, angle: Math.random() * Math.PI * 2 };
+  // Saturn's own ring -- a flat disc tilted relative to its orbital plane,
+  // distinct from the thin orbit-path ring above.
+  let saturnRing = null;
+  if (hasRing) {
+    saturnRing = new THREE.Mesh(
+      new THREE.RingGeometry(planetRadius * 1.5, planetRadius * 2.4, 48),
+      new THREE.MeshBasicMaterial({ color: 0xd8c79a, transparent: true, opacity: 0, side: THREE.DoubleSide })
+    );
+    saturnRing.rotation.x = Math.PI / 2.5;
+    planet.add(saturnRing);
+  }
+  return { group, ring, planet, saturnRing, orbitRadius, angle: 0 };
 }
 
 function buildStarPoints(count, size, opacity, colorHex) {
@@ -290,25 +305,41 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
     const { group: stars, bright: brightStars } = buildStarfield();
     scene.add(stars);
 
-    // Sun + two orbiting planets, parked well behind and to the side of
+    // Sun + the other seven planets, parked well behind and to the side of
     // Earth so pulling the camera back (the zoom-out gesture below) brings
-    // them into frame alongside a shrinking Earth, selling "you were
-    // looking at one planet in a solar system all along". Lives directly
-    // in `scene` (not `planetGroup`) so it doesn't inherit Earth's own
-    // mouse-tilt/drag rotation. rotation.x tilts the whole thing so the
-    // flat orbit rings/planet paths read as ellipses instead of edge-on
-    // lines, same trick as the equatorial ring around Earth itself.
+    // the whole system into frame alongside a shrinking Earth, selling
+    // "you were looking at one planet in a solar system all along". Lives
+    // directly in `scene` (not `planetGroup`) so it doesn't inherit
+    // Earth's own mouse-tilt/drag rotation. rotation.x tilts the whole
+    // thing so the flat orbit rings/planet paths read as ellipses seen at
+    // an angle rather than edge-on lines, same trick as the equatorial
+    // ring around Earth itself, and echoing the angled top-down look of
+    // the reference "solar system at real scale" reveal shots.
     const solarGroup = new THREE.Group();
-    solarGroup.position.set(planetGroup.position.x - 20, planetGroup.position.y + 10, -180);
-    solarGroup.rotation.x = 1.05;
+    solarGroup.position.set(planetGroup.position.x - 20, planetGroup.position.y + 10, -230);
+    solarGroup.rotation.x = 1.15;
     scene.add(solarGroup);
     const sun = buildSun(15);
     solarGroup.add(sun.group);
+    // Orbit radius / planet size / color roughly ordered like the real
+    // solar system (not to real relative scale -- Jupiter/Saturn sized up
+    // for a readable silhouette); Earth's own slot (~40) is intentionally
+    // left as a gap since the real textured globe sits near there already.
     const solarPlanets = [
-      buildOrbitPlanet(34, 3, 0x7fb3ff),
-      buildOrbitPlanet(52, 4.2, 0xd97757),
+      buildOrbitPlanet(22, 1.1, 0x9c9c94), // Mercury
+      buildOrbitPlanet(29, 1.8, 0xe0c088), // Venus
+      buildOrbitPlanet(48, 1.4, 0xc1440e), // Mars
+      buildOrbitPlanet(62, 6.2, 0xd8ae82), // Jupiter
+      buildOrbitPlanet(80, 5.2, 0xead6a8, true), // Saturn (+ ring)
+      buildOrbitPlanet(96, 3.4, 0xace5ee), // Uranus
+      buildOrbitPlanet(110, 3.3, 0x3f5efb), // Neptune
     ];
-    solarPlanets.forEach(p => solarGroup.add(p.group));
+    // Staggered (not random) starting angles, fanned out on roughly the
+    // same side of the sun -- reads as a clean line-up at first glance
+    // (closer to the reference "solar system" reveal shot) rather than
+    // planets scattered arbitrarily around their orbits, while the render
+    // loop's per-frame angle update still lets them drift naturally after.
+    solarPlanets.forEach((p, i) => { p.angle = -0.12 * i; solarGroup.add(p.group); });
 
     let raf = null;
     let scrollProgress = 0; // 0 = top of hero, 1 = scrolled a full viewport past it
@@ -498,15 +529,18 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
       sun.core.material.opacity = Math.min(1, sunFade * 1.3);
       sun.halos.forEach((h, i) => { h.material.opacity = sunFade * (0.5 - i * 0.15); });
       solarPlanets.forEach(p => {
-        p.angle += dt * 0.05;
+        // Rough Keplerian feel: closer orbits move visibly faster than
+        // farther ones, instead of every planet crawling at the same rate.
+        p.angle += dt * (1.6 / Math.sqrt(p.orbitRadius));
         p.planet.position.set(Math.cos(p.angle) * p.orbitRadius, Math.sin(p.angle) * p.orbitRadius, 0);
         p.planet.material.opacity = sunFade;
         p.ring.material.opacity = sunFade * 0.35;
+        if (p.saturnRing) p.saturnRing.material.opacity = sunFade * 0.8;
       });
 
-      camera.position.z = 34 + scrollProgress * 18 + zoomLevel * 165;
-      camera.position.y = -scrollProgress * 6 - zoomLevel * 12;
-      camera.lookAt(planetGroup.position.x * 0.4 * (1 - zoomLevel * 0.6), 0, -zoomLevel * 60);
+      camera.position.z = 34 + scrollProgress * 18 + zoomLevel * 245;
+      camera.position.y = -scrollProgress * 6 - zoomLevel * 18;
+      camera.lookAt(planetGroup.position.x * 0.4 * (1 - zoomLevel * 0.7), 0, -zoomLevel * 95);
       camera.getWorldDirection(camDir);
 
       const mountRect = mount.getBoundingClientRect();
@@ -594,7 +628,7 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
       earthTexture?.dispose();
       const disposables = [globe, ...stars.children, ...orbitGroup.children, sun.core, ...sun.halos];
       arcs.forEach(a => { disposables.push(a.line, a.particle); });
-      solarPlanets.forEach(p => { disposables.push(p.ring, p.planet); });
+      solarPlanets.forEach(p => { disposables.push(p.ring, p.planet); if (p.saturnRing) disposables.push(p.saturnRing); });
       globe.children.forEach(child => { child.children.forEach(c => disposables.push(c)); });
       disposables.forEach(obj => {
         obj.geometry?.dispose();
