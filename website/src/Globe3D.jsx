@@ -387,7 +387,7 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
         position: absolute; top: 0; left: 0; transform: translate(-50%, -130%);
         background: rgba(10,14,26,0.85); color: #fff; font-size: 11px; font-weight: 700;
         letter-spacing: 0.04em; text-transform: uppercase; padding: 3px 8px; border-radius: 4px;
-        border: 1px solid ${m.color}; white-space: nowrap; pointer-events: none;
+        border: none; white-space: nowrap; pointer-events: none;
         transition: opacity 0.3s ease; opacity: 0;
       `;
       mount.appendChild(el);
