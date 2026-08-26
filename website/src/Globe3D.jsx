@@ -19,11 +19,47 @@ const GLOW_FRAGMENT = `
   varying vec3 vPosition;
   uniform vec3 topColor;
   uniform vec3 bottomColor;
+  uniform vec3 peakColor;
   void main() {
     float intensity = pow(0.55 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 2.5);
     float t = smoothstep(-8.0, 4.0, vPosition.y);
-    vec3 glowColor = mix(bottomColor, topColor, t);
+    float peak = smoothstep(4.0, 9.5, vPosition.y);
+    vec3 glowColor = mix(mix(bottomColor, topColor, t), peakColor, peak);
     gl_FragColor = vec4(glowColor, intensity);
+  }
+`;
+
+// Dot-matrix layer shader: samples the same rasterized land texture as
+// before, but modulates each dot's color/brightness by how close it sits to
+// the sphere's silhouette edge (the same fresnel term the atmosphere shell
+// uses) -- dots near the horizon pick up the rim's orange/blue tint and
+// glow brighter, dots facing the camera stay their plain light-blue color.
+const DOT_VERTEX = `
+  varying vec3 vNormal;
+  varying vec3 vPosition;
+  varying vec2 vUv;
+  void main() {
+    vNormal = normalize(normalMatrix * normal);
+    vPosition = position;
+    vUv = uv;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+const DOT_FRAGMENT = `
+  uniform sampler2D dotMap;
+  uniform vec3 topColor;
+  uniform vec3 bottomColor;
+  varying vec3 vNormal;
+  varying vec3 vPosition;
+  varying vec2 vUv;
+  void main() {
+    vec4 tex = texture2D(dotMap, vUv);
+    if (tex.a < 0.1) discard;
+    float rim = pow(1.0 - abs(dot(vNormal, vec3(0.0, 0.0, 1.0))), 3.0);
+    float t = smoothstep(-8.0, 4.0, vPosition.y);
+    vec3 tint = mix(bottomColor, topColor, t);
+    vec3 finalColor = mix(tex.rgb, tint, rim * 0.8);
+    gl_FragColor = vec4(finalColor * (1.0 + rim * 1.4), tex.a);
   }
 `;
 
@@ -208,6 +244,7 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
     // right so the globe sits clear of the headline column.
     const planetGroup = new THREE.Group();
     planetGroup.position.x = 29;
+    planetGroup.position.y = -2.5;
     planetGroup.scale.setScalar(1.35);
     scene.add(planetGroup);
 
@@ -220,9 +257,23 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
 
     // Dot-matrix world map shell — filled in asynchronously once the real
     // land geometry loads (see fetch below); starts blank so nothing pops.
+    // Seeded with a 1x1 transparent texture rather than null so the sampler
+    // is never unbound (avoids a WebGL "texture unit" warning every frame).
+    const blankTexture = new THREE.DataTexture(new Uint8Array([0, 0, 0, 0]), 1, 1);
+    blankTexture.needsUpdate = true;
     const dotEarth = new THREE.Mesh(
       new THREE.SphereGeometry(10.03, 64, 64),
-      new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending })
+      new THREE.ShaderMaterial({
+        vertexShader: DOT_VERTEX,
+        fragmentShader: DOT_FRAGMENT,
+        uniforms: {
+          dotMap: { value: blankTexture },
+          topColor: { value: new THREE.Color(0xff8a3d) },
+          bottomColor: { value: new THREE.Color(0x1a8cff) },
+        },
+        transparent: true,
+        blending: THREE.AdditiveBlending,
+      })
     );
     globe.add(dotEarth);
 
@@ -232,7 +283,7 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
       .then(geojson => {
         if (cancelled) return;
         dotTexture = rasterizeLandToDots(geojson);
-        dotEarth.material.map = dotTexture;
+        dotEarth.material.uniforms.dotMap.value = dotTexture;
         dotEarth.material.needsUpdate = true;
       })
       .catch(() => { /* decorative only — fine to skip if it fails to load */ });
@@ -283,8 +334,9 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
       }
     }
 
-    // Atmosphere glow shell (fresnel rim light), warm at the top fading to
-    // cool blue at the bottom -- additive-blended, matching the reference's
+    // Atmosphere glow shell (fresnel rim light): neon blue at the bottom,
+    // through vivid orange, up to a warm yellow-white peak highlight right
+    // at the top crest -- additive-blended, matching the reference's
     // sunlit-limb globe rather than a flat single-color glow.
     const glow = new THREE.Mesh(
       new THREE.SphereGeometry(10.6, 64, 64),
@@ -292,8 +344,9 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
         vertexShader: GLOW_VERTEX,
         fragmentShader: GLOW_FRAGMENT,
         uniforms: {
-          topColor: { value: new THREE.Color(0xffab5c) },
-          bottomColor: { value: new THREE.Color(0x2f6bff) },
+          topColor: { value: new THREE.Color(0xff4500) },
+          bottomColor: { value: new THREE.Color(0x0066ff) },
+          peakColor: { value: new THREE.Color(0xffe9b0) },
         },
         blending: THREE.AdditiveBlending,
         side: THREE.BackSide,
@@ -484,6 +537,7 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
       mount.removeChild(renderer.domElement);
       labelEls.forEach(el => el.remove());
       dotTexture?.dispose();
+      blankTexture.dispose();
       const disposables = [globe, dotEarth, glow, stars, ...orbitGroup.children];
       arcs.forEach(a => { disposables.push(a.line, a.particle); });
       globe.children.forEach(child => { if (child !== dotEarth) child.children.forEach(c => disposables.push(c)); });
