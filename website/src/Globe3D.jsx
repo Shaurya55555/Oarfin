@@ -477,10 +477,14 @@ export default function Globe3D({ scrollContainerId, markers = [], darkMode = tr
         globe.material.needsUpdate = true;
       });
     } else {
-      // Land stays exactly the same photo colors as dark mode -- only the
-      // ocean (identified by luminance, it's the darkest thing in this
-      // texture) gets screen-blended to light blue, since a plain color
-      // multiply can't lighten near-black deep-ocean pixels at all.
+      // Ocean gets screen-blended to light blue (a plain multiply can't
+      // lighten near-black deep-ocean pixels at all); land is darkened
+      // slightly instead of left untouched. Classifying "ocean" by
+      // luminance alone was wrong -- dark rainforest canopy (Amazon etc)
+      // is just as dark as deep ocean, so it was getting misclassified
+      // and punched full of light-blue holes. Water in this texture is
+      // reliably blue-dominant (b clearly above both r and g) in a way
+      // dark vegetation never is, so use hue instead of brightness.
       const img = new Image();
       img.crossOrigin = 'anonymous';
       img.onload = () => {
@@ -493,13 +497,18 @@ export default function Globe3D({ scrollContainerId, markers = [], darkMode = tr
         const d = imgData.data;
         const screen = (base, tint) => 255 - ((255 - base) * (255 - tint)) / 255;
         const OCEAN = [150, 205, 235];
+        const LAND_DARKEN = 0.78;
         for (let i = 0; i < d.length; i += 4) {
           const r = d[i], g = d[i + 1], b = d[i + 2];
-          const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
-          if (luminance < 42) {
+          const isOcean = b > r + 6 && b > g + 2;
+          if (isOcean) {
             d[i] = screen(r, OCEAN[0]);
             d[i + 1] = screen(g, OCEAN[1]);
             d[i + 2] = screen(b, OCEAN[2]);
+          } else {
+            d[i] = r * LAND_DARKEN;
+            d[i + 1] = g * LAND_DARKEN;
+            d[i + 2] = b * LAND_DARKEN;
           }
         }
         ctx.putImageData(imgData, 0, 0);
