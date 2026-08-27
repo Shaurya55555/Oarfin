@@ -316,11 +316,14 @@ function buildStarPoints(count, size, opacity, colorHex) {
 // uniform field -- reads as genuine depth in a starfield rather than a flat
 // scatter of identical dots. The bright layer also gets a gentle twinkle
 // (opacity oscillation) in the render loop below.
-function buildStarfield() {
+function buildStarfield(darkMode = true) {
   const group = new THREE.Group();
-  const dim = buildStarPoints(2600, 0.16, 0.45, 0xffffff);
-  const mid = buildStarPoints(700, 0.32, 0.7, 0xcfe0ff);
-  const bright = buildStarPoints(70, 0.75, 0.9, 0xffffff);
+  // Warm gold/cream tones in light mode instead of cool white/blue --
+  // plain white specks read as noise/snow against a bright orange sky,
+  // gold flecks read as sunlit sparkle instead.
+  const dim = buildStarPoints(2600, 0.16, darkMode ? 0.45 : 0.35, darkMode ? 0xffffff : 0xffdca0);
+  const mid = buildStarPoints(700, 0.32, darkMode ? 0.7 : 0.55, darkMode ? 0xcfe0ff : 0xffc978);
+  const bright = buildStarPoints(70, 0.75, darkMode ? 0.9 : 0.75, darkMode ? 0xffffff : 0xfff2d6);
   group.add(dim, mid, bright);
   return { group, dim, mid, bright };
 }
@@ -419,7 +422,7 @@ function buildMarker(radius, latDeg, lonDeg, colorHex) {
  * back on scroll, and can be dragged with the cursor (mouse/touch) to spin
  * it manually, with momentum on release.
  */
-export default function Globe3D({ scrollContainerId, markers = [] }) {
+export default function Globe3D({ scrollContainerId, markers = [], darkMode = true }) {
   const mountRef = useRef(null);
   const markersKey = markers.map(m => `${m.color}${m.label}${m.lat}${m.lon}`).join(',');
   // Persists across the effect re-running (the GDACS live-marker fetch
@@ -459,19 +462,47 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
     // line up with what the texture actually paints at that lat/lon.
     const globe = new THREE.Mesh(
       new THREE.SphereGeometry(10, 64, 64),
-      new THREE.MeshBasicMaterial({ color: 0x050b16 })
+      new THREE.MeshBasicMaterial({ color: darkMode ? 0x050b16 : 0xf3ddb2 })
     );
     planetGroup.add(globe);
 
     let earthTexture = null;
-    new THREE.TextureLoader().load('/earth_map.jpg', tex => {
-      if (cancelled) return;
-      tex.colorSpace = THREE.SRGBColorSpace;
-      earthTexture = tex;
-      globe.material.map = tex;
-      globe.material.color.set(0xffffff);
-      globe.material.needsUpdate = true;
-    });
+    if (darkMode) {
+      new THREE.TextureLoader().load('/earth_map.jpg', tex => {
+        if (cancelled) return;
+        tex.colorSpace = THREE.SRGBColorSpace;
+        earthTexture = tex;
+        globe.material.map = tex;
+        globe.material.color.set(0xffffff);
+        globe.material.needsUpdate = true;
+      });
+    } else {
+      // A plain color multiply can't lighten the photo texture's darkest
+      // pixels (deep ocean is near-black) -- multiplying by a light tint
+      // just gives a dark, muddy result. Screen-blend a warm color over
+      // the image on a canvas instead (screen genuinely brightens dark
+      // pixels, unlike multiply), producing an actual pale/washed-out
+      // Earth for the light-mode hero rather than a literal dark photo.
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        if (cancelled) return;
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width; canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        ctx.globalCompositeOperation = 'screen';
+        ctx.fillStyle = 'rgba(255, 210, 150, 0.62)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        const tex = new THREE.CanvasTexture(canvas);
+        tex.colorSpace = THREE.SRGBColorSpace;
+        earthTexture = tex;
+        globe.material.map = tex;
+        globe.material.color.set(0xffffff);
+        globe.material.needsUpdate = true;
+      };
+      img.src = '/earth_map.jpg';
+    }
 
     // Real per-country boundaries (Natural Earth 110m admin-0, trimmed to
     // just name+geometry) for the hover-to-country-name lookup below.
@@ -533,7 +564,7 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
     globe.add(orbitGroup);
 
     // Starfield stays centered on the whole viewport, not offset with the planet.
-    const { group: stars, bright: brightStars } = buildStarfield();
+    const { group: stars, bright: brightStars } = buildStarfield(darkMode);
     scene.add(stars);
 
     // Sun + the other seven planets, parked well behind and to the side of
@@ -687,8 +718,18 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
     // camera back to reveal the sun and two more planets behind Earth.
     // Gated behind ctrlKey specifically so plain scrolling over the hero
     // still scrolls the page normally instead of being hijacked.
-    let zoomTarget = 0;
-    let zoomLevel = 0;
+    // ── Opening intro — start already fully zoomed out on the solar
+    // system (not eased in from Earth first), hold briefly, then zoom
+    // into Earth, once per real page load. `shouldPlayIntro` is computed
+    // once per effect invocation and only ever read here -- the actual
+    // "has it played" flag is set later, from inside the hold timer, so
+    // React StrictMode's dev-only mount->cleanup->mount double-invoke
+    // can't have its throwaway first run claim the intro played and
+    // leave the real, kept run thinking it should skip it (the
+    // throwaway run's cleanup cancels its timer before that ever fires).
+    const shouldPlayIntro = !introPlayedRef.current;
+    let zoomTarget = shouldPlayIntro ? 1 : 0;
+    let zoomLevel = shouldPlayIntro ? 1 : 0;
     const onWheelZoom = (e) => {
       if (!e.ctrlKey) return;
       e.preventDefault();
@@ -696,27 +737,13 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
     };
     mount.addEventListener('wheel', onWheelZoom, { passive: false });
 
-    // ── Opening intro — reveal the full solar system, hold briefly, then
-    // zoom into Earth, once per real page load. Just drives the same
-    // `zoomTarget` the manual Ctrl+scroll gesture above does (the render
-    // loop's existing easing does the actual animating); a later manual
-    // scroll simply overrides it like any other zoomTarget change.
     const introTimers = [];
-    if (!introPlayedRef.current) {
-      // Mark played from inside the timer rather than synchronously here:
-      // React StrictMode (dev only) mounts this effect, tears it straight
-      // back down, then mounts it again -- setting the ref synchronously
-      // would make the *first, torn-down* run claim the intro played,
-      // leaving the real kept instance thinking it already had and
-      // silently skipping it. Marking it from the timer means the
-      // torn-down run's cleanup cancels its timer before this ever fires,
-      // so only a run that actually survives gets to claim it.
+    if (shouldPlayIntro) {
       introTimers.push(setTimeout(() => {
         if (cancelled) return;
         introPlayedRef.current = true;
-        zoomTarget = 1;
-      }, 300));
-      introTimers.push(setTimeout(() => { zoomTarget = 0; }, 2900));
+        zoomTarget = 0;
+      }, 2200));
     }
 
     // Small discoverability hint for the gesture above -- otherwise nothing
@@ -947,7 +974,7 @@ export default function Globe3D({ scrollContainerId, markers = [] }) {
       renderer.dispose();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [scrollContainerId, markersKey]);
+  }, [scrollContainerId, markersKey, darkMode]);
 
   return <div ref={mountRef} style={{
     position: 'absolute', inset: 0, zIndex: 0, overflow: 'hidden',
