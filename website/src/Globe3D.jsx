@@ -479,10 +479,12 @@ export default function Globe3D({ scrollContainerId, markers = [], darkMode = tr
     } else {
       // A plain color multiply can't lighten the photo texture's darkest
       // pixels (deep ocean is near-black) -- multiplying by a light tint
-      // just gives a dark, muddy result. Screen-blend a warm color over
-      // the image on a canvas instead (screen genuinely brightens dark
-      // pixels, unlike multiply), producing an actual pale/washed-out
-      // Earth for the light-mode hero rather than a literal dark photo.
+      // just gives a dark, muddy result. Screen-blend brightens instead,
+      // but blending the whole image toward one warm tone turned the
+      // ocean the same brownish tan as land. Read the pixels and screen
+      // land toward the warm tone but ocean (identified by luminance --
+      // it's the darkest thing in this texture) toward light blue, so
+      // the sea reads as a sea instead of blending into the coastline.
       const img = new Image();
       img.crossOrigin = 'anonymous';
       img.onload = () => {
@@ -491,9 +493,19 @@ export default function Globe3D({ scrollContainerId, markers = [], darkMode = tr
         canvas.width = img.width; canvas.height = img.height;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0);
-        ctx.globalCompositeOperation = 'screen';
-        ctx.fillStyle = 'rgba(255, 210, 150, 0.62)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const d = imgData.data;
+        const screen = (base, tint) => 255 - ((255 - base) * (255 - tint)) / 255;
+        const OCEAN = [150, 205, 235], LAND = [255, 205, 145];
+        for (let i = 0; i < d.length; i += 4) {
+          const r = d[i], g = d[i + 1], b = d[i + 2];
+          const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
+          const [tr, tg, tb] = luminance < 42 ? OCEAN : LAND;
+          d[i] = screen(r, tr);
+          d[i + 1] = screen(g, tg);
+          d[i + 2] = screen(b, tb);
+        }
+        ctx.putImageData(imgData, 0, 0);
         const tex = new THREE.CanvasTexture(canvas);
         tex.colorSpace = THREE.SRGBColorSpace;
         earthTexture = tex;
