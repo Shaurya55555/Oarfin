@@ -750,7 +750,7 @@ function Hero({ onLoginClick, onRegisterClick, onNavClick, lang, onLangChange, s
   const heroBtnBorder = darkMode ? 'rgba(255,255,255,0.16)' : 'rgba(15,23,42,0.16)';
 
   return (
-    <section id="dashboard-section" style={{ position: 'relative', overflow: 'hidden', background: darkMode ? 'radial-gradient(ellipse at 65% 90%, #0c1024 0%, #05060f 45%, #000000 100%)' : 'radial-gradient(ellipse at 65% 90%, #fff3d6 0%, #ffd27a 40%, #ff9d3d 75%, #f4711f 100%)', minHeight: '100vh', display: 'flex', alignItems: 'center' }}>
+    <section id="dashboard-section" style={{ position: 'relative', overflow: 'hidden', background: darkMode ? 'radial-gradient(ellipse at 65% 90%, #0c1024 0%, #05060f 45%, #000000 100%)' : 'radial-gradient(ellipse at 65% 90%, #ffffff 0%, #fff6db 35%, #ffe697 65%, #ffcf5c 100%)', minHeight: '100vh', display: 'flex', alignItems: 'center' }}>
       <Globe3D scrollContainerId="dashboard-section" markers={pins} darkMode={darkMode} />
       {showVerticalNav && <VerticalNav lang={lang} onNavClick={onNavClick} onLoginClick={onLoginClick} darkMode={darkMode} />}
       <div style={{ position: 'absolute', top: '1.75rem', right: '1.75rem', zIndex: 4, display: 'flex', alignItems: 'center', gap: '0.9rem' }}>

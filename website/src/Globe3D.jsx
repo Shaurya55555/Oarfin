@@ -477,14 +477,10 @@ export default function Globe3D({ scrollContainerId, markers = [], darkMode = tr
         globe.material.needsUpdate = true;
       });
     } else {
-      // A plain color multiply can't lighten the photo texture's darkest
-      // pixels (deep ocean is near-black) -- multiplying by a light tint
-      // just gives a dark, muddy result. Screen-blend brightens instead,
-      // but blending the whole image toward one warm tone turned the
-      // ocean the same brownish tan as land. Read the pixels and screen
-      // land toward the warm tone but ocean (identified by luminance --
-      // it's the darkest thing in this texture) toward light blue, so
-      // the sea reads as a sea instead of blending into the coastline.
+      // Land stays exactly the same photo colors as dark mode -- only the
+      // ocean (identified by luminance, it's the darkest thing in this
+      // texture) gets screen-blended to light blue, since a plain color
+      // multiply can't lighten near-black deep-ocean pixels at all.
       const img = new Image();
       img.crossOrigin = 'anonymous';
       img.onload = () => {
@@ -496,14 +492,15 @@ export default function Globe3D({ scrollContainerId, markers = [], darkMode = tr
         const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         const d = imgData.data;
         const screen = (base, tint) => 255 - ((255 - base) * (255 - tint)) / 255;
-        const OCEAN = [150, 205, 235], LAND = [255, 205, 145];
+        const OCEAN = [150, 205, 235];
         for (let i = 0; i < d.length; i += 4) {
           const r = d[i], g = d[i + 1], b = d[i + 2];
           const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
-          const [tr, tg, tb] = luminance < 42 ? OCEAN : LAND;
-          d[i] = screen(r, tr);
-          d[i + 1] = screen(g, tg);
-          d[i + 2] = screen(b, tb);
+          if (luminance < 42) {
+            d[i] = screen(r, OCEAN[0]);
+            d[i + 1] = screen(g, OCEAN[1]);
+            d[i + 2] = screen(b, OCEAN[2]);
+          }
         }
         ctx.putImageData(imgData, 0, 0);
         const tex = new THREE.CanvasTexture(canvas);
