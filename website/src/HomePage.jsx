@@ -713,9 +713,13 @@ const FALLBACK_PINS = [
 ];
 
 // ── Hero ─────────────────────────────────────────────────────────────
-function Hero({ onLoginClick, onRegisterClick, onNavClick, lang, onLangChange, showVerticalNav = true, darkMode, onDarkToggle }) {
+function Hero({ onLoginClick, onRegisterClick, onNavClick, lang, onLangChange, showVerticalNav = true }) {
   const t = T[lang];
   const [pins, setPins] = useState(FALLBACK_PINS);
+  // Hero (the site's first page) always renders in dark mode -- light
+  // mode is intentionally not offered here, regardless of the rest of
+  // the site's theme preference. No toggle is rendered for it either.
+  const darkMode = true;
 
   useEffect(() => {
     let cancelled = false;
@@ -767,10 +771,6 @@ function Hero({ onLoginClick, onRegisterClick, onNavClick, lang, onLangChange, s
           <option style={{ color: '#111' }}>Gujarati</option>
           <option style={{ color: '#111' }}>Telugu</option>
         </select>
-        <button onClick={onDarkToggle} title="Toggle Dark Mode" aria-label="Toggle dark mode"
-          style={{ background: heroBtnBg, border: `1px solid ${heroBtnBorder}`, borderRadius: '50%', width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center', color: heroText, cursor: 'pointer', fontSize: '0.85rem' }}>
-          <i className={`fa-solid ${darkMode ? 'fa-moon' : 'fa-sun'}`}></i>
-        </button>
         <button className="btn-modern" onClick={onLoginClick} style={{ background: 'none', border: 'none', color: heroText, fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', padding: '0.4rem 0.2rem' }}>
           {t.signIn}
         </button>
@@ -1354,7 +1354,7 @@ export default function HomePage({ onLogin }) {
     <div className="bg-mesh-flow min-h-screen">
       <Navbar onLoginClick={() => openModal('login')} onRegisterClick={() => openModal('register')} lang={lang} onNavClick={handleNav} hidden={heroVisible && !isMobile} />
       <main>
-        <Hero onLoginClick={() => openModal('login')} onRegisterClick={() => openModal('register')} onNavClick={handleNav} lang={lang} onLangChange={setLang} showVerticalNav={!isMobile} darkMode={darkMode} onDarkToggle={() => setDarkMode(d => !d)} />
+        <Hero onLoginClick={() => openModal('login')} onRegisterClick={() => openModal('register')} onNavClick={handleNav} lang={lang} onLangChange={setLang} showVerticalNav={!isMobile} />
         <div style={{ paddingTop: (heroVisible && !isMobile) ? 0 : 62, transition: 'padding-top 0.4s cubic-bezier(0.16,1,0.3,1)' }}>
           <AlertsAndStats lang={lang} />
         </div>

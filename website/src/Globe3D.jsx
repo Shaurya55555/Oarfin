@@ -479,12 +479,17 @@ export default function Globe3D({ scrollContainerId, markers = [], darkMode = tr
     } else {
       // Ocean gets screen-blended to light blue (a plain multiply can't
       // lighten near-black deep-ocean pixels at all); land is darkened
-      // slightly instead of left untouched. Classifying "ocean" by
-      // luminance alone was wrong -- dark rainforest canopy (Amazon etc)
-      // is just as dark as deep ocean, so it was getting misclassified
-      // and punched full of light-blue holes. Water in this texture is
-      // reliably blue-dominant (b clearly above both r and g) in a way
-      // dark vegetation never is, so use hue instead of brightness.
+      // slightly instead of left untouched. Two earlier classifiers both
+      // failed on this specific texture: luminance alone (dark rainforest
+      // canopy is just as dark as deep ocean) and simple blue-dominance
+      // (this "earth_atmos" texture has an atmospheric blue haze that
+      // shifts ALL dark pixels -- forest included -- toward blue, so
+      // plain "b > r" still misclassified the Amazon/Congo/Siberia as
+      // ocean). Verified against real sampled pixels: true ocean is
+      // [~25,~35,~60] (g meaningfully above r, and a big r->g->b climb);
+      // hazy dark forest is [~32,~35,~52] (g roughly equal to r). The
+      // g-r gap is what actually separates them, not raw blueness.
+      const isOceanColor = (r, g, b) => (g - r) > 8 && (b - g) > 18;
       const img = new Image();
       img.crossOrigin = 'anonymous';
       img.onload = () => {
