@@ -1,5 +1,6 @@
 const { chromium } = require('playwright');
 const axios = require('axios');
+const { XMLParser } = require('fast-xml-parser');
 const { isDisasterNews } = require('./llmService');
 const cache = require('./cache');
 
@@ -21,16 +22,29 @@ async function launchBrowser() {
   });
 }
 
+// Fails OPEN, not closed: if the LLM relevance check errors (missing/invalid
+// GEMINI_API_KEY, quota, network blip), the article is KEPT rather than
+// dropped. A filter step that silently drops everything on every error
+// turns "misconfigured API key" into "the news section is always empty" --
+// which is a worse failure mode than occasionally showing an off-topic
+// article. Logged once per run (not per-article) so a real misconfiguration
+// is still loud in the logs without spamming them.
 async function filterArticles(articles) {
   const filtered = [];
+  let filterBroken = false;
   for (const article of articles) {
     try {
+      if (filterBroken) { filtered.push(article); continue; }
       if ((await isDisasterNews(article)) === 'YES') {
         filtered.push(article);
       }
       await sleep(2000);
     } catch (err) {
-      console.error('Error filtering article:', err.message);
+      if (!filterBroken) {
+        filterBroken = true;
+        console.error('Disaster-relevance filter is failing (check GEMINI_API_KEY) -- serving articles unfiltered for this run:', err.message);
+      }
+      filtered.push(article);
     }
   }
   return filtered;
@@ -72,41 +86,38 @@ async function scrapeBBC() {
   }
 }
 
+const xmlParser = new XMLParser({ cdataPropName: '__cdata', ignoreAttributes: false });
+
+// Switched from headless-browser scraping of ndtv.com/world to their public
+// world-news RSS feed. The page itself now sits behind Akamai bot
+// protection and returns a flat "Access Denied" (HTTP 200, no bot-check
+// challenge to solve, just a hard block) to any headless-browser request
+// regardless of wait strategy or user agent -- confirmed directly, not a
+// stale-selector issue. The RSS feed is a normal public endpoint meant for
+// automated consumption and isn't blocked, and already includes a
+// description/summary per article, so no per-article page visit is needed.
 async function scrapeNDTV() {
   const cached = cache.get(CACHE_KEYS.NDTV);
   if (cached) return cached;
 
-  const browser = await launchBrowser();
-  try {
-    const page = await browser.newPage();
-    await page.goto('https://www.ndtv.com/world', { waitUntil: 'domcontentloaded' });
+  const res = await axios.get('https://feeds.feedburner.com/ndtvnews-world-news', {
+    headers: { 'User-Agent': USER_AGENT },
+    timeout: 10000,
+  });
+  const parsed = xmlParser.parse(res.data);
+  const items = parsed?.rss?.channel?.item;
+  const list = Array.isArray(items) ? items : (items ? [items] : []);
 
-    const articleUrls = await page.$$eval(
-      'a[data-tb-title]',
-      (links) => links.map((l) => l.href).filter((u) => u.includes('/world-news/'))
-    );
+  const text = (v) => (typeof v === 'object' ? v?.__cdata : v) || '';
+  const articles = list.slice(0, 20).map((item) => ({
+    url: text(item.link).split('#')[0],
+    title: text(item.title),
+    content: text(item.description),
+  })).filter((a) => a.url && a.title);
 
-    const articles = [];
-    for (const url of articleUrls) {
-      try {
-        await page.goto(url, { waitUntil: 'domcontentloaded' });
-        const title = await page.title();
-        const intro = page.locator('div.Art-exp_wr p');
-        const paragraphs = await Promise.all(
-          (await intro.all()).map((el) => el.textContent())
-        );
-        articles.push({ url, title, content: paragraphs.filter(Boolean).join(' ') });
-      } catch (err) {
-        console.error(`Error scraping NDTV article ${url}:`, err.message);
-      }
-    }
-
-    const result = await filterArticles(articles);
-    cache.set(CACHE_KEYS.NDTV, result, CACHE_TTL.NDTV);
-    return result;
-  } finally {
-    await browser.close();
-  }
+  const result = await filterArticles(articles);
+  cache.set(CACHE_KEYS.NDTV, result, CACHE_TTL.NDTV);
+  return result;
 }
 
 // Reddit's own OAuth API (client-credentials grant -- app-only auth, no user

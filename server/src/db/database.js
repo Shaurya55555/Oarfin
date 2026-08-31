@@ -1,7 +1,13 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
-const dbPath = path.resolve(__dirname, '../../disaster_alert.db');
+// Defaults to a file next to the server code, which on Render (and most
+// PaaS hosts) sits on an EPHEMERAL disk -- wiped on every deploy/restart,
+// which is why every redeploy this session has silently reset every user
+// account. Set DB_PATH to a location on a mounted persistent disk (Render:
+// add a Disk in the service's dashboard, e.g. mounted at /data, then set
+// DB_PATH=/data/disaster_alert.db as an env var) to survive redeploys.
+const dbPath = process.env.DB_PATH || path.resolve(__dirname, '../../disaster_alert.db');
 
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
