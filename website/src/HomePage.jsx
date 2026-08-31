@@ -105,6 +105,12 @@ const T = {
     resourcesDesc: 'Access critical resources for disaster preparedness and response.',
     preparednessTitle: 'Disaster Preparedness',
     preparednessDesc: 'Be ready before disaster strikes. Follow these guidelines to protect yourself and your family.',
+    disasterTypes: { EQ: 'Earthquake', FL: 'Flood', TC: 'Cyclone', VO: 'Volcano', DR: 'Drought', WF: 'Wildfire', Hurricane: 'Hurricane' },
+    valEmailRequired: 'Email is required', valPasswordRequired: 'Password is required', valRequired: 'Required',
+    valInvalidEmail: 'Invalid email', valMobileRequired: 'Mobile is required for alerts', valMinPassword: 'Minimum 8 characters',
+    valPasswordMismatch: 'Passwords do not match', valSelectUserType: 'Please select a user type',
+    valAcceptTerms: 'You must accept the terms', valGenericError: 'Something went wrong. Please try again.',
+    updatedLabel: 'Updated',
   },
   Hindi: {
     activeAlerts: 'सक्रिय अलर्ट: 3',
@@ -165,6 +171,12 @@ const T = {
     resourcesDesc: 'आपदा तैयारी और प्रतिक्रिया के लिए महत्वपूर्ण संसाधनों तक पहुंचें।',
     preparednessTitle: 'आपदा तैयारी',
     preparednessDesc: 'आपदा आने से पहले तैयार रहें। अपनी और अपने परिवार की रक्षा के लिए इन दिशानिर्देशों का पालन करें।',
+    disasterTypes: { EQ: 'भूकंप', FL: 'बाढ़', TC: 'चक्रवात', VO: 'ज्वालामुखी', DR: 'सूखा', WF: 'जंगल की आग', Hurricane: 'तूफान' },
+    valEmailRequired: 'ईमेल आवश्यक है', valPasswordRequired: 'पासवर्ड आवश्यक है', valRequired: 'आवश्यक',
+    valInvalidEmail: 'अमान्य ईमेल', valMobileRequired: 'अलर्ट के लिए मोबाइल नंबर आवश्यक है', valMinPassword: 'न्यूनतम 8 अक्षर',
+    valPasswordMismatch: 'पासवर्ड मेल नहीं खाते', valSelectUserType: 'कृपया उपयोगकर्ता प्रकार चुनें',
+    valAcceptTerms: 'आपको नियम स्वीकार करने होंगे', valGenericError: 'कुछ गलत हो गया। कृपया पुनः प्रयास करें।',
+    updatedLabel: 'अपडेट किया गया',
   },
   Kannada: {
     activeAlerts: 'ಸಕ್ರಿಯ ಎಚ್ಚರಿಕೆಗಳು: 3',
@@ -225,6 +237,12 @@ const T = {
     resourcesDesc: 'ವಿಪತ್ತು ಸಿದ್ಧತೆ ಮತ್ತು ಪ್ರತಿಕ್ರಿಯೆಗಾಗಿ ನಿರ್ಣಾಯಕ ಸಂಪನ್ಮೂಲಗಳನ್ನು ಪ್ರವೇಶಿಸಿ.',
     preparednessTitle: 'ವಿಪತ್ತು ಸಿದ್ಧತೆ',
     preparednessDesc: 'ವಿಪತ್ತು ಸಂಭವಿಸುವ ಮೊದಲು ಸಿದ್ಧರಾಗಿರಿ. ನಿಮ್ಮನ್ನು ಮತ್ತು ನಿಮ್ಮ ಕುಟುಂಬವನ್ನು ರಕ್ಷಿಸಲು ಈ ಮಾರ್ಗಸೂಚಿಗಳನ್ನು ಅನುಸರಿಸಿ.',
+    disasterTypes: { EQ: 'ಭೂಕಂಪ', FL: 'ಪ್ರವಾಹ', TC: 'ಚಂಡಮಾರುತ', VO: 'ಜ್ವಾಲಾಮುಖಿ', DR: 'ಬರ', WF: 'ಕಾಡ್ಗಿಚ್ಚು', Hurricane: 'ಚಂಡಮಾರುತ' },
+    valEmailRequired: 'ಇಮೇಲ್ ಅಗತ್ಯವಿದೆ', valPasswordRequired: 'ಪಾಸ್‌ವರ್ಡ್ ಅಗತ್ಯವಿದೆ', valRequired: 'ಅಗತ್ಯವಿದೆ',
+    valInvalidEmail: 'ಅಮಾನ್ಯ ಇಮೇಲ್', valMobileRequired: 'ಎಚ್ಚರಿಕೆಗಳಿಗಾಗಿ ಮೊಬೈಲ್ ಅಗತ್ಯವಿದೆ', valMinPassword: 'ಕನಿಷ್ಠ 8 ಅಕ್ಷರಗಳು',
+    valPasswordMismatch: 'ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಹೊಂದಿಕೆಯಾಗುತ್ತಿಲ್ಲ', valSelectUserType: 'ದಯವಿಟ್ಟು ಬಳಕೆದಾರ ಪ್ರಕಾರವನ್ನು ಆಯ್ಕೆಮಾಡಿ',
+    valAcceptTerms: 'ನೀವು ನಿಯಮಗಳನ್ನು ಸ್ವೀಕರಿಸಬೇಕು', valGenericError: 'ಏನೋ ತಪ್ಪಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
+    updatedLabel: 'ನವೀಕರಿಸಲಾಗಿದೆ',
   },
   Tamil: {
     activeAlerts: 'செயலில் உள்ள எச்சரிக்கைகள்: 3',
@@ -285,6 +303,12 @@ const T = {
     resourcesDesc: 'பேரிடர் தயார்நிலை மற்றும் பதிலளிப்பிற்கான முக்கியமான வளங்களை அணுகவும்.',
     preparednessTitle: 'பேரிடர் தயார்நிலை',
     preparednessDesc: 'பேரிடர் ஏற்படுவதற்கு முன் தயாராக இருங்கள். உங்களையும் உங்கள் குடும்பத்தையும் பாதுகாக்க இந்த வழிகாட்டுதல்களைப் பின்பற்றவும்.',
+    disasterTypes: { EQ: 'நிலநடுக்கம்', FL: 'வெள்ளம்', TC: 'புயல்', VO: 'எரிமலை', DR: 'வறட்சி', WF: 'காட்டுத் தீ', Hurricane: 'சூறாவளி' },
+    valEmailRequired: 'மின்னஞ்சல் தேவை', valPasswordRequired: 'கடவுச்சொல் தேவை', valRequired: 'தேவை',
+    valInvalidEmail: 'தவறான மின்னஞ்சல்', valMobileRequired: 'எச்சரிக்கைகளுக்கு மொபைல் எண் தேவை', valMinPassword: 'குறைந்தபட்சம் 8 எழுத்துகள்',
+    valPasswordMismatch: 'கடவுச்சொற்கள் பொருந்தவில்லை', valSelectUserType: 'பயனர் வகையைத் தேர்ந்தெடுக்கவும்',
+    valAcceptTerms: 'நீங்கள் விதிமுறைகளை ஏற்க வேண்டும்', valGenericError: 'ஏதோ தவறு ஏற்பட்டது. மீண்டும் முயற்சிக்கவும்.',
+    updatedLabel: 'புதுப்பிக்கப்பட்டது',
   },
   Marathi: {
     activeAlerts: 'सक्रिय इशारे: 3',
@@ -345,6 +369,12 @@ const T = {
     resourcesDesc: 'आपत्ती सज्जता आणि प्रतिसादासाठी महत्त्वाच्या संसाधनांमध्ये प्रवेश करा.',
     preparednessTitle: 'आपत्ती सज्जता',
     preparednessDesc: 'आपत्ती येण्यापूर्वी सज्ज रहा. स्वतःचे आणि आपल्या कुटुंबाचे संरक्षण करण्यासाठी या मार्गदर्शक तत्त्वांचे पालन करा.',
+    disasterTypes: { EQ: 'भूकंप', FL: 'पूर', TC: 'चक्रीवादळ', VO: 'ज्वालामुखी', DR: 'दुष्काळ', WF: 'वणवा', Hurricane: 'चक्रीवादळ' },
+    valEmailRequired: 'ईमेल आवश्यक आहे', valPasswordRequired: 'पासवर्ड आवश्यक आहे', valRequired: 'आवश्यक',
+    valInvalidEmail: 'अवैध ईमेल', valMobileRequired: 'सूचनांसाठी मोबाइल क्रमांक आवश्यक आहे', valMinPassword: 'किमान 8 अक्षरे',
+    valPasswordMismatch: 'पासवर्ड जुळत नाहीत', valSelectUserType: 'कृपया वापरकर्ता प्रकार निवडा',
+    valAcceptTerms: 'तुम्ही अटी स्वीकारणे आवश्यक आहे', valGenericError: 'काहीतरी चुकले. कृपया पुन्हा प्रयत्न करा.',
+    updatedLabel: 'अद्यतनित',
   },
   Gujarati: {
     activeAlerts: 'સક્રિય ચેતવણીઓ: 3',
@@ -405,6 +435,12 @@ const T = {
     resourcesDesc: 'આપત્તિ તૈયારી અને પ્રતિભાવ માટે મહત્વપૂર્ણ સંસાધનોને ઍક્સેસ કરો.',
     preparednessTitle: 'આપત્તિ તૈયારી',
     preparednessDesc: 'આપત્તિ આવે તે પહેલાં તૈયાર રહો. તમારી અને તમારા પરિવારની સુરક્ષા માટે આ માર્ગદર્શિકાઓનું પાલન કરો.',
+    disasterTypes: { EQ: 'ભૂકંપ', FL: 'પૂર', TC: 'ચક્રવાત', VO: 'જ્વાળામુખી', DR: 'દુષ્કાળ', WF: 'જંગલી આગ', Hurricane: 'વાવાઝોડું' },
+    valEmailRequired: 'ઈમેલ જરૂરી છે', valPasswordRequired: 'પાસવર્ડ જરૂરી છે', valRequired: 'જરૂરી',
+    valInvalidEmail: 'અમાન્ય ઈમેલ', valMobileRequired: 'ચેતવણીઓ માટે મોબાઈલ નંબર જરૂરી છે', valMinPassword: 'ઓછામાં ઓછા 8 અક્ષરો',
+    valPasswordMismatch: 'પાસવર્ડ મેળ ખાતા નથી', valSelectUserType: 'કૃપા કરી વપરાશકર્તા પ્રકાર પસંદ કરો',
+    valAcceptTerms: 'તમારે શરતો સ્વીકારવી આવશ્યક છે', valGenericError: 'કંઈક ખોટું થયું. કૃપા કરી ફરી પ્રયાસ કરો.',
+    updatedLabel: 'અપડેટ થયું',
   },
   Telugu: {
     activeAlerts: 'క్రియాశీల హెచ్చరికలు: 3',
@@ -465,15 +501,59 @@ const T = {
     resourcesDesc: 'విపత్తు సంసిద్ధత మరియు స్పందన కోసం కీలకమైన వనరులను యాక్సెస్ చేయండి.',
     preparednessTitle: 'విపత్తు సంసిద్ధత',
     preparednessDesc: 'విపత్తు సంభవించే ముందు సిద్ధంగా ఉండండి. మిమ్మల్ని మరియు మీ కుటుంబాన్ని రక్షించుకోవడానికి ఈ మార్గదర్శకాలను అనుసరించండి.',
+    disasterTypes: { EQ: 'భూకంపం', FL: 'వరద', TC: 'తుఫాను', VO: 'అగ్నిపర్వతం', DR: 'కరువు', WF: 'అడవి మంటలు', Hurricane: 'తుఫాను' },
+    valEmailRequired: 'ఇమెయిల్ అవసరం', valPasswordRequired: 'పాస్‌వర్డ్ అవసరం', valRequired: 'అవసరం',
+    valInvalidEmail: 'చెల్లని ఇమెయిల్', valMobileRequired: 'హెచ్చరికల కోసం మొబైల్ నంబర్ అవసరం', valMinPassword: 'కనీసం 8 అక్షరాలు',
+    valPasswordMismatch: 'పాస్‌వర్డ్‌లు సరిపోలడం లేదు', valSelectUserType: 'దయచేసి వినియోగదారు రకాన్ని ఎంచుకోండి',
+    valAcceptTerms: 'మీరు నిబంధనలను అంగీకరించాలి', valGenericError: 'ఏదో తప్పు జరిగింది. దయచేసి మళ్లీ ప్రయత్నించండి.',
+    updatedLabel: 'నవీకరించబడింది',
   },
 };
 
 
-const ALERTS_DATA = [
-  { color: '#EF4444', badge: 'CRITICAL', badgeBg: '#EF4444', icon: 'fa-hurricane', title: 'Hurricane Maya', meta: 'Category 4 — ETA 18 hours', detail: 'Evacuation ordered for all coastal zones within 50km. Shelters open at designated centers.', status: 'Evacuation Ordered', source: 'National Hurricane Center', updated: '8 minutes ago' },
-  { color: '#F59E0B', badge: 'HIGH', badgeBg: '#D97706', icon: 'fa-fire', title: 'Wildfire CA-47', meta: '15,240 acres — 35% contained', detail: 'Air quality index critical. Residents advised to stay indoors. Firefighting crews deployed.', status: 'Active Response', source: 'CAL FIRE', updated: '4 minutes ago' },
-  { color: '#3B82F6', badge: 'MODERATE', badgeBg: '#2563EB', icon: 'fa-water', title: 'Flash Flood Warning', meta: 'Mumbai Region — 12 districts', detail: 'Heavy rainfall expected for next 6 hours. Avoid low-lying areas and river banks.', status: 'Watch Active', source: 'India Meteorological Dept', updated: '12 minutes ago' },
+const ALERTS_META = [
+  { color: '#EF4444', badgeBg: '#EF4444', icon: 'fa-hurricane' },
+  { color: '#F59E0B', badgeBg: '#D97706', icon: 'fa-fire' },
+  { color: '#3B82F6', badgeBg: '#2563EB', icon: 'fa-water' },
 ];
+
+const ALERTS_DATA_BY_LANG = {
+  English: [
+    { badge: 'CRITICAL', title: 'Hurricane Maya', meta: 'Category 4 — ETA 18 hours', detail: 'Evacuation ordered for all coastal zones within 50km. Shelters open at designated centers.', status: 'Evacuation Ordered', source: 'National Hurricane Center', updated: '8 minutes ago' },
+    { badge: 'HIGH', title: 'Wildfire CA-47', meta: '15,240 acres — 35% contained', detail: 'Air quality index critical. Residents advised to stay indoors. Firefighting crews deployed.', status: 'Active Response', source: 'CAL FIRE', updated: '4 minutes ago' },
+    { badge: 'MODERATE', title: 'Flash Flood Warning', meta: 'Mumbai Region — 12 districts', detail: 'Heavy rainfall expected for next 6 hours. Avoid low-lying areas and river banks.', status: 'Watch Active', source: 'India Meteorological Dept', updated: '12 minutes ago' },
+  ],
+  Hindi: [
+    { badge: 'गंभीर', title: 'हरिकेन माया', meta: 'श्रेणी 4 — ईटीए 18 घंटे', detail: '50 किमी के भीतर सभी तटीय क्षेत्रों में निकासी का आदेश दिया गया। निर्धारित केंद्रों पर आश्रय स्थल खुले हैं।', status: 'निकासी का आदेश', source: 'राष्ट्रीय तूफान केंद्र', updated: '8 मिनट पहले' },
+    { badge: 'उच्च', title: 'जंगल की आग CA-47', meta: '15,240 एकड़ — 35% नियंत्रित', detail: 'वायु गुणवत्ता सूचकांक गंभीर। निवासियों को घर के अंदर रहने की सलाह दी गई है। अग्निशमन दल तैनात।', status: 'सक्रिय प्रतिक्रिया', source: 'CAL FIRE', updated: '4 मिनट पहले' },
+    { badge: 'मध्यम', title: 'फ्लैश फ्लड चेतावनी', meta: 'मुंबई क्षेत्र — 12 जिले', detail: 'अगले 6 घंटों में भारी बारिश की संभावना। निचले इलाकों और नदी किनारों से बचें।', status: 'निगरानी सक्रिय', source: 'भारत मौसम विज्ञान विभाग', updated: '12 मिनट पहले' },
+  ],
+  Kannada: [
+    { badge: 'ತೀವ್ರ', title: 'ಹರಿಕೇನ್ ಮಾಯಾ', meta: 'ವರ್ಗ 4 — ETA 18 ಗಂಟೆಗಳು', detail: '50ಕಿಮೀ ಒಳಗಿನ ಎಲ್ಲಾ ಕರಾವಳಿ ವಲಯಗಳಿಗೆ ಸ್ಥಳಾಂತರ ಆದೇಶ. ನಿಗದಿತ ಕೇಂದ್ರಗಳಲ್ಲಿ ಆಶ್ರಯ ತಾಣಗಳು ತೆರೆದಿವೆ.', status: 'ಸ್ಥಳಾಂತರ ಆದೇಶ', source: 'ರಾಷ್ಟ್ರೀಯ ಚಂಡಮಾರುತ ಕೇಂದ್ರ', updated: '8 ನಿಮಿಷಗಳ ಹಿಂದೆ' },
+    { badge: 'ಹೆಚ್ಚು', title: 'ಕಾಡ್ಗಿಚ್ಚು CA-47', meta: '15,240 ಎಕರೆ — 35% ನಿಯಂತ್ರಣ', detail: 'ವಾಯು ಗುಣಮಟ್ಟ ಸೂಚ್ಯಂಕ ಗಂಭೀರ. ನಿವಾಸಿಗಳು ಒಳಾಂಗಣದಲ್ಲಿ ಇರುವಂತೆ ಸಲಹೆ. ಅಗ್ನಿಶಾಮಕ ತಂಡಗಳು ನಿಯೋಜಿಸಲಾಗಿದೆ.', status: 'ಸಕ್ರಿಯ ಪ್ರತಿಕ್ರಿಯೆ', source: 'CAL FIRE', updated: '4 ನಿಮಿಷಗಳ ಹಿಂದೆ' },
+    { badge: 'ಮಧ್ಯಮ', title: 'ಹಠಾತ್ ಪ್ರವಾಹ ಎಚ್ಚರಿಕೆ', meta: 'ಮುಂಬೈ ಪ್ರದೇಶ — 12 ಜಿಲ್ಲೆಗಳು', detail: 'ಮುಂದಿನ 6 ಗಂಟೆಗಳಲ್ಲಿ ಭಾರೀ ಮಳೆ ನಿರೀಕ್ಷೆ. ತಗ್ಗು ಪ್ರದೇಶಗಳು ಮತ್ತು ನದಿ ದಂಡೆಗಳನ್ನು ತಪ್ಪಿಸಿ.', status: 'ವೀಕ್ಷಣೆ ಸಕ್ರಿಯ', source: 'ಭಾರತ ಹವಾಮಾನ ಇಲಾಖೆ', updated: '12 ನಿಮಿಷಗಳ ಹಿಂದೆ' },
+  ],
+  Tamil: [
+    { badge: 'அவசரம்', title: 'ஹரிக்கேன் மாயா', meta: 'வகை 4 — ETA 18 மணி நேரம்', detail: '50கிமீ சுற்றளவில் உள்ள அனைத்து கடலோர பகுதிகளுக்கும் வெளியேற்ற உத்தரவு. நியமிக்கப்பட்ட மையங்களில் தங்குமிடங்கள் திறந்துள்ளன.', status: 'வெளியேற்ற உத்தரவு', source: 'தேசிய சூறாவளி மையம்', updated: '8 நிமிடங்களுக்கு முன்பு' },
+    { badge: 'அதிகம்', title: 'காட்டுத்தீ CA-47', meta: '15,240 ஏக்கர் — 35% கட்டுப்பாடு', detail: 'காற்று தர குறியீடு ஆபத்தானது. குடியிருப்பாளர்கள் வீட்டிற்குள் இருக்குமாறு அறிவுறுத்தப்படுகிறார்கள். தீயணைப்பு குழுக்கள் நியமிக்கப்பட்டுள்ளன.', status: 'செயலில் பதிலளிப்பு', source: 'CAL FIRE', updated: '4 நிமிடங்களுக்கு முன்பு' },
+    { badge: 'மிதமான', title: 'திடீர் வெள்ள எச்சரிக்கை', meta: 'மும்பை பகுதி — 12 மாவட்டங்கள்', detail: 'அடுத்த 6 மணி நேரத்தில் கனமழை எதிர்பார்க்கப்படுகிறது. தாழ்வான பகுதிகள் மற்றும் ஆற்றங்கரைகளைத் தவிர்க்கவும்.', status: 'கண்காணிப்பு செயலில்', source: 'இந்திய வானிலை ஆய்வு மையம்', updated: '12 நிமிடங்களுக்கு முன்பு' },
+  ],
+  Marathi: [
+    { badge: 'गंभीर', title: 'हरिकेन माया', meta: 'श्रेणी 4 — ETA 18 तास', detail: '50 किमी च्या आत असलेल्या सर्व किनारपट्टी भागात निर्वासनाचा आदेश. नियुक्त केंद्रांवर निवारे उघडे आहेत.', status: 'निर्वासन आदेश', source: 'राष्ट्रीय चक्रीवादळ केंद्र', updated: '8 मिनिटांपूर्वी' },
+    { badge: 'उच्च', title: 'वणवा CA-47', meta: '15,240 एकर — 35% नियंत्रित', detail: 'हवा गुणवत्ता निर्देशांक गंभीर. रहिवाशांना घरातच राहण्याचा सल्ला. अग्निशमन पथके तैनात.', status: 'सक्रिय प्रतिसाद', source: 'CAL FIRE', updated: '4 मिनिटांपूर्वी' },
+    { badge: 'मध्यम', title: 'फ्लॅश फ्लड इशारा', meta: 'मुंबई प्रदेश — 12 जिल्हे', detail: 'पुढील 6 तासांत मुसळधार पावसाची शक्यता. सखल भाग आणि नदीकाठ टाळा.', status: 'निरीक्षण सक्रिय', source: 'भारतीय हवामान विभाग', updated: '12 मिनिटांपूर्वी' },
+  ],
+  Gujarati: [
+    { badge: 'ગંભીર', title: 'હરિકેન માયા', meta: 'શ્રેણી 4 — ETA 18 કલાક', detail: '50 કિમીની અંદરના તમામ દરિયાકાંઠાના વિસ્તારો માટે સ્થળાંતરનો આદેશ. નિયુક્ત કેન્દ્રો પર આશ્રયસ્થાનો ખુલ્લા છે.', status: 'સ્થળાંતર આદેશ', source: 'નેશનલ હરિકેન સેન્ટર', updated: '8 મિનિટ પહેલા' },
+    { badge: 'ઉચ્ચ', title: 'જંગલી આગ CA-47', meta: '15,240 એકર — 35% નિયંત્રિત', detail: 'હવાની ગુણવત્તા સૂચકાંક ગંભીર. રહેવાસીઓને ઘરની અંદર રહેવાની સલાહ. અગ્નિશમન ટીમો તૈનાત.', status: 'સક્રિય પ્રતિભાવ', source: 'CAL FIRE', updated: '4 મિનિટ પહેલા' },
+    { badge: 'મધ્યમ', title: 'ફ્લેશ ફ્લડ ચેતવણી', meta: 'મુંબઈ પ્રદેશ — 12 જિલ્લા', detail: 'આગામી 6 કલાકમાં ભારે વરસાદની અપેક્ષા. નીચાણવાળા વિસ્તારો અને નદી કિનારા ટાળો.', status: 'નિરીક્ષણ સક્રિય', source: 'ભારત હવામાન વિભાગ', updated: '12 મિનિટ પહેલા' },
+  ],
+  Telugu: [
+    { badge: 'తీవ్రమైన', title: 'హరికేన్ మాయ', meta: 'కేటగిరీ 4 — ETA 18 గంటలు', detail: '50కిమీ లోపు ఉన్న అన్ని తీర ప్రాంతాలకు తరలింపు ఆదేశం. నిర్దేశిత కేంద్రాలలో ఆశ్రయాలు తెరిచి ఉన్నాయి.', status: 'తరలింపు ఆదేశం', source: 'జాతీయ తుఫాను కేంద్రం', updated: '8 నిమిషాల క్రితం' },
+    { badge: 'అధిక', title: 'అడవి మంటలు CA-47', meta: '15,240 ఎకరాలు — 35% నియంత్రణ', detail: 'గాలి నాణ్యత సూచిక తీవ్రంగా ఉంది. నివాసితులు ఇంటి లోపల ఉండాలని సూచించారు. అగ్నిమాపక బృందాలు మోహరించాయి.', status: 'క్రియాశీల స్పందన', source: 'CAL FIRE', updated: '4 నిమిషాల క్రితం' },
+    { badge: 'మధ్యస్థ', title: 'ఫ్లాష్ ఫ్లడ్ హెచ్చరిక', meta: 'ముంబై ప్రాంతం — 12 జిల్లాలు', detail: 'రాబోయే 6 గంటల్లో భారీ వర్షం అంచనా. లోతట్టు ప్రాంతాలు మరియు నదీ తీరాలను నివారించండి.', status: 'పర్యవేక్షణ క్రియాశీలం', source: 'భారత వాతావరణ శాఖ', updated: '12 నిమిషాల క్రితం' },
+  ],
+};
 
 const RESOURCES_META = [
   { icon: 'fa-house-chimney-medical', color: '#1E3A5F', link: '#' },
@@ -703,21 +783,24 @@ function VerticalNav({ lang, onNavClick, darkMode = true }) {
 
 // GDACS event-type -> marker styling, matching the color language used
 // elsewhere in the app (ALERTS_DATA/DisasterFilter).
+// Colors + a lookup key into T[lang].disasterTypes -- NOT the display
+// label itself, so the same fetched/fallback pins can be relabeled on the
+// fly when the language changes without needing to refetch GDACS.
 const GDACS_TYPE_STYLE = {
-  EQ: { color: '#A78BFA', label: 'Earthquake' },
-  FL: { color: '#3B82F6', label: 'Flood' },
-  TC: { color: '#EF4444', label: 'Cyclone' },
-  VO: { color: '#F97316', label: 'Volcano' },
-  DR: { color: '#CA8A04', label: 'Drought' },
-  WF: { color: '#F59E0B', label: 'Wildfire' },
+  EQ: { color: '#A78BFA', typeKey: 'EQ' },
+  FL: { color: '#3B82F6', typeKey: 'FL' },
+  TC: { color: '#EF4444', typeKey: 'TC' },
+  VO: { color: '#F97316', typeKey: 'VO' },
+  DR: { color: '#CA8A04', typeKey: 'DR' },
+  WF: { color: '#F59E0B', typeKey: 'WF' },
 };
 // Real on-land fallback (Gulf Coast FL / Southern CA / Bangladesh delta,
 // verified earlier against actual coastline data) used only if the live
 // GDACS fetch fails or is empty, so the globe never has to show nothing.
 const FALLBACK_PINS = [
-  { color: '#EF4444', label: 'Hurricane', lat: 26, lon: -81 },
-  { color: '#F59E0B', label: 'Wildfire', lat: 36, lon: -119 },
-  { color: '#3B82F6', label: 'Flood', lat: 23, lon: 90 },
+  { color: '#EF4444', typeKey: 'Hurricane', lat: 26, lon: -81 },
+  { color: '#F59E0B', typeKey: 'WF', lat: 36, lon: -119 },
+  { color: '#3B82F6', typeKey: 'FL', lat: 23, lon: 90 },
 ];
 
 // ── Hero ─────────────────────────────────────────────────────────────
@@ -743,7 +826,7 @@ function Hero({ onLoginClick, onRegisterClick, onNavClick, lang, onLangChange, s
         .slice(0, 6)
         .map(f => {
           const type = f.properties?.eventtype;
-          const style = GDACS_TYPE_STYLE[type] || { color: '#94A3B8', label: type || 'Event' };
+          const style = GDACS_TYPE_STYLE[type] || { color: '#94A3B8', typeKey: type || 'Event' };
           const [lon, lat] = f.geometry.coordinates;
           return { ...style, lat, lon };
         });
@@ -763,7 +846,7 @@ function Hero({ onLoginClick, onRegisterClick, onNavClick, lang, onLangChange, s
 
   return (
     <section id="dashboard-section" style={{ position: 'relative', overflow: 'hidden', background: darkMode ? 'radial-gradient(ellipse at 65% 90%, #0c1024 0%, #05060f 45%, #000000 100%)' : 'radial-gradient(ellipse at 65% 90%, #ffffff 0%, #fffdf4 30%, #fff8e0 55%, #ffefb8 80%, #ffe28f 100%)', minHeight: '100vh', display: 'flex', alignItems: 'center' }}>
-      <Globe3D scrollContainerId="dashboard-section" markers={pins} darkMode={darkMode} />
+      <Globe3D scrollContainerId="dashboard-section" markers={pins.map(p => ({ ...p, label: t.disasterTypes[p.typeKey] || p.typeKey }))} darkMode={darkMode} />
       {showVerticalNav && <VerticalNav lang={lang} onNavClick={onNavClick} onLoginClick={onLoginClick} darkMode={darkMode} />}
       <div style={{ position: 'absolute', top: '1.75rem', right: '1.75rem', zIndex: 4, display: 'flex', alignItems: 'center', gap: '0.9rem' }}>
         <select
@@ -827,6 +910,8 @@ function AlertsAndStats({ lang }) {
   const [expanded, setExpanded] = useState(null);
   const vals = ['1,240', '3,800+', '420+', '< 2 min'];
   const icons = ['fa-users', 'fa-bell', 'fa-house-chimney-medical', 'fa-clock-rotate-left'];
+  const alerts = (ALERTS_DATA_BY_LANG[lang] || ALERTS_DATA_BY_LANG.English)
+    .map((a, i) => ({ ...a, ...ALERTS_META[i] }));
   return (
     <section id="alerts-section" style={{ background: 'var(--alert-section-bg)', borderBottom: '1px solid var(--border-subtle)', padding: '3.5rem 0', transition: 'background 0.4s ease' }}>
       <div style={{ width: '100%', margin: '0 auto', padding: '0 2.5rem' }}>
@@ -846,7 +931,7 @@ function AlertsAndStats({ lang }) {
               </a>
             </div>
             <div style={{ display: 'grid', gap: '1.25rem' }}>
-              {ALERTS_DATA.map((alert, i) => (
+              {alerts.map((alert, i) => (
                 <Reveal key={i} delay={i * 130}>
                   <div onClick={() => setExpanded(expanded === i ? null : i)}
                     className="card-hover"
@@ -861,7 +946,7 @@ function AlertsAndStats({ lang }) {
                     <p style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', marginBottom: '0.75rem' }}>{alert.meta}</p>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span style={{ fontSize: '0.8rem', fontWeight: 600, color: alert.color }}>{alert.status}</span>
-                      <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>Updated {alert.updated}</span>
+                      <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>{t.updatedLabel} {alert.updated}</span>
                     </div>
                     {expanded === i && (
                       <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--expanded-border)' }}>
@@ -883,7 +968,7 @@ function AlertsAndStats({ lang }) {
                   ● {t.activeAlerts}
                 </span>
                 <span style={{ fontSize: '0.78rem', fontWeight: 600, color: '#E3B341', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {ALERTS_DATA[1].title} — {ALERTS_DATA[1].meta} — {t.updatedAgo}
+                  {alerts[1].title} — {alerts[1].meta} — {t.updatedAgo}
                 </span>
               </div>
             </Reveal>
@@ -1128,22 +1213,22 @@ function AuthModal({ tab, onClose, onSuccess, lang }) {
 
   const validateLogin = () => {
     const e = {};
-    if (!form.email) e.email = 'Email is required';
-    if (!form.password) e.password = 'Password is required';
+    if (!form.email) e.email = t.valEmailRequired;
+    if (!form.password) e.password = t.valPasswordRequired;
     return e;
   };
   const validateRegister = () => {
     const e = {};
-    if (!form.firstName) e.firstName = 'Required';
-    if (!form.lastName) e.lastName = 'Required';
-    if (!form.email) e.email = 'Email is required';
-    else if (!/\S+@\S+\.\S+/.test(form.email)) e.email = 'Invalid email';
-    if (!form.mobile) e.mobile = 'Mobile is required for alerts';
-    if (!form.password) e.password = 'Password is required';
-    else if (form.password.length < 8) e.password = 'Minimum 8 characters';
-    if (form.password !== form.confirm) e.confirm = 'Passwords do not match';
-    if (!form.userType) e.userType = 'Please select a user type';
-    if (!form.terms) e.terms = 'You must accept the terms';
+    if (!form.firstName) e.firstName = t.valRequired;
+    if (!form.lastName) e.lastName = t.valRequired;
+    if (!form.email) e.email = t.valEmailRequired;
+    else if (!/\S+@\S+\.\S+/.test(form.email)) e.email = t.valInvalidEmail;
+    if (!form.mobile) e.mobile = t.valMobileRequired;
+    if (!form.password) e.password = t.valPasswordRequired;
+    else if (form.password.length < 8) e.password = t.valMinPassword;
+    if (form.password !== form.confirm) e.confirm = t.valPasswordMismatch;
+    if (!form.userType) e.userType = t.valSelectUserType;
+    if (!form.terms) e.terms = t.valAcceptTerms;
     return e;
   };
 
@@ -1166,7 +1251,7 @@ function AuthModal({ tab, onClose, onSuccess, lang }) {
         onSuccess(res.data.user);
       }
     } catch (err) {
-      setServerError(err.response?.data?.error || 'Something went wrong. Please try again.');
+      setServerError(err.response?.data?.error || t.valGenericError);
     } finally {
       setLoading(false);
     }
