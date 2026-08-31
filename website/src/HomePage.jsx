@@ -829,7 +829,7 @@ function AlertsAndStats({ lang }) {
   const icons = ['fa-users', 'fa-bell', 'fa-house-chimney-medical', 'fa-clock-rotate-left'];
   return (
     <section id="alerts-section" style={{ background: 'var(--alert-section-bg)', borderBottom: '1px solid var(--border-subtle)', padding: '3.5rem 0', transition: 'background 0.4s ease' }}>
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1.5rem' }}>
+      <div style={{ width: '100%', margin: '0 auto', padding: '0 2.5rem' }}>
         <div className="alerts-stats-grid" style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '2.5rem', alignItems: 'start' }}>
           {/* Left column — Live Alert Feed */}
           <div>
@@ -1043,7 +1043,7 @@ function InfoTabs({ lang, activeTab, setActiveTab }) {
 
   return (
     <section id="info-tabs-section" style={{ background: 'var(--hero-bg)', borderBottom: '1px solid var(--border-subtle)', transition: 'background 0.4s ease' }}>
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1.5rem' }}>
+      <div style={{ width: '100%', margin: '0 auto', padding: '0 2.5rem' }}>
         <div style={{ display: 'flex', gap: '0.5rem', borderBottom: '1px solid var(--border-subtle)', overflowX: 'auto' }}>
           {INFO_TABS.map(({ key, icon }) => (
             <button key={key} onClick={() => setActiveTab(key)}
