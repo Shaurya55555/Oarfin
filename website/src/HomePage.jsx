@@ -600,7 +600,7 @@ const PREPAREDNESS_DATA_BY_LANG = {
 // Horizontal top nav, active from the second page onward -- fixed to the
 // viewport (not sticky) so it can fully collapse offscreen while the Hero's
 // VerticalNav is showing, then slide/fade in once the hero scrolls out.
-function Navbar({ onLoginClick, onRegisterClick, lang, onNavClick, hidden }) {
+function Navbar({ onLoginClick, onRegisterClick, lang, onNavClick, hidden, darkMode, onDarkToggle }) {
   const t = T[lang];
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -635,6 +635,10 @@ function Navbar({ onLoginClick, onRegisterClick, lang, onNavClick, hidden }) {
           ))}
         </div>
         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexShrink: 0 }}>
+          <button onClick={onDarkToggle} title="Toggle Dark Mode" aria-label="Toggle dark mode"
+            style={{ background: 'var(--bg-section)', border: '1px solid var(--border-subtle)', borderRadius: '50%', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-primary)', cursor: 'pointer', fontSize: '0.82rem' }}>
+            <i className={`fa-solid ${darkMode ? 'fa-moon' : 'fa-sun'}`}></i>
+          </button>
           <button className="btn-modern" onClick={onLoginClick} style={{ background: 'none', border: 'none', fontSize: '0.88rem', color: 'var(--color-primary)', fontWeight: 600, padding: '0.4rem 0.6rem', cursor: 'pointer' }}>
             {t.signIn}
           </button>
@@ -654,6 +658,10 @@ function Navbar({ onLoginClick, onRegisterClick, lang, onNavClick, hidden }) {
           <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.75rem' }}>
             <button onClick={onLoginClick} style={{ flex: 1, background: 'none', border: '1px solid var(--color-primary)', borderRadius: 6, padding: '0.5rem', color: 'var(--color-primary)', fontWeight: 600, cursor: 'pointer' }}>{t.signIn}</button>
             <button onClick={onRegisterClick} style={{ flex: 1, background: 'var(--color-primary)', border: 'none', borderRadius: 6, padding: '0.5rem', color: '#fff', fontWeight: 600, cursor: 'pointer' }}>{t.emergencyLogin}</button>
+            <button onClick={onDarkToggle} title="Toggle Dark Mode" aria-label="Toggle dark mode"
+              style={{ background: 'var(--bg-section)', border: '1px solid var(--border-subtle)', borderRadius: 6, padding: '0.5rem 0.75rem', color: 'var(--text-primary)', cursor: 'pointer' }}>
+              <i className={`fa-solid ${darkMode ? 'fa-moon' : 'fa-sun'}`}></i>
+            </button>
           </div>
         </div>
       )}
@@ -1352,7 +1360,7 @@ export default function HomePage({ onLogin }) {
 
   return (
     <div className="bg-mesh-flow min-h-screen">
-      <Navbar onLoginClick={() => openModal('login')} onRegisterClick={() => openModal('register')} lang={lang} onNavClick={handleNav} hidden={heroVisible && !isMobile} />
+      <Navbar onLoginClick={() => openModal('login')} onRegisterClick={() => openModal('register')} lang={lang} onNavClick={handleNav} hidden={heroVisible && !isMobile} darkMode={darkMode} onDarkToggle={() => setDarkMode(d => !d)} />
       <main>
         <Hero onLoginClick={() => openModal('login')} onRegisterClick={() => openModal('register')} onNavClick={handleNav} lang={lang} onLangChange={setLang} showVerticalNav={!isMobile} />
         <div style={{ paddingTop: (heroVisible && !isMobile) ? 0 : 62, transition: 'padding-top 0.4s cubic-bezier(0.16,1,0.3,1)' }}>
