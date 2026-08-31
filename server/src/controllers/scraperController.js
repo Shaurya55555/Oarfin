@@ -1,13 +1,17 @@
 const { scrapeBBC, scrapeNDTV, fetchReddit } = require('../services/scraperService');
 const cache = require('../services/cache');
 
+// Surfacing the real err.message here temporarily (not just a generic
+// string) -- there's no other way to see why a scrape is failing on the
+// deployed server without direct log access, and neither message leaks
+// anything sensitive (just Playwright/network error text).
 async function getBBCNews(req, res) {
   try {
     const articles = await scrapeBBC();
     res.status(200).json(articles);
   } catch (err) {
     console.error('BBC scraping error:', err.message);
-    res.status(500).json({ error: 'Failed to scrape BBC news' });
+    res.status(500).json({ error: 'Failed to scrape BBC news', detail: err.message });
   }
 }
 
@@ -17,7 +21,7 @@ async function getNDTVNews(req, res) {
     res.status(200).json(articles);
   } catch (err) {
     console.error('NDTV scraping error:', err.message);
-    res.status(500).json({ error: 'Failed to scrape NDTV news' });
+    res.status(500).json({ error: 'Failed to scrape NDTV news', detail: err.message });
   }
 }
 
