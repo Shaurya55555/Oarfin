@@ -50,33 +50,50 @@ async function filterArticles(articles) {
   return filtered;
 }
 
+// Capped + fetched concurrently across multiple pages/tabs in the same
+// browser (was: sequential full navigations across all ~17 listing links).
+// That sequential version, one page-load at a time, easily ran past
+// Render's reverse-proxy request timeout on a cold cache -- the scrape
+// itself would eventually finish, but the client (and Render's proxy)
+// had already given up with a 502/503 well before it did.
+const BBC_ARTICLE_LIMIT = 6;
+const BBC_CONCURRENCY = 3;
+
 async function scrapeBBC() {
   const cached = cache.get(CACHE_KEYS.BBC);
   if (cached) return cached;
 
   const browser = await launchBrowser();
   try {
-    const page = await browser.newPage();
-    await page.goto('https://bbc.com/future-planet', { waitUntil: 'domcontentloaded' });
-
-    const articleUrls = await page.$$eval(
+    const listPage = await browser.newPage();
+    await listPage.goto('https://bbc.com/future-planet', { waitUntil: 'domcontentloaded' });
+    const articleUrls = (await listPage.$$eval(
       'a[href*="/news/articles"]',
       (links) => links.map((l) => l.href).filter((u) => u.includes('/news/articles'))
-    );
+    )).slice(0, BBC_ARTICLE_LIMIT);
+    await listPage.close();
 
     const articles = [];
-    for (const url of articleUrls) {
-      try {
-        await page.goto(url, { waitUntil: 'domcontentloaded' });
-        const title = await page.title();
-        const paragraphs = await page.$$eval('article p', (ps) =>
-          ps.map((p) => p.textContent?.trim()).filter(Boolean)
-        );
-        articles.push({ url, title, content: paragraphs.join(' ') });
-      } catch (err) {
-        console.error(`Error scraping BBC article ${url}:`, err.message);
+    const queue = [...articleUrls];
+    const worker = async () => {
+      while (queue.length) {
+        const url = queue.shift();
+        const page = await browser.newPage();
+        try {
+          await page.goto(url, { waitUntil: 'domcontentloaded' });
+          const title = await page.title();
+          const paragraphs = await page.$$eval('article p', (ps) =>
+            ps.map((p) => p.textContent?.trim()).filter(Boolean)
+          );
+          articles.push({ url, title, content: paragraphs.join(' ') });
+        } catch (err) {
+          console.error(`Error scraping BBC article ${url}:`, err.message);
+        } finally {
+          await page.close();
+        }
       }
-    }
+    };
+    await Promise.all(Array.from({ length: BBC_CONCURRENCY }, worker));
 
     const result = await filterArticles(articles);
     cache.set(CACHE_KEYS.BBC, result, CACHE_TTL.BBC);
