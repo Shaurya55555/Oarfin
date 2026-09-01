@@ -1,4 +1,3 @@
-const { chromium } = require('playwright');
 const axios = require('axios');
 const { XMLParser } = require('fast-xml-parser');
 const { isDisasterNews } = require('./llmService');
@@ -15,11 +14,19 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function launchBrowser() {
-  return chromium.launch({
-    headless: true,
-    args: ['--disable-dev-shm-usage', '--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu'],
-  });
+const xmlParser = new XMLParser({ cdataPropName: '__cdata', ignoreAttributes: false });
+const rssText = (v) => (typeof v === 'object' ? v?.__cdata : v) || '';
+
+async function fetchRssArticles(url, limit) {
+  const res = await axios.get(url, { headers: { 'User-Agent': USER_AGENT }, timeout: 10000 });
+  const parsed = xmlParser.parse(res.data);
+  const items = parsed?.rss?.channel?.item;
+  const list = Array.isArray(items) ? items : (items ? [items] : []);
+  return list.slice(0, limit).map((item) => ({
+    url: rssText(item.link).split('#')[0].split('?')[0],
+    title: rssText(item.title),
+    content: rssText(item.description),
+  })).filter((a) => a.url && a.title);
 }
 
 // Fails OPEN, not closed: if the LLM relevance check errors (missing/invalid
@@ -50,88 +57,33 @@ async function filterArticles(articles) {
   return filtered;
 }
 
-// Capped + fetched concurrently across multiple pages/tabs in the same
-// browser (was: sequential full navigations across all ~17 listing links).
-// That sequential version, one page-load at a time, easily ran past
-// Render's reverse-proxy request timeout on a cold cache -- the scrape
-// itself would eventually finish, but the client (and Render's proxy)
-// had already given up with a 502/503 well before it did.
-const BBC_ARTICLE_LIMIT = 6;
-const BBC_CONCURRENCY = 3;
-
+// Switched off headless-browser scraping entirely for both news sources --
+// BBC's own future-planet page scrape worked locally (confirmed 17 real
+// articles) but hung/never returned on Render even after fixing the
+// missing-Chromium-binary issue, almost certainly because the --with-deps
+// apt step (which installs Chromium's required system shared libraries)
+// silently failed in Render's build sandbox and the postinstall's `|| true`
+// fallback let the build continue anyway with a browser binary present but
+// non-functional. Rather than keep fighting Playwright-on-Render, both
+// sources now use their own public RSS feeds -- legitimate endpoints meant
+// for automated consumption, not scraping around a block -- which also
+// already include a per-article summary, so no per-article page visit is
+// needed for either source anymore.
 async function scrapeBBC() {
   const cached = cache.get(CACHE_KEYS.BBC);
   if (cached) return cached;
 
-  const browser = await launchBrowser();
-  try {
-    const listPage = await browser.newPage();
-    await listPage.goto('https://bbc.com/future-planet', { waitUntil: 'domcontentloaded' });
-    const articleUrls = (await listPage.$$eval(
-      'a[href*="/news/articles"]',
-      (links) => links.map((l) => l.href).filter((u) => u.includes('/news/articles'))
-    )).slice(0, BBC_ARTICLE_LIMIT);
-    await listPage.close();
-
-    const articles = [];
-    const queue = [...articleUrls];
-    const worker = async () => {
-      while (queue.length) {
-        const url = queue.shift();
-        const page = await browser.newPage();
-        try {
-          await page.goto(url, { waitUntil: 'domcontentloaded' });
-          const title = await page.title();
-          const paragraphs = await page.$$eval('article p', (ps) =>
-            ps.map((p) => p.textContent?.trim()).filter(Boolean)
-          );
-          articles.push({ url, title, content: paragraphs.join(' ') });
-        } catch (err) {
-          console.error(`Error scraping BBC article ${url}:`, err.message);
-        } finally {
-          await page.close();
-        }
-      }
-    };
-    await Promise.all(Array.from({ length: BBC_CONCURRENCY }, worker));
-
-    const result = await filterArticles(articles);
-    cache.set(CACHE_KEYS.BBC, result, CACHE_TTL.BBC);
-    return result;
-  } finally {
-    await browser.close();
-  }
+  const articles = await fetchRssArticles('https://feeds.bbci.co.uk/news/science_and_environment/rss.xml', 15);
+  const result = await filterArticles(articles);
+  cache.set(CACHE_KEYS.BBC, result, CACHE_TTL.BBC);
+  return result;
 }
 
-const xmlParser = new XMLParser({ cdataPropName: '__cdata', ignoreAttributes: false });
-
-// Switched from headless-browser scraping of ndtv.com/world to their public
-// world-news RSS feed. The page itself now sits behind Akamai bot
-// protection and returns a flat "Access Denied" (HTTP 200, no bot-check
-// challenge to solve, just a hard block) to any headless-browser request
-// regardless of wait strategy or user agent -- confirmed directly, not a
-// stale-selector issue. The RSS feed is a normal public endpoint meant for
-// automated consumption and isn't blocked, and already includes a
-// description/summary per article, so no per-article page visit is needed.
 async function scrapeNDTV() {
   const cached = cache.get(CACHE_KEYS.NDTV);
   if (cached) return cached;
 
-  const res = await axios.get('https://feeds.feedburner.com/ndtvnews-world-news', {
-    headers: { 'User-Agent': USER_AGENT },
-    timeout: 10000,
-  });
-  const parsed = xmlParser.parse(res.data);
-  const items = parsed?.rss?.channel?.item;
-  const list = Array.isArray(items) ? items : (items ? [items] : []);
-
-  const text = (v) => (typeof v === 'object' ? v?.__cdata : v) || '';
-  const articles = list.slice(0, 20).map((item) => ({
-    url: text(item.link).split('#')[0],
-    title: text(item.title),
-    content: text(item.description),
-  })).filter((a) => a.url && a.title);
-
+  const articles = await fetchRssArticles('https://feeds.feedburner.com/ndtvnews-world-news', 20);
   const result = await filterArticles(articles);
   cache.set(CACHE_KEYS.NDTV, result, CACHE_TTL.NDTV);
   return result;
