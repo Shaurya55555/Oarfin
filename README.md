@@ -148,6 +148,3 @@ All APIs have error handling and CORS protection. The server's SQLite database b
 
 Oarfin was built as a team project (Runner-Up, HackCrux Hackathon) — this repository tracks the most current implementation of that shared codebase. Thanks to OpenStreetMap for geospatial data, Google Generative AI / OpenAI for the assistant, and the open-source community for the tools this is built on.
  
-## Contributors 
-- Shaurya55555 
-- kushagra0526 
