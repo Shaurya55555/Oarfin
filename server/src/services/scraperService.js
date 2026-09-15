@@ -89,11 +89,77 @@ async function scrapeNDTV() {
   return result;
 }
 
+// Reddit's own legacy Atom/RSS feed for a subreddit -- unlike the JSON API
+// (oauth.reddit.com or reddit.com/*.json, both now gated behind Reddit
+// login/app-review for automated traffic) this endpoint still serves plain
+// XML to a normal User-Agent with zero authentication. Confirmed directly:
+// reddit.com/r/<sub>/new/.rss returns 200 with real entries when both the
+// OAuth app-creation flow (blocked on a "Responsible Builder Policy"
+// registration step) and Pullpush (403s all automated requests now) were
+// dead ends. Each entry's `content` field is an HTML snippet -- a "[link]"
+// anchor to the external post URL (or self-post permalink) and sometimes an
+// `<img>` thumbnail -- extracted here with regex since it's simple enough
+// not to warrant a second HTML parser. No score/comment-count field exists
+// in this feed format (Atom doesn't carry it), so those come back null.
+const REDDIT_RSS_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+// Atom's <content type="html">...</content> isn't CDATA-wrapped like the
+// BBC/NDTV RSS 2.0 feeds -- fast-xml-parser turns it into
+// { '@_type': 'html', '#text': '...' } instead, so the shared rssText()
+// helper (which only checks __cdata) returns nothing for it and the raw
+// object falls through to string methods and throws. This covers both
+// shapes plus a plain string, for whichever field/feed format shows up.
+function textOf(v) {
+  if (v == null) return '';
+  if (typeof v === 'string') return v;
+  if (typeof v === 'object') return v.__cdata ?? v['#text'] ?? '';
+  return String(v);
+}
+function decodeRssEntities(s) {
+  return (s || '')
+    .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"')
+    .replace(/&#32;/g, ' ').replace(/&#39;/g, "'").replace(/&amp;/g, '&');
+}
+async function fetchRedditViaRss(sub) {
+  const res = await axios.get(`https://www.reddit.com/r/${sub}/new/.rss`, {
+    headers: { 'User-Agent': REDDIT_RSS_USER_AGENT },
+    timeout: 10000,
+  });
+  const parsed = xmlParser.parse(res.data);
+  const entries = parsed?.feed?.entry;
+  const list = Array.isArray(entries) ? entries : (entries ? [entries] : []);
+
+  return list.map((entry) => {
+    const redditLink = entry.link?.['@_href'] || `https://www.reddit.com/r/${sub}`;
+    const decoded = decodeRssEntities(textOf(entry.content));
+    const linkMatch = decoded.match(/<a href="([^"]+)">\[link\]<\/a>/);
+    const imgMatch = decoded.match(/<img[^>]*src="([^"]+)"/);
+    const postLink = linkMatch ? linkMatch[1] : redditLink;
+    const isVideo = /v\.redd\.it|\.(mp4|webm)(\?|$)|youtube\.com|youtu\.be/i.test(postLink);
+    // Image classification only from the post link's own extension (matches
+    // the OAuth/Pullpush paths' logic) -- an external article that merely
+    // has a thumbnail (imgMatch) is a link post, not an image post.
+    const isImage = !isVideo && /\.(jpg|jpeg|png|gif|webp)(\?|$)/i.test(postLink);
+    return {
+      id: textOf(entry.id).replace('t3_', ''),
+      title: textOf(entry.title),
+      type: isVideo ? 'video' : (isImage ? 'image' : 'link'),
+      post_link: postLink,
+      reddit_link: redditLink,
+      thumbnail: imgMatch ? imgMatch[1] : null,
+      score: null,
+      comments: null,
+      created: entry.published || entry.updated || null,
+      author: textOf(entry.author?.name).replace('/u/', ''),
+      flair: '',
+    };
+  }).filter((p) => p.title);
+}
+
 // Reddit's own OAuth API (client-credentials grant -- app-only auth, no user
 // login needed, sufficient for reading public subreddit listings). Requires
 // REDDIT_CLIENT_ID/REDDIT_CLIENT_SECRET env vars from a "script" app created
 // at reddit.com/prefs/apps; until those are set this simply returns null and
-// fetchReddit falls back to the Pullpush path below unchanged.
+// fetchReddit falls back to the RSS path below unchanged.
 let redditToken = null;
 async function getRedditAccessToken() {
   const clientId = process.env.REDDIT_CLIENT_ID;
@@ -150,10 +216,22 @@ async function fetchReddit(sub) {
   const cached = cache.get(cacheKey);
   if (cached) return cached;
 
-  // Prefer Reddit's own OAuth API when credentials are configured -- it's
-  // the reliable, made-for-this path. Falls through to Pullpush below (with
-  // its own retry/stale-cache handling) if credentials aren't set yet, or
-  // if the OAuth call itself fails for any reason.
+  // RSS first: no credentials needed and confirmed working right now, unlike
+  // both alternatives below (OAuth needs a Reddit "script" app, which the
+  // app-creation flow itself has been blocking on; Pullpush 403s everything).
+  try {
+    const posts = await fetchRedditViaRss(sub);
+    if (posts.length > 0) {
+      cache.set(cacheKey, posts, CACHE_TTL.REDDIT);
+      cache.set(staleKey, posts, 21600);
+      return posts;
+    }
+  } catch (err) {
+    console.warn('Reddit RSS fetch failed, trying OAuth next:', err.message);
+  }
+
+  // OAuth next, if credentials happen to be configured -- more complete data
+  // (score/comment counts) than RSS when it's available.
   try {
     const posts = await fetchRedditViaOAuth(sub);
     if (posts) {
