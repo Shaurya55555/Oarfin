@@ -12,6 +12,8 @@ Oarfin is a real-time disaster alert and management system built around four con
 
 **Live:** [Website (Vercel)](https://oarfin-website-nine.vercel.app) · [API Server (Render)](https://oarfin-server.onrender.com)
 
+**Demo video:** [Watch the walkthrough on Loom](https://www.loom.com/share/f7281bc929ac42c8966fbb03ecbbbc77)
+
 ## What it does
 
 - **Website** (`website/`) — a live map for authorities showing current disasters worldwide, affected areas, and the number of app users in each affected region. Authorities can mark safe areas, which are pushed to nearby app users, alongside scraped news/context about each disaster.
