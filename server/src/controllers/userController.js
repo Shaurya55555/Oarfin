@@ -74,7 +74,7 @@ function getAlerts(req, res) {
   }
 
   const sql = `
-    SELECT d.id, d.title, d.description, d.severity, d.timestamp, d.expiryTime,
+    SELECT d.id, d.eventID, d.title, d.description, d.severity, d.timestamp, d.expiryTime,
            d.latitude, d.longitude, d.radius, d.source, d.type
     FROM disaster d
     WHERE (? BETWEEN d.latitude - (d.radius/111.0) AND d.latitude + (d.radius/111.0))

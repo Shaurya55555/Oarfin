@@ -8,6 +8,8 @@ const scraperRoutes = require('./src/routes/scraper');
 const disasterRoutes = require('./src/routes/disasters');
 const userRoutes = require('./src/routes/users');
 const shelterRoutes = require('./src/routes/shelters');
+const friendRoutes = require('./src/routes/friends');
+const aiRoutes = require('./src/routes/ai');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -23,6 +25,8 @@ app.use('/api/llm', llmRoutes);
 app.use('/api/news', scraperRoutes);
 app.use('/api/disasters', disasterRoutes);
 app.use('/api/shelters', shelterRoutes);
+app.use('/api/friends', friendRoutes);
+app.use('/api/ai', aiRoutes);
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on http://0.0.0.0:${PORT}`);

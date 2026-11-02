@@ -6,7 +6,7 @@ Oarfin is a real-time disaster alert and management system built around four con
 
 [![React](https://img.shields.io/badge/React-19.0.0-blue.svg)](https://reactjs.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-Express-green.svg)](https://nodejs.org/)
-[![Flutter](https://img.shields.io/badge/Flutter-Dart-blue.svg)](https://flutter.dev/)
+[![React Native](https://img.shields.io/badge/React%20Native-Expo-blue.svg)](https://expo.dev/)
 
 **🏆 Runner-Up, HackCrux Hackathon**
 
@@ -17,7 +17,7 @@ Oarfin is a real-time disaster alert and management system built around four con
 ## What it does
 
 - **Website** (`website/`) — a live map for authorities showing current disasters worldwide, affected areas, and the number of app users in each affected region. Authorities can mark safe areas, which are pushed to nearby app users, alongside scraped news/context about each disaster.
-- **App** (`disaster_alert/`) — a Flutter mobile app for people in or near a disaster. On detecting a danger zone, the user is notified immediately, their location is sent to authorities, and their added contacts are alerted too. The app helps the user navigate out of the danger zone or follow safety instructions, and surfaces authority-marked safe areas.
+- **App** (`mobile/`) — a React Native (Expo) mobile app for people in or near a disaster. On detecting a danger zone, the user is notified immediately, their location is sent to authorities, and their added contacts are alerted too. The app helps the user navigate out of the danger zone or follow safety instructions, and surfaces authority-marked safe areas.
 - **Server** (`server/`) — the hub connecting the website, app, and scraping pipeline. Scrapes disaster news/Reddit posts, serves nearby-safe-location lookups (hospitals, shelters, police, fire stations via the Overpass API), and provides an AI-assisted chatbot (Google Generative AI / OpenAI) for contextual emergency guidance — on top of JWT-authenticated APIs and a SQLite-backed store.
 
 ## 🚀 Features
@@ -52,7 +52,7 @@ Oarfin is a real-time disaster alert and management system built around four con
 ## 🛠️ Tech Stack
 
 **Website (frontend)** — React 19 + Vite, Leaflet.js, Tailwind CSS, Axios
-**App (mobile)** — Flutter / Dart
+**App (mobile)** — React Native + Expo (SDK 58), Expo Router, TypeScript, react-native-maps
 **Server (backend)** — Node.js + Express.js, Playwright, SQLite3, node-cache, Google Generative AI & OpenAI APIs, JWT
 **External APIs** — Overpass API (OpenStreetMap data)
 
@@ -82,17 +82,20 @@ Oarfin/
 │   ├── index.js
 │   └── package.json
 │
-└── disaster_alert/          # Flutter mobile app (user-facing alerts)
-    ├── lib/
-    ├── android/
-    └── pubspec.yaml
+├── mobile/                  # React Native (Expo) mobile app (user-facing alerts)
+│   ├── src/app/             # Screens (Expo Router)
+│   ├── src/context/         # Auth, location, alerts, friends state
+│   ├── src/lib/             # API client, GDACS, geo, notifications, SOS
+│   └── package.json
+│
+└── disaster_alert/          # Earlier Flutter prototype (superseded by mobile/)
 ```
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 - Node.js (v16+), npm
-- Flutter SDK (for the mobile app)
+- Expo Go on your phone (for the mobile app)
 - Git
 
 ### Setup — Server
@@ -126,10 +129,11 @@ npm run dev   # http://localhost:5173
 
 ### Setup — App
 ```bash
-cd disaster_alert
-flutter pub get
-flutter run
+cd mobile
+npm install
+npx expo start
 ```
+Scan the QR code with Expo Go. See [`mobile/README.md`](mobile/README.md) for pointing the app at a local server.
 
 ## 🎯 Usage
 
