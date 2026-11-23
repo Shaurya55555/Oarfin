@@ -3,6 +3,7 @@ import axios from 'axios';
 import Lenis from 'lenis';
 import Globe3D from './Globe3D';
 import OarfinLogo from './Logo';
+import SafetyVideos from './SafetyVideos';
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3000';
 
@@ -1045,6 +1046,7 @@ function Preparedness({ lang }) {
           </Reveal>
         ))}
       </div>
+      <SafetyVideos lang={lang} />
     </>
   );
 }
