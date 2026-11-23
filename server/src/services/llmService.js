@@ -4,7 +4,7 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || process.env.G
 
 async function isDisasterNews({ title, content }) {
   const response = await ai.models.generateContent({
-    model: 'gemini-2.0-flash',
+    model: process.env.GEMINI_CLASSIFIER_MODEL || 'gemini-3.5-flash-lite',
     contents: `Title: ${title}\nContent: ${content}\nThis is the details of a news article. ONLY ANSWER IN YES OR NO. If the news article is based on a natural disaster answer YES else NO`,
   });
 

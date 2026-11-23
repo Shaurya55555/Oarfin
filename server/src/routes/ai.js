@@ -2,12 +2,10 @@ const express = require('express');
 const router = express.Router();
 const { GoogleGenAI } = require('@google/genai');
 
-const AI_MODELS = [
-  'gemini-2.0-flash-lite',
-  'gemini-2.0-flash',
-  'gemini-1.5-flash-8b',
-  'gemini-1.5-flash',
-];
+// Ordered by preference. Google retires model names, so a model that is gone
+// (404 NOT_FOUND) is skipped just like a rate-limited one.
+const AI_MODELS = (process.env.GEMINI_MODELS || 'gemini-3.5-flash-lite,gemini-3.5-flash,gemini-2.5-flash,gemini-2.5-flash-lite')
+  .split(',').map((m) => m.trim()).filter(Boolean);
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -26,7 +24,15 @@ async function generateWithRetry(ai, prompt, retries = 2, delayMs = 3000) {
           err.message?.includes('quota') ||
           err.status === 429;
 
-        if (isRateLimit) {
+        const isGone =
+          err.status === 404 ||
+          err.message?.includes('NOT_FOUND') ||
+          err.message?.includes('no longer available');
+
+        if (isGone) {
+          lastError = err;
+          break; // this model name is retired; go straight to the next one
+        } else if (isRateLimit) {
           lastError = err;
           if (attempt < retries) {
             // wait before retrying same model
