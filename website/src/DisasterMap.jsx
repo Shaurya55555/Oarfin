@@ -12,16 +12,17 @@ import SafeSpotMarker from "./SafeSpotMarker";
 const SERVER_URL = import.meta.env.VITE_SERVER_URL || "http://localhost:3000";
 const DISASTER_TYPES = ["EQ","FL","TC","VO","DR","WF"];
 const DAY_OPTIONS = [1,3,5,7,14,30];
-const safeSpotIcon = new L.Icon({ iconUrl:"https://cdn-icons-png.flaticon.com/512/2776/2776067.png", iconSize:[25,41], iconAnchor:[12,41], popupAnchor:[1,-34], shadowSize:[41,41] });
-const ICON_MAP = { EQ:"https://cdn-icons-png.flaticon.com/512/1840/1840485.png", FL:"https://cdn-icons-png.flaticon.com/512/1840/1840525.png", TC:"https://cdn-icons-png.flaticon.com/512/1840/1840491.png", VO:"https://cdn-icons-png.flaticon.com/512/1840/1840506.png", DR:"https://cdn-icons-png.flaticon.com/512/1840/1840489.png", WF:"https://cdn-icons-png.flaticon.com/512/1840/1840524.png" };
-const getIcon = (t) => ICON_MAP[t] || "https://cdn-icons-png.flaticon.com/512/184/184525.png";
+const pinHtml = (bg, glyph, size = 32) =>
+  `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${bg};border:2.5px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;color:#fff;font-size:${Math.round(size * 0.44)}px"><i class="fa-solid ${glyph}"></i></div>`;
+const makePin = (bg, glyph, size = 32) => L.divIcon({ className: "", html: pinHtml(bg, glyph, size), iconSize: [size, size], iconAnchor: [size / 2, size / 2], popupAnchor: [0, -size / 2] });
+const safeSpotIcon = makePin("#16A34A", "fa-shield-heart");
+const TYPE_GLYPH = { EQ: "fa-house-crack", FL: "fa-water", TC: "fa-hurricane", VO: "fa-mountain", DR: "fa-sun", WF: "fa-fire" };
+const LEVEL_COLOR = { Red: "#DC2626", Orange: "#F59E0B", Green: "#16A34A" };
+const eventIconFor = (type, level) => makePin(LEVEL_COLOR[level] || "#475569", TYPE_GLYPH[type] || "fa-circle-exclamation", 34);
 const CATEGORY_LABELS = { shelter:"Shelters", hospital:"Hospitals", clinic:"Clinics", nursing_home:"Nursing Homes", police:"Police", fire_station:"Fire Stations", pharmacy:"Pharmacies" };
 const CATEGORY_FA = { shelter:"fa-house", hospital:"fa-hospital", clinic:"fa-stethoscope", nursing_home:"fa-bed-pulse", police:"fa-shield-halved", fire_station:"fa-fire-extinguisher", pharmacy:"fa-pills" };
 
-const userLocationIcon = new L.Icon({
-  iconUrl: "https://cdn-icons-png.flaticon.com/512/149/149059.png",
-  iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32]
-});
+const userLocationIcon = L.divIcon({ className: "", html: '<div style="width:20px;height:20px;border-radius:50%;background:#2563EB;border:3px solid #fff;box-shadow:0 0 0 6px rgba(37,99,235,.28)"></div>', iconSize: [20, 20], iconAnchor: [10, 10] });
 
 function SpotMarker({ onMapClick }) { useMapEvents({ click:(e)=>onMapClick(e.latlng) }); return null; }
 function FlyTo({ center }) { const map=useMap(); useEffect(()=>{ if(center) map.flyTo(center,8,{duration:1.0}); },[center]); return null; }
@@ -146,7 +147,7 @@ export default function DisasterMap() {
         return true;
       });
       setDisasters(all);
-      if(all.length>0){ try{ const formatted=all.map(d=>({eventid:d.properties?.eventid||Date.now().toString(),latitude:d.geometry?.coordinates[1],longitude:d.geometry?.coordinates[0],type:d.properties?.eventtype||"Unknown",description:d.properties?.htmldescription||d.properties?.title||"Unknown Event"})); await axios.post(`${SERVER_URL}/api/disasters/report-batch`,{disasters:formatted}); }catch{ /* batch sync is best-effort */ } }
+      if(all.length>0){ try{ const formatted=all.map(d=>({eventid:d.properties?.eventid||Date.now().toString(),latitude:d.geometry?.coordinates[1],longitude:d.geometry?.coordinates[0],type:d.properties?.eventtype||"Unknown",description:d.properties?.htmldescription||d.properties?.title||"Unknown Event"})); axios.post(`${SERVER_URL}/api/disasters/report-batch`,{disasters:formatted}).catch(()=>{}); }catch{ /* batch sync is best-effort */ } }
     } catch(err) {
       console.error("Failed to fetch disasters:", err.message);
     } finally {
@@ -242,7 +243,7 @@ export default function DisasterMap() {
             const description=event.properties?.htmldescription||event.properties?.title||"Unknown Event";
             const alertLevel=event.properties?.alertlevel||"N/A";
             const markerPos=[coords[1],coords[0]];
-            const eventIcon=L.icon({iconUrl:event.properties?.icon||getIcon(eventType),iconSize:[22,22],iconAnchor:[11,22]});
+            const eventIcon=eventIconFor(eventType,alertLevel);
             let area=null;
             if(bbox.length===4){ const [minLon,minLat,maxLon,maxLat]=bbox; area=minLon!==maxLon||minLat!==maxLat?<Rectangle bounds={[[minLat,minLon],[maxLat,maxLon]]} pathOptions={{color:"red",weight:1.5,fillOpacity:0.05}}/>:<Circle center={markerPos} radius={50000} pathOptions={{color:"red",weight:1.5,fillOpacity:0.05}}/>; }
             return (
