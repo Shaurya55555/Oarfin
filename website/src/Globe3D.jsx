@@ -21,158 +21,6 @@ function buildOrbitRing(radius, tiltX, tiltZ, color, tubeRadius = 0.035) {
   return ring;
 }
 
-// Small seeded PRNG (mulberry32) so each planet's procedural surface is
-// deterministic across reloads instead of reshuffling its blotches/bands
-// every mount -- purely cosmetic stability, not correctness-critical.
-function makeSeededRandom(seed) {
-  let a = seed >>> 0;
-  return () => {
-    a |= 0; a = (a + 0x6d2b79f5) | 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-// Bakes fake directional shading (a light->dark radial gradient standing
-// in for a real light source, since MeshBasicMaterial ignores THREE's
-// lights) plus surface detail -- cloud bands for gas giants, mottled
-// blotches for rocky planets/the sun -- into a small canvas texture. Flat
-// single-color spheres read as placeholder/cartoon shapes; painting the
-// shading and texture directly into the map is what makes them read as
-// actual rendered planets instead.
-function makeSurfaceTexture(baseColorHex, { bands = false, blotches = true, seed = 1, granular = false } = {}) {
-  const size = 256;
-  const canvas = document.createElement('canvas');
-  canvas.width = size; canvas.height = size;
-  const ctx = canvas.getContext('2d');
-  const rand = makeSeededRandom(seed);
-  const base = new THREE.Color(baseColorHex);
-  const light = base.clone().lerp(new THREE.Color(0xffffff), 0.5);
-  const dark = base.clone().lerp(new THREE.Color(0x000000), 0.55);
-
-  ctx.fillStyle = `#${base.getHexString()}`;
-  ctx.fillRect(0, 0, size, size);
-
-  if (bands) {
-    // Cloud bands with a little turbulence (soft elongated swirl blobs
-    // layered on each stripe) instead of flat rectangles, closer to how
-    // a real gas giant's banded atmosphere actually looks.
-    const bandCount = 9 + Math.floor(rand() * 4);
-    for (let i = 0; i < bandCount; i++) {
-      const y = (i / bandCount) * size;
-      const h = (size / bandCount) * (0.55 + rand() * 0.7);
-      const bandColor = rand() > 0.5 ? light : dark;
-      ctx.globalAlpha = 0.1 + rand() * 0.16;
-      ctx.fillStyle = `#${bandColor.getHexString()}`;
-      ctx.fillRect(0, y, size, h);
-      const swirls = 2 + Math.floor(rand() * 3);
-      for (let s = 0; s < swirls; s++) {
-        ctx.globalAlpha = 0.08 + rand() * 0.1;
-        ctx.fillStyle = `#${(rand() > 0.5 ? light : dark).getHexString()}`;
-        ctx.save();
-        ctx.translate(rand() * size, y + h * (0.2 + rand() * 0.6));
-        ctx.rotate((rand() - 0.5) * 0.3);
-        ctx.beginPath();
-        ctx.ellipse(0, 0, size * (0.12 + rand() * 0.16), h * (0.3 + rand() * 0.3), 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-      }
-    }
-    ctx.globalAlpha = 1;
-  }
-
-  if (blotches) {
-    if (bands) {
-      const count = granular ? 260 : 46;
-      for (let i = 0; i < count; i++) {
-        const x = rand() * size, y = rand() * size, r = granular ? 1 + rand() * 3 : 2 + rand() * 8;
-        ctx.globalAlpha = granular ? 0.08 + rand() * 0.1 : 0.06 + rand() * 0.1;
-        ctx.fillStyle = rand() > 0.5 ? `#${light.getHexString()}` : `#${dark.getHexString()}`;
-        ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
-      }
-    } else {
-      // Rocky-planet craters: a dark shadow rim with a slightly offset
-      // lighter interior, instead of a single flat dot -- reads as an
-      // actual pitted/cratered surface rather than paint speckle.
-      const count = granular ? 90 : 30;
-      for (let i = 0; i < count; i++) {
-        const x = rand() * size, y = rand() * size, r = granular ? 1.2 + rand() * 3 : 2.5 + rand() * 8;
-        ctx.globalAlpha = 0.16 + rand() * 0.12;
-        ctx.fillStyle = `#${dark.getHexString()}`;
-        ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
-        ctx.globalAlpha = 0.14 + rand() * 0.1;
-        ctx.fillStyle = `#${light.getHexString()}`;
-        ctx.beginPath(); ctx.arc(x - r * 0.25, y - r * 0.25, r * 0.62, 0, Math.PI * 2); ctx.fill();
-      }
-    }
-    ctx.globalAlpha = 1;
-  }
-
-  // Directional shading pass on top -- bright upper-left "sunlit" side
-  // fading to a dark limb, the actual cue that reads as a lit sphere
-  // rather than a flat painted disc.
-  const grad = ctx.createRadialGradient(size * 0.32, size * 0.3, size * 0.06, size * 0.5, size * 0.5, size * 0.74);
-  grad.addColorStop(0, `rgba(255,255,255,0.6)`);
-  grad.addColorStop(0.45, `rgba(255,255,255,0)`);
-  grad.addColorStop(0.8, `rgba(0,0,0,0.14)`);
-  grad.addColorStop(1, `rgba(0,0,0,0.62)`);
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, size, size);
-
-  // Small bright specular glint where the "sunlight" would catch the
-  // surface most directly -- the little highlight real rendered/photo
-  // spheres have that a plain gradient alone doesn't give.
-  const glint = ctx.createRadialGradient(size * 0.3, size * 0.26, 0, size * 0.3, size * 0.26, size * 0.12);
-  glint.addColorStop(0, 'rgba(255,255,255,0.35)');
-  glint.addColorStop(1, 'rgba(255,255,255,0)');
-  ctx.fillStyle = glint;
-  ctx.fillRect(0, 0, size, size);
-
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  return tex;
-}
-
-// Fresnel rim-glow shell -- a per-object shader (not post-processing, so
-// it doesn't carry the UnrealBloomPass black-screen risk hit earlier this
-// session) that brightens toward a mesh's silhouette edge. Used for the
-// sun's crisp glowing "border" -- the soft blurred halo spheres alone
-// read as a diffuse blob with no defined edge, this adds the sharp bright
-// limb a real sun photo/render has.
-const FRESNEL_VERTEX = `
-  varying vec3 vNormal;
-  varying vec3 vViewDir;
-  void main() {
-    vNormal = normalize(normalMatrix * normal);
-    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-    vViewDir = normalize(-mvPosition.xyz);
-    gl_Position = projectionMatrix * mvPosition;
-  }
-`;
-const FRESNEL_FRAGMENT = `
-  varying vec3 vNormal;
-  varying vec3 vViewDir;
-  uniform vec3 color;
-  uniform float power;
-  uniform float uOpacity;
-  void main() {
-    float rim = pow(1.0 - max(dot(normalize(vNormal), normalize(vViewDir)), 0.0), power);
-    gl_FragColor = vec4(color, rim * uOpacity);
-  }
-`;
-function buildFresnelGlow(radius, colorHex, power) {
-  const mat = new THREE.ShaderMaterial({
-    vertexShader: FRESNEL_VERTEX,
-    fragmentShader: FRESNEL_FRAGMENT,
-    uniforms: { color: { value: new THREE.Color(colorHex) }, power: { value: power }, uOpacity: { value: 0 } },
-    transparent: true,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending,
-  });
-  return new THREE.Mesh(new THREE.SphereGeometry(radius, 32, 32), mat);
-}
-
 // Soft radial-gradient glow sprite (always faces the camera, unlike a
 // sphere) -- bright center smoothly fading to fully transparent. Used for
 // the sun's outer corona: a handful of overlapping SphereGeometry shells
@@ -217,84 +65,59 @@ function buildGlowSprite(size, colorHex) {
 // look rather than a scientifically accurate orrery.
 function buildSun(radius) {
   const group = new THREE.Group();
-  const surfaceTex = makeSurfaceTexture(0xffb347, { blotches: true, granular: true, seed: 7 });
+  // Camera-facing photographed disc (NASA imagery, same asset as the
+  // portfolio site) with soft corona sprites behind it.
   const core = new THREE.Mesh(
-    new THREE.SphereGeometry(radius, 32, 32),
-    new THREE.MeshBasicMaterial({ map: surfaceTex, color: 0xfff2d0, transparent: true, opacity: 0 })
+    new THREE.PlaneGeometry(radius * 2, radius * 2),
+    new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false })
   );
   group.add(core);
-  // Sharp bright limb right at the photosphere edge, then two overlapping
-  // soft radial-gradient sprites further out (a true smooth falloff,
-  // unlike stacked sphere shells which show as flat concentric rings) --
-  // together read as a real glowing sun rather than a flat disc or a
-  // banded blur.
-  const rim = buildFresnelGlow(radius * 1.02, 0xffe9b0, 2.6);
-  group.add(rim);
   const halos = [
-    buildGlowSprite(radius * 4.2, 0xffb35c),
-    buildGlowSprite(radius * 7.5, 0xff8a3d),
+    buildGlowSprite(radius * 4.2, 0xffbe6e),
+    buildGlowSprite(radius * 7.5, 0xff9640),
   ];
   halos.forEach(h => group.add(h));
-  return { group, core, rim, halos };
+  return { group, core, halos };
 }
 
+// Photo planet: a camera-facing plane showing the real NASA photograph, with
+// the side away from the sun darkened -- the same look as the portfolio
+// site's orbit map. The shader reads the sun's direction on screen each
+// frame (uLight) so the shading always faces the sun.
+const PLANET_VERT = 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }';
+const PLANET_FRAG = `
+  uniform sampler2D uMap; uniform float uOpacity; uniform vec2 uLight; uniform float uWide;
+  varying vec2 vUv;
+  void main(){
+    vec4 tex = texture2D(uMap, vUv);
+    vec2 p = vUv - 0.5; p.x *= uWide;
+    vec2 c = uLight * 0.3;
+    float R = length(vec2(0.5 + abs(c.x), 0.5 + abs(c.y)));
+    float shade = 0.78 * smoothstep(0.32, 0.82, length(p - c) / R);
+    gl_FragColor = vec4(tex.rgb * (1.0 - shade), tex.a * uOpacity);
+    #include <colorspace_fragment>
+  }`;
+
 function buildOrbitPlanet(orbitRadius, planetRadius, color, opts = {}) {
-  const { hasRing = false } = opts;
+  const { wide = 1 } = opts;
   const group = new THREE.Group();
-  // Thin, neutral pale-grey path -- real orbit-diagram lines, not a
-  // colored decoration -- so the eye reads it as a trajectory rather
-  // than part of the planet's own design.
-  // Thicker tube than the default (0.09 vs 0.035): at solar-system scale
-  // (orbit radii 22-110 vs the default's ~13.5) the default tube was
-  // nearly sub-pixel at render distance and read as barely-there threads
-  // rather than visible orbit paths.
+  // Thin, neutral orbit line (opacity driven by the render loop).
   const ring = buildOrbitRing(orbitRadius, 0, 0, 0x8a97ad, 0.09);
   ring.material.opacity = 0;
   group.add(ring);
-  // Starts as a flat placeholder in the planet's real average color;
-  // swapped for the actual NASA-imagery equirectangular map once it
-  // loads (see the loader calls below, same pattern as the Earth globe's
-  // own texture) -- the load is local and fast, and the planet stays
-  // invisible (opacity 0) until the zoom-out gesture fades it in anyway.
-  const planet = new THREE.Mesh(
-    new THREE.SphereGeometry(planetRadius, 28, 28),
-    new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0 })
-  );
+  const blank = new THREE.DataTexture(new Uint8Array([0, 0, 0, 0]), 1, 1);
+  blank.needsUpdate = true;
+  const material = new THREE.ShaderMaterial({
+    uniforms: { uMap: { value: blank }, uOpacity: { value: 0 }, uLight: { value: new THREE.Vector2(0, 0) }, uWide: { value: wide } },
+    vertexShader: PLANET_VERT,
+    fragmentShader: PLANET_FRAG,
+    transparent: true,
+    depthWrite: false,
+  });
+  // For ringed Saturn the plane is wider than the disc (rings extend past it).
+  const planet = new THREE.Mesh(new THREE.PlaneGeometry(planetRadius * 2 * wide, planetRadius * 2), material);
   group.add(planet);
-  // Faint atmosphere-limb rim in the planet's own color -- the subtle
-  // edge glow a real planet render/photo has, rather than a hard cutoff
-  // silhouette against black space.
-  const atmosphere = buildFresnelGlow(planetRadius * 1.06, color, 2.2);
-  planet.add(atmosphere);
-  // Saturn's own ring -- a flat disc tilted relative to its orbital plane,
-  // distinct from the thin orbit-path ring above. Starts transparent
-  // black; swapped for the real ring alpha texture once loaded.
-  let saturnRing = null;
-  if (hasRing) {
-    const innerR = planetRadius * 1.35, outerR = planetRadius * 3.1;
-    const ringGeo = new THREE.RingGeometry(innerR, outerR, 96, 1);
-    // RingGeometry's default UVs project each vertex onto a unit circle
-    // (a square-to-disc mapping), not a radial gradient -- a real ring
-    // texture (a thin horizontal strip encoding inner->outer banding) needs
-    // u to actually track radial distance instead, or it renders as a
-    // faint, mostly-flat wash rather than Saturn's visible concentric
-    // bands. Remap manually: u = normalized radius, v unused (constant).
-    const posAttr = ringGeo.attributes.position;
-    const uvAttr = ringGeo.attributes.uv;
-    const v3 = new THREE.Vector3();
-    for (let i = 0; i < posAttr.count; i++) {
-      v3.fromBufferAttribute(posAttr, i);
-      const r = v3.length();
-      uvAttr.setXY(i, THREE.MathUtils.clamp((r - innerR) / (outerR - innerR), 0, 1), 0.5);
-    }
-    saturnRing = new THREE.Mesh(
-      ringGeo,
-      new THREE.MeshBasicMaterial({ color: 0xd8c79a, transparent: true, opacity: 0, side: THREE.DoubleSide })
-    );
-    saturnRing.rotation.x = Math.PI / 2.5;
-    planet.add(saturnRing);
-  }
-  return { group, ring, planet, atmosphere, saturnRing, orbitRadius, angle: 0 };
+  return { group, ring, planet, orbitRadius, angle: 0, color };
 }
 
 function buildStarPoints(count, size, opacity, colorHex) {
@@ -599,6 +422,9 @@ export default function Globe3D({ scrollContainerId, markers = [], darkMode = tr
     // an angle rather than edge-on lines, same trick as the equatorial
     // ring around Earth itself, and echoing the angled top-down look of
     // the reference "solar system at real scale" reveal shots.
+    const planetQuat = new THREE.Quaternion();
+    const planetWorld = new THREE.Vector3();
+    const sunWorld = new THREE.Vector3();
     const solarGroup = new THREE.Group();
     solarGroup.position.set(planetGroup.position.x - 20, planetGroup.position.y + 10, -230);
     solarGroup.rotation.x = 1.15;
@@ -610,13 +436,13 @@ export default function Globe3D({ scrollContainerId, markers = [], darkMode = tr
     // for a readable silhouette); Earth's own slot (~40) is intentionally
     // left as a gap since the real textured globe sits near there already.
     const solarPlanets = [
-      buildOrbitPlanet(22, 1.1, 0x9c9c94), // Mercury
-      buildOrbitPlanet(29, 1.8, 0xe0c088), // Venus
-      buildOrbitPlanet(48, 1.4, 0xc1440e), // Mars
-      buildOrbitPlanet(62, 6.2, 0xd8ae82), // Jupiter
-      buildOrbitPlanet(80, 5.2, 0xead6a8, { hasRing: true }), // Saturn (+ ring)
-      buildOrbitPlanet(96, 3.4, 0xace5ee), // Uranus
-      buildOrbitPlanet(110, 3.3, 0x3f5efb), // Neptune
+      buildOrbitPlanet(22, 1.7, 0x9c9c94), // Mercury
+      buildOrbitPlanet(29, 2.6, 0xe0c088), // Venus
+      buildOrbitPlanet(48, 2.1, 0xc1440e), // Mars
+      buildOrbitPlanet(62, 7.8, 0xd8ae82), // Jupiter
+      buildOrbitPlanet(80, 6.4, 0xead6a8, { wide: 900 / 368 }), // Saturn (photo includes rings)
+      buildOrbitPlanet(96, 4.4, 0xace5ee), // Uranus
+      buildOrbitPlanet(110, 4.2, 0x3f5efb), // Neptune
     ];
     // Staggered (not random) starting angles, fanned out on roughly the
     // same side of the sun -- reads as a clean line-up at first glance
@@ -630,21 +456,16 @@ export default function Globe3D({ scrollContainerId, markers = [], darkMode = tr
     // own /earth_map.jpg), loaded async and swapped in once ready --
     // replaces the flat placeholder color set in buildOrbitPlanet above.
     const planetTextureLoader = new THREE.TextureLoader();
-    const loadInto = (material, url) => {
+    const loadPhoto = (url, apply) => {
       planetTextureLoader.load(url, tex => {
         if (cancelled) return;
         tex.colorSpace = THREE.SRGBColorSpace;
-        material.map = tex;
-        material.color.set(0xffffff);
-        material.needsUpdate = true;
+        apply(tex);
       });
     };
-    const PLANET_TEXTURE_URLS = [
-      '/planets/mercury.jpg', '/planets/venus.jpg', '/planets/mars.jpg',
-      '/planets/jupiter.jpg', '/planets/saturn.jpg', '/planets/uranus.jpg', '/planets/neptune.jpg',
-    ];
-    solarPlanets.forEach((p, i) => loadInto(p.planet.material, PLANET_TEXTURE_URLS[i]));
-    loadInto(solarPlanets[4].saturnRing.material, '/planets/saturn_ring.png');
+    ['mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune'].forEach((name, i) =>
+      loadPhoto(`/solar/${name}.webp`, tex => { solarPlanets[i].planet.material.uniforms.uMap.value = tex; }));
+    loadPhoto('/solar/sun.webp', tex => { sun.core.material.map = tex; sun.core.material.needsUpdate = true; });
 
     // Hover targets + display names for the sun/planet name label below --
     // tagged via userData rather than a parallel lookup array so the
@@ -859,17 +680,25 @@ export default function Globe3D({ scrollContainerId, markers = [], darkMode = tr
       planetGroup.scale.setScalar(1.35 - zoomLevel * 0.85);
       const sunFade = zoomLevel;
       sun.core.material.opacity = Math.min(1, sunFade * 1.3);
-      sun.rim.material.uniforms.uOpacity.value = Math.min(1, sunFade * 1.6);
+      sun.group.getWorldQuaternion(planetQuat).invert().multiply(camera.quaternion);
+      sun.core.quaternion.copy(planetQuat);
       sun.halos.forEach((h, i) => { h.material.opacity = sunFade * (0.5 - i * 0.15); });
       solarPlanets.forEach(p => {
         // Rough Keplerian feel: closer orbits move visibly faster than
         // farther ones, instead of every planet crawling at the same rate.
         p.angle += dt * (1.6 / Math.sqrt(p.orbitRadius));
         p.planet.position.set(Math.cos(p.angle) * p.orbitRadius, Math.sin(p.angle) * p.orbitRadius, 0);
-        p.planet.material.opacity = sunFade;
-        p.ring.material.opacity = sunFade * 0.6;
-        p.atmosphere.material.uniforms.uOpacity.value = sunFade * 0.9;
-        if (p.saturnRing) p.saturnRing.material.opacity = sunFade * 0.8;
+        p.planet.material.uniforms.uOpacity.value = sunFade;
+        p.ring.material.opacity = sunFade * 0.35;
+        // face the camera, and point the shading toward the sun on screen
+        p.group.getWorldQuaternion(planetQuat).invert().multiply(camera.quaternion);
+        p.planet.quaternion.copy(planetQuat);
+        p.planet.getWorldPosition(planetWorld).project(camera);
+        sun.group.getWorldPosition(sunWorld).project(camera);
+        const lx = (sunWorld.x - planetWorld.x) * camera.aspect;
+        const ly = sunWorld.y - planetWorld.y;
+        const ll = Math.hypot(lx, ly) || 1;
+        p.planet.material.uniforms.uLight.value.set(lx / ll, ly / ll);
       });
 
       camera.position.z = 34 + scrollProgress * 18 + zoomLevel * 150;
@@ -984,9 +813,9 @@ export default function Globe3D({ scrollContainerId, markers = [], darkMode = tr
       countryLabelEl.remove();
       hintEl.remove();
       earthTexture?.dispose();
-      const disposables = [globe, ...stars.children, ...orbitGroup.children, sun.core, sun.rim, ...sun.halos];
+      const disposables = [globe, ...stars.children, ...orbitGroup.children, sun.core, ...sun.halos];
       arcs.forEach(a => { disposables.push(a.line, a.particle); });
-      solarPlanets.forEach(p => { disposables.push(p.ring, p.planet, p.atmosphere); if (p.saturnRing) disposables.push(p.saturnRing); });
+      solarPlanets.forEach(p => { disposables.push(p.ring, p.planet); });
       globe.children.forEach(child => { child.children.forEach(c => disposables.push(c)); });
       disposables.forEach(obj => {
         obj.geometry?.dispose();
