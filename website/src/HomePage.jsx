@@ -1151,6 +1151,17 @@ function InfoTabs({ lang, activeTab, setActiveTab }) {
 
 
 // ── Footer ───────────────────────────────────────────────────────────
+const FOOTER_LABELS = {
+  'Dashboard': { Hindi: 'डैशबोर्ड', Kannada: 'ಡ್ಯಾಶ್‌ಬೋರ್ಡ್', Tamil: 'டாஷ்போர்டு', Marathi: 'डॅशबोर्ड', Gujarati: 'ડેશબોર્ડ', Telugu: 'డాష్‌బోర్డ్' },
+  'Live alerts': { Hindi: 'लाइव अलर्ट', Kannada: 'ಲೈವ್ ಎಚ್ಚರಿಕೆಗಳು', Tamil: 'நேரடி எச்சரிக்கைகள்', Marathi: 'लाइव्ह इशारे', Gujarati: 'લાઇવ ચેતવણીઓ', Telugu: 'లైవ్ హెచ్చరికలు' },
+  'Resources': { Hindi: 'संसाधन', Kannada: 'ಸಂಪನ್ಮೂಲಗಳು', Tamil: 'வளங்கள்', Marathi: 'संसाधने', Gujarati: 'સંસાધનો', Telugu: 'వనరులు' },
+  'Project': { Hindi: 'परियोजना', Kannada: 'ಯೋಜನೆ', Tamil: 'திட்டம்', Marathi: 'प्रकल्प', Gujarati: 'પ્રોજેક્ટ', Telugu: 'ప్రాజెక్ట్' },
+  'Source code': { Hindi: 'सोर्स कोड', Kannada: 'ಸೋರ್ಸ್ ಕೋಡ್', Tamil: 'மூலக் குறியீடு', Marathi: 'सोर्स कोड', Gujarati: 'સોર્સ કોડ', Telugu: 'సోర్స్ కోడ్' },
+  'Demo video': { Hindi: 'डेमो वीडियो', Kannada: 'ಡೆಮೊ ವೀಡಿಯೊ', Tamil: 'டெமோ வீடியோ', Marathi: 'डेमो व्हिडिओ', Gujarati: 'ડેમો વિડિઓ', Telugu: 'డెమో వీడియో' },
+  'Report an issue': { Hindi: 'समस्या बताएं', Kannada: 'ಸಮಸ್ಯೆ ವರದಿ ಮಾಡಿ', Tamil: 'சிக்கலைத் தெரிவிக்கவும்', Marathi: 'समस्या कळवा', Gujarati: 'સમસ્યા જણાવો', Telugu: 'సమస్యను నివేదించండి' },
+};
+const footerLabel = (label, lang) => (FOOTER_LABELS[label] || {})[lang] || label;
+
 function Footer({ lang }) {
   const t = T[lang];
   return (
@@ -1169,13 +1180,13 @@ function Footer({ lang }) {
             ['Project', [['Source code', 'https://github.com/Shaurya55555/Oarfin'], ['Demo video', 'https://www.loom.com/share/f7281bc929ac42c8966fbb03ecbbbc77'], ['Report an issue', 'https://github.com/Shaurya55555/Oarfin/issues']]],
           ].map(([title, links]) => (
             <div key={title} style={{ flex: '1 1 140px' }}>
-              <div style={{ color: '#fff', fontWeight: 700, fontSize: '0.82rem', marginBottom: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.07em' }}>{title}</div>
+              <div style={{ color: '#fff', fontWeight: 700, fontSize: '0.82rem', marginBottom: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.07em' }}>{footerLabel(title, lang)}</div>
               {links.map(([label, href]) => (
                 <div key={label} style={{ marginBottom: '0.45rem' }}>
                   <a href={href} {...(href.startsWith('http') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
                     style={{ color: 'var(--footer-link)', fontSize: '0.84rem', transition: 'color 0.2s', textDecoration: 'none' }}
                     onMouseEnter={e => e.target.style.color = '#fff'}
-                    onMouseLeave={e => e.target.style.color = 'var(--footer-link)'}>{label}</a>
+                    onMouseLeave={e => e.target.style.color = 'var(--footer-link)'}>{footerLabel(label, lang)}</a>
                 </div>
               ))}
             </div>
