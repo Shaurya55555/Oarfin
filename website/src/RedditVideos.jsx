@@ -31,6 +31,7 @@ const fetchPosts = (sub) =>
       comments: p.comments || 0,
       created: p.created ? new Date(p.created).toLocaleDateString() : "",
       flair: p.flair || "",
+      source: p.source || "reddit",
     })));
 
 export default function RedditVideos() {
@@ -63,7 +64,7 @@ export default function RedditVideos() {
           <h2 style={{ margin: 0, fontSize: "1.35rem", fontWeight: 800, display: "flex", alignItems: "center", gap: "0.5rem" }}>
             <i className="fa-brands fa-reddit" style={{ color: "#FF4500" }}></i> Disaster Updates from Reddit
           </h2>
-          <p style={{ fontSize: "0.85rem", color: "#666", marginTop: "0.3rem" }}>Community reports and updates from disaster-related subreddits</p>
+          <p style={{ fontSize: "0.85rem", color: "#666", marginTop: "0.3rem" }}>{posts.some((p) => p.source === "mastodon") ? "Live community posts on disaster hashtags (Reddit is currently unreachable from our server)" : "Community reports and updates from disaster-related subreddits"}</p>
         </div>
         <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
           {SUBREDDITS.map((sub) => (
@@ -161,7 +162,7 @@ export default function RedditVideos() {
                 </div>
                 <a href={post.redditUrl} target="_blank" rel="noopener noreferrer"
                   style={{ fontSize: "0.82rem", color: "#FF4500", fontWeight: 600, textDecoration: "none", display: "flex", alignItems: "center", gap: "0.3rem" }}>
-                  View on Reddit <i className="fa-solid fa-arrow-right" style={{ fontSize: "0.7rem" }}></i>
+                  {post.source === "mastodon" ? "View post" : "View on Reddit"} <i className="fa-solid fa-arrow-right" style={{ fontSize: "0.7rem" }}></i>
                 </a>
               </div>
             </div>

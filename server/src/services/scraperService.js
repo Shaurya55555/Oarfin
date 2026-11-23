@@ -209,6 +209,52 @@ async function fetchRedditViaOAuth(sub) {
   })).filter(p => p.title);
 }
 
+// Fallback when Reddit refuses this server (it blocks most cloud-host IPs):
+// live public posts from Mastodon hashtag timelines. Public API, no key, no
+// login. Posts keep the same shape the page already renders, plus
+// source:'mastodon' so the UI can label them honestly.
+const COMMUNITY_TAGS = {
+  DisasterUpdate: ['earthquake', 'flood', 'wildfire', 'cyclone'],
+  NaturalDisasters: ['naturaldisaster', 'tsunami', 'landslide', 'volcano'],
+  worldnews: ['breakingnews', 'disaster', 'emergency'],
+};
+const stripHtml = (h) => (h || '').replace(/<br\s*\/?>/gi, ' ').replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, ' ').trim();
+
+async function fetchCommunityPosts(sub) {
+  const tags = COMMUNITY_TAGS[sub] || COMMUNITY_TAGS.DisasterUpdate;
+  const results = await Promise.allSettled(tags.map((t) =>
+    axios.get(`https://mastodon.social/api/v1/timelines/tag/${t}`, { params: { limit: 20 }, timeout: 10000 })));
+  const seen = new Set();
+  const posts = [];
+  for (const r of results) {
+    if (r.status !== 'fulfilled') continue;
+    for (const st of r.value.data || []) {
+      if (seen.has(st.id) || st.sensitive || st.reblog) continue;
+      seen.add(st.id);
+      const title = stripHtml(st.content).slice(0, 220);
+      if (!title) continue;
+      const media = (st.media_attachments || [])[0];
+      const type = media ? (media.type === 'video' || media.type === 'gifv' ? 'video' : media.type === 'image' ? 'image' : 'link') : 'link';
+      posts.push({
+        id: String(st.id),
+        title,
+        type,
+        post_link: media?.url || st.url,
+        reddit_link: st.url,
+        thumbnail: media?.preview_url || null,
+        score: st.favourites_count || 0,
+        comments: st.replies_count || 0,
+        created: st.created_at,
+        author: st.account?.acct || '',
+        flair: (st.tags || [])[0]?.name ? '#' + st.tags[0].name : '',
+        source: 'mastodon',
+      });
+    }
+  }
+  posts.sort((a, b) => new Date(b.created) - new Date(a.created));
+  return posts.slice(0, 40);
+}
+
 async function fetchReddit(sub) {
   sub = sub || 'DisasterUpdate';
   const cacheKey = 'reddit_' + sub;
@@ -241,6 +287,19 @@ async function fetchReddit(sub) {
     }
   } catch (err) {
     console.warn('Reddit OAuth fetch failed, falling back to Pullpush:', err.response?.data?.message || err.message);
+  }
+
+  // Reddit itself is unreachable from this host: fall back to live public
+  // community posts so the page still shows current disaster updates.
+  try {
+    const posts = await fetchCommunityPosts(sub);
+    if (posts.length > 0) {
+      cache.set(cacheKey, posts, CACHE_TTL.REDDIT);
+      cache.set(staleKey, posts, 21600);
+      return posts;
+    }
+  } catch (err) {
+    console.warn('Community-feed fallback failed:', err.message);
   }
 
   // Pullpush (Reddit archive API) is a free public service with an aggressive,
