@@ -3,6 +3,7 @@ import axios from 'axios';
 import Lenis from 'lenis';
 import Globe3D from './Globe3D';
 import OarfinLogo from './Logo';
+import SolarSystem from './SolarSystem';
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3000';
 
@@ -1448,6 +1449,7 @@ export default function HomePage({ onLogin }) {
       <Navbar onLoginClick={() => openModal('login')} onRegisterClick={() => openModal('register')} lang={lang} onNavClick={handleNav} hidden={heroVisible && !isMobile} darkMode={darkMode} onDarkToggle={() => setDarkMode(d => !d)} />
       <main>
         <Hero onLoginClick={() => openModal('login')} onRegisterClick={() => openModal('register')} onNavClick={handleNav} lang={lang} onLangChange={setLang} showVerticalNav={!isMobile} />
+        <SolarSystem lang={lang} />
         <div style={{ paddingTop: (heroVisible && !isMobile) ? 0 : 62, transition: 'padding-top 0.4s cubic-bezier(0.16,1,0.3,1)' }}>
           <AlertsAndStats lang={lang} />
         </div>
