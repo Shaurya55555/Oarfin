@@ -56,7 +56,7 @@ export default function DisasterDetailPanel({ disaster, onClose, onShowShelters 
       setFetched(true);
       // Pass shelter markers up to map
       if (onShowShelters) onShowShelters(res.data.shelters || []);
-    } catch (err) {
+    } catch {
       setError('Could not load shelters. Check if the server is running.');
     } finally {
       setLoading(false);

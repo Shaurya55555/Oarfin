@@ -48,14 +48,15 @@ async function generateWithRetry(ai, prompt, retries = 2, delayMs = 3000) {
 
 router.post('/chat', async (req, res) => {
   try {
-    if (!process.env.GEMINI_API_KEY) {
+    const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_API_KEY;
+    if (!apiKey) {
       return res.json({
-        reply: 'AI features are offline. GEMINI_API_KEY is missing in server .env file.',
+        reply: 'AI features are offline. GEMINI_API_KEY (or GOOGLE_AI_API_KEY) is missing in server .env file.',
         error: 'missing_key',
       });
     }
 
-    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+    const ai = new GoogleGenAI({ apiKey });
     const { message, location, disaster, shelters } = req.body;
 
     if (!message || !message.trim()) {

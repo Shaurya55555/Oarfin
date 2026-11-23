@@ -489,7 +489,6 @@ export default function Globe3D({ scrollContainerId, markers = [], darkMode = tr
       // [~25,~35,~60] (g meaningfully above r, and a big r->g->b climb);
       // hazy dark forest is [~32,~35,~52] (g roughly equal to r). The
       // g-r gap is what actually separates them, not raw blueness.
-      const isOceanColor = (r, g, b) => (g - r) > 8 && (b - g) > 18;
       const img = new Image();
       img.crossOrigin = 'anonymous';
       img.onload = () => {

@@ -146,7 +146,7 @@ export default function DisasterMap() {
         return true;
       });
       setDisasters(all);
-      if(all.length>0){ try{ const formatted=all.map(d=>({eventid:d.properties?.eventid||Date.now().toString(),latitude:d.geometry?.coordinates[1],longitude:d.geometry?.coordinates[0],type:d.properties?.eventtype||"Unknown",description:d.properties?.htmldescription||d.properties?.title||"Unknown Event"})); await axios.post(`${SERVER_URL}/api/disasters/report-batch`,{disasters:formatted}); }catch(e){} }
+      if(all.length>0){ try{ const formatted=all.map(d=>({eventid:d.properties?.eventid||Date.now().toString(),latitude:d.geometry?.coordinates[1],longitude:d.geometry?.coordinates[0],type:d.properties?.eventtype||"Unknown",description:d.properties?.htmldescription||d.properties?.title||"Unknown Event"})); await axios.post(`${SERVER_URL}/api/disasters/report-batch`,{disasters:formatted}); }catch{ /* batch sync is best-effort */ } }
     } catch(err) {
       console.error("Failed to fetch disasters:", err.message);
     } finally {

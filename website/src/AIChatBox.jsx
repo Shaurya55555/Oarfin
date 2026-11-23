@@ -10,7 +10,7 @@ export default function AIChatBox({ disasterContext, sheltersContext, userLocati
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [lastUserMsg, setLastUserMsg] = useState(null);
+  const [, setLastUserMsg] = useState(null);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {

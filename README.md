@@ -29,7 +29,7 @@ Oarfin is a real-time disaster alert and management system built around four con
 - 5km-radius safe-location identification (hospitals, shelters, police stations, fire stations)
 
 ### 📰 Live Disaster News Aggregation
-- Automated web scraping using **Playwright**
+- News via RSS feeds (BBC, NDTV, Reddit)
 - Real-time news articles from multiple sources, plus Reddit video integration for on-ground updates
 - Cached responses (via `node-cache`) for optimized performance
 
@@ -53,7 +53,7 @@ Oarfin is a real-time disaster alert and management system built around four con
 
 **Website (frontend)** — React 19 + Vite, Leaflet.js, Tailwind CSS, Axios
 **App (mobile)** — React Native + Expo (SDK 58), Expo Router, TypeScript, react-native-maps
-**Server (backend)** — Node.js + Express.js, Playwright, SQLite3, node-cache, Google Generative AI & OpenAI APIs, JWT
+**Server (backend)** — Node.js + Express.js, RSS-based news scraping, Turso (libSQL), node-cache, Google Generative AI & OpenAI APIs, JWT
 **External APIs** — Overpass API (OpenStreetMap data)
 
 ## 📁 Project Structure
@@ -105,13 +105,16 @@ npm install
 ```
 Create `server/.env` from `server/.env.example`:
 ```env
-PORT=5000
+PORT=3000
 GOOGLE_AI_API_KEY=your_google_ai_key
+GEMINI_API_KEY=your_gemini_key   # used by /api/ai/chat
 OPENAI_API_KEY=your_openai_key
 JWT_SECRET=your_jwt_secret
+TURSO_DATABASE_URL=libsql://your-db.turso.io
+TURSO_AUTH_TOKEN=your_turso_token
 ```
 ```bash
-npm run dev   # http://localhost:5000
+npm run dev   # http://localhost:3000
 ```
 
 ### Setup — Website
@@ -121,7 +124,7 @@ npm install
 ```
 Create `website/.env` from `website/.env.example`:
 ```env
-VITE_API_URL=http://localhost:5000
+VITE_SERVER_URL=http://localhost:3000
 ```
 ```bash
 npm run dev   # http://localhost:5173

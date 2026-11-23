@@ -47,7 +47,7 @@ const DisasterFilter = ({ filters, setFilters, disasterCounts }) => {
           border: '1px solid var(--border-active)', background: 'var(--bg-section)',
           color: 'var(--text-primary)', cursor: 'pointer', fontWeight: 600, transition: 'all 0.2s',
         }}
-          onMouseEnter={e => e.currentTarget.style.background = 'var(--color-primary)' && (e.currentTarget.style.color = '#fff')}
+          onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-primary)'; e.currentTarget.style.color = '#fff'; }}
           onMouseLeave={e => { e.currentTarget.style.background = 'var(--bg-section)'; e.currentTarget.style.color = 'var(--text-primary)'; }}>
           Select All
         </button>
