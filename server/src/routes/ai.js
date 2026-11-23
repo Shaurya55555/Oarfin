@@ -22,7 +22,11 @@ async function generateWithRetry(ai, prompt, retries = 2, delayMs = 3000) {
           err.message?.includes('429') ||
           err.message?.includes('RESOURCE_EXHAUSTED') ||
           err.message?.includes('quota') ||
-          err.status === 429;
+          err.status === 429 ||
+          err.status === 503 ||
+          err.message?.includes('503') ||
+          err.message?.includes('UNAVAILABLE') ||
+          err.message?.includes('high demand');
 
         const isGone =
           err.status === 404 ||
