@@ -825,17 +825,27 @@ function Hero({ onLoginClick, onRegisterClick, onNavClick, lang, onLangChange, s
 // ── Active Alerts + Stats: real events from GDACS (UN + EU disaster alert system) ──
 const GDACS_BASE = 'https://www.gdacs.org/gdacsapi/api/events/geteventlist/SEARCH?eventlist=EQ,TC,FL,VO,DR,WF&limit=25&alertlevel=';
 const GDACS_TYPES = {
-  EQ: { en: 'Earthquake', hi: 'भूकंप', icon: 'fa-house-crack' },
-  TC: { en: 'Cyclone', hi: 'चक्रवात', icon: 'fa-hurricane' },
-  FL: { en: 'Flood', hi: 'बाढ़', icon: 'fa-water' },
-  VO: { en: 'Volcano', hi: 'ज्वालामुखी', icon: 'fa-mountain' },
-  DR: { en: 'Drought', hi: 'सूखा', icon: 'fa-sun' },
-  WF: { en: 'Wildfire', hi: 'जंगल की आग', icon: 'fa-fire' },
+  EQ: { icon: 'fa-house-crack', en: 'Earthquake', hi: 'भूकंप', ta: 'நிலநடுக்கம்', kn: 'ಭೂಕಂಪ', mr: 'भूकंप', gu: 'ભૂકંપ', te: 'భూకంపం' },
+  TC: { icon: 'fa-hurricane', en: 'Cyclone', hi: 'चक्रवात', ta: 'புயல்', kn: 'ಚಂಡಮಾರುತ', mr: 'चक्रीवादळ', gu: 'ચક્રવાત', te: 'తుఫాను' },
+  FL: { icon: 'fa-water', en: 'Flood', hi: 'बाढ़', ta: 'வெள்ளம்', kn: 'ಪ್ರವಾಹ', mr: 'पूर', gu: 'પૂર', te: 'వరద' },
+  VO: { icon: 'fa-mountain', en: 'Volcano', hi: 'ज्वालामुखी', ta: 'எரிமலை', kn: 'ಜ್ವಾಲಾಮುಖಿ', mr: 'ज्वालामुखी', gu: 'જ્વાળામુખી', te: 'అగ్నిపర్వతం' },
+  DR: { icon: 'fa-sun', en: 'Drought', hi: 'सूखा', ta: 'வறட்சி', kn: 'ಬರ', mr: 'दुष्काळ', gu: 'દુષ્કાળ', te: 'కరువు' },
+  WF: { icon: 'fa-fire', en: 'Wildfire', hi: 'जंगल की आग', ta: 'காட்டுத்தீ', kn: 'ಕಾಡ್ಗಿಚ್ಚು', mr: 'वणवा', gu: 'દાવાનળ', te: 'కార్చిచ్చు' },
 };
 const GDACS_LEVEL = {
-  Red: { color: '#EF4444', hi: 'लाल' },
-  Orange: { color: '#F59E0B', hi: 'नारंगी' },
-  Green: { color: '#22C55E', hi: 'हरा' },
+  Red: { color: '#EF4444', en: 'Red', hi: 'लाल', ta: 'சிவப்பு', kn: 'ಕೆಂಪು', mr: 'लाल', gu: 'લાલ', te: 'ఎరుపు' },
+  Orange: { color: '#F59E0B', en: 'Orange', hi: 'नारंगी', ta: 'ஆரஞ்சு', kn: 'ಕಿತ್ತಳೆ', mr: 'नारंगी', gu: 'નારંગી', te: 'నారింజ' },
+  Green: { color: '#22C55E', en: 'Green', hi: 'हरा', ta: 'பச்சை', kn: 'ಹಸಿರು', mr: 'हिरवा', gu: 'લીલો', te: 'ఆకుపచ్చ' },
+};
+// Page language -> short key and the locale used for dates and country names.
+const ALERT_LANG = {
+  English: { k: 'en', locale: 'en' },
+  Hindi: { k: 'hi', locale: 'hi-IN' },
+  Kannada: { k: 'kn', locale: 'kn-IN' },
+  Tamil: { k: 'ta', locale: 'ta-IN' },
+  Marathi: { k: 'mr', locale: 'mr-IN' },
+  Gujarati: { k: 'gu', locale: 'gu-IN' },
+  Telugu: { k: 'te', locale: 'te-IN' },
 };
 const ALERTS_COPY = {
   en: {
@@ -854,12 +864,91 @@ const ALERTS_COPY = {
     stats: ['ट्रैक की गई घटनाएँ', 'लाल / नारंगी अलर्ट', 'नामित देश', 'आपदा के प्रकार'],
     ticker: 'लाल / नारंगी अलर्ट', source: 'स्रोत', open: 'GDACS पर रिपोर्ट खोलें', since: 'शुरू',
   },
+  ta: {
+    desc: 'GDACS (ஐ.நா. மற்றும் ஐரோப்பிய ஒன்றியத்தின் பேரிடர் எச்சரிக்கை அமைப்பு) வழங்கும் சமீபத்திய நிகழ்வுகள். விவரங்களுக்கு எச்சரிக்கையைக் கிளிக் செய்யவும்.',
+    all: 'GDACS-இல் அனைத்து நிகழ்வுகள்',
+    loading: 'நேரடி நிகழ்வுகள் ஏற்றப்படுகின்றன…',
+    error: 'GDACS தரவை இப்போது அணுக முடியவில்லை. சிறிது நேரம் கழித்து மீண்டும் முயலவும்.',
+    stats: ['கண்காணிக்கப்படும் நிகழ்வுகள்', 'சிவப்பு / ஆரஞ்சு எச்சரிக்கைகள்', 'குறிப்பிடப்பட்ட நாடுகள்', 'பேரிடர் வகைகள்'],
+    ticker: 'சிவப்பு / ஆரஞ்சு எச்சரிக்கைகள்', source: 'மூலம்', open: 'GDACS-இல் அறிக்கையைத் திற', since: 'தொடக்கம்',
+  },
+  kn: {
+    desc: 'GDACS (ವಿಶ್ವಸಂಸ್ಥೆ ಮತ್ತು ಯುರೋಪಿಯನ್ ಒಕ್ಕೂಟದ ವಿಪತ್ತು ಎಚ್ಚರಿಕೆ ವ್ಯವಸ್ಥೆ) ನೀಡಿದ ಇತ್ತೀಚಿನ ಘಟನೆಗಳು. ವಿವರಗಳಿಗಾಗಿ ಎಚ್ಚರಿಕೆಯ ಮೇಲೆ ಕ್ಲಿಕ್ ಮಾಡಿ.',
+    all: 'GDACS ನಲ್ಲಿ ಎಲ್ಲಾ ಘಟನೆಗಳು',
+    loading: 'ನೇರ ಘಟನೆಗಳು ಲೋಡ್ ಆಗುತ್ತಿವೆ…',
+    error: 'GDACS ಮಾಹಿತಿಯನ್ನು ಈಗ ಪಡೆಯಲಾಗಲಿಲ್ಲ. ಸ್ವಲ್ಪ ಸಮಯದ ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
+    stats: ['ಟ್ರ್ಯಾಕ್ ಮಾಡಿದ ಘಟನೆಗಳು', 'ಕೆಂಪು / ಕಿತ್ತಳೆ ಎಚ್ಚರಿಕೆಗಳು', 'ಹೆಸರಿಸಲಾದ ದೇಶಗಳು', 'ವಿಪತ್ತಿನ ವಿಧಗಳು'],
+    ticker: 'ಕೆಂಪು / ಕಿತ್ತಳೆ ಎಚ್ಚರಿಕೆಗಳು', source: 'ಮೂಲ', open: 'GDACS ನಲ್ಲಿ ವರದಿ ತೆರೆಯಿರಿ', since: 'ಆರಂಭ',
+  },
+  mr: {
+    desc: 'GDACS (संयुक्त राष्ट्र आणि युरोपीय महासंघाची आपत्ती इशारा प्रणाली) कडील ताज्या घटना. तपशीलासाठी इशाऱ्यावर क्लिक करा.',
+    all: 'GDACS वरील सर्व घटना',
+    loading: 'थेट घटना लोड होत आहेत…',
+    error: 'GDACS फीड सध्या उपलब्ध नाही. थोड्या वेळाने पुन्हा प्रयत्न करा.',
+    stats: ['ट्रॅक केलेल्या घटना', 'लाल / नारंगी इशारे', 'नमूद देश', 'आपत्तीचे प्रकार'],
+    ticker: 'लाल / नारंगी इशारे', source: 'स्रोत', open: 'GDACS वर अहवाल उघडा', since: 'सुरुवात',
+  },
+  gu: {
+    desc: 'GDACS (સંયુક્ત રાષ્ટ્ર અને યુરોપિયન યુનિયનની આપત્તિ ચેતવણી પ્રણાલી) ની તાજેતરની ઘટનાઓ. વિગતો માટે ચેતવણી પર ક્લિક કરો.',
+    all: 'GDACS પર બધી ઘટનાઓ',
+    loading: 'લાઇવ ઘટનાઓ લોડ થઈ રહી છે…',
+    error: 'GDACS ફીડ હાલમાં ઉપલબ્ધ નથી. થોડી વાર પછી ફરી પ્રયાસ કરો.',
+    stats: ['ટ્રૅક કરેલી ઘટનાઓ', 'લાલ / નારંગી ચેતવણીઓ', 'નામાંકિત દેશો', 'આપત્તિના પ્રકાર'],
+    ticker: 'લાલ / નારંગી ચેતવણીઓ', source: 'સ્ત્રોત', open: 'GDACS પર અહેવાલ ખોલો', since: 'શરૂઆત',
+  },
+  te: {
+    desc: 'GDACS (ఐక్యరాజ్యసమితి మరియు యూరోపియన్ యూనియన్ విపత్తు హెచ్చరిక వ్యవస్థ) నుండి తాజా సంఘటనలు. వివరాల కోసం హెచ్చరికపై క్లిక్ చేయండి.',
+    all: 'GDACS లో అన్ని సంఘటనలు',
+    loading: 'ప్రత్యక్ష సంఘటనలు లోడ్ అవుతున్నాయి…',
+    error: 'GDACS ఫీడ్ ప్రస్తుతం అందుబాటులో లేదు. కాసేపటి తర్వాత మళ్లీ ప్రయత్నించండి.',
+    stats: ['ట్రాక్ చేసిన సంఘటనలు', 'ఎరుపు / నారింజ హెచ్చరికలు', 'పేర్కొన్న దేశాలు', 'విపత్తు రకాలు'],
+    ticker: 'ఎరుపు / నారింజ హెచ్చరికలు', source: 'మూలం', open: 'GDACS లో నివేదికను తెరవండి', since: 'ప్రారంభం',
+  },
 };
+
+// GDACS gives country names in English. Map them to ISO codes with the browser's own
+// English region names, then print each one in the page language. Unknown names stay English.
+const COUNTRY_ALIASES = {
+  'democratic republic of congo': 'CD', 'republic of congo': 'CG', 'congo': 'CG', 'ivory coast': 'CI',
+  'myanmar': 'MM', 'burma': 'MM', 'czech republic': 'CZ', 'swaziland': 'SZ', 'east timor': 'TL', 'timor-leste': 'TL',
+  'russia': 'RU', 'south korea': 'KR', 'north korea': 'KP', 'laos': 'LA', 'syria': 'SY', 'iran': 'IR', 'vietnam': 'VN',
+  'tanzania': 'TZ', 'bolivia': 'BO', 'venezuela': 'VE', 'moldova': 'MD', 'brunei': 'BN', 'macedonia': 'MK', 'cape verde': 'CV',
+  'palestinian territory': 'PS', 'palestine': 'PS', 'turkey': 'TR', 'united states': 'US', 'usa': 'US', 'uk': 'GB',
+  'united kingdom': 'GB', 'mexico': 'MX', 'méxico': 'MX', 'bosnia & herzegovina': 'BA', 'bosnia and herzegovina': 'BA',
+};
+let countryCodeMap = null;
+function countryCode(name) {
+  const key = String(name).trim().toLowerCase();
+  if (COUNTRY_ALIASES[key]) return COUNTRY_ALIASES[key];
+  if (!countryCodeMap) {
+    countryCodeMap = {};
+    try {
+      const en = new Intl.DisplayNames(['en'], { type: 'region' });
+      const A = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      for (const x of A) for (const y of A) {
+        const code = x + y;
+        const n = en.of(code);
+        if (n && n !== code) countryCodeMap[n.toLowerCase()] = code;
+      }
+    } catch { /* older browsers: names stay English */ }
+  }
+  return countryCodeMap[key] || null;
+}
+function localCountry(name, locale) {
+  if (locale === 'en') return String(name).trim();
+  const code = countryCode(name);
+  if (!code) return String(name).trim();
+  try {
+    return new Intl.DisplayNames([locale], { type: 'region' }).of(code) || String(name).trim();
+  } catch {
+    return String(name).trim();
+  }
+}
 
 function AlertsAndStats({ lang }) {
   const t = T[lang];
-  const k = lang === 'Hindi' ? 'hi' : 'en';
-  const c = ALERTS_COPY[k];
+  const { k, locale } = ALERT_LANG[lang] || ALERT_LANG.English;
+  const c = ALERTS_COPY[k] || ALERTS_COPY.en;
   const [expanded, setExpanded] = useState(null);
   const [events, setEvents] = useState(null);
   const [failed, setFailed] = useState(false);
@@ -889,8 +978,17 @@ function AlertsAndStats({ lang }) {
     ? [events.length, severe.length, countries.size, new Set(events.map((p) => p.eventtype)).size]
     : ['–', '–', '–', '–'];
   const icons = ['fa-list-check', 'fa-triangle-exclamation', 'fa-earth-asia', 'fa-layer-group'];
-  const fmt = (d) => (d ? new Date(d).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : '');
+  const fmt = (d) => (d ? new Date(d).toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' }) : '');
   const title = (p) => {
+    const typeName = GDACS_TYPES[p.eventtype]?.[k];
+    if (k !== 'en' && typeName) {
+      // Storms and volcanoes keep their official Latin name; other events list the affected countries.
+      const named = String(p.eventname || '').replace(/\s+/g, ' ').trim();
+      if ((p.eventtype === 'TC' || p.eventtype === 'VO') && named) return `${typeName} ${named}`;
+      const list = String(p.country || '').split(',').map((x) => x.trim()).filter(Boolean).map((x) => localCountry(x, locale));
+      if (list.length) return `${typeName} · ${list.slice(0, 3).join(', ')}${list.length > 3 ? ` +${list.length - 3}` : ''}`;
+      return typeName;
+    }
     const n = String(p.name || p.eventname || '').replace(/\s+/g, ' ').trim();
     return n.length > 90 ? n.slice(0, 87).trimEnd() + '…' : n;
   };
@@ -917,7 +1015,7 @@ function AlertsAndStats({ lang }) {
             <div style={{ display: 'grid', gap: '1rem' }}>
               {featured.map((p, i) => {
                 const lvl = GDACS_LEVEL[p.alertlevel] || GDACS_LEVEL.Green;
-                const type = GDACS_TYPES[p.eventtype] || { en: p.eventtype, hi: p.eventtype, icon: 'fa-circle-exclamation' };
+                const type = GDACS_TYPES[p.eventtype] || { en: p.eventtype, icon: 'fa-circle-exclamation' };
                 return (
                   <Reveal key={p.eventid} delay={i * 130}>
                     <div onClick={() => setExpanded(expanded === i ? null : i)} className="card-hover"
@@ -928,11 +1026,11 @@ function AlertsAndStats({ lang }) {
                           <span style={{ fontWeight: 600, fontSize: '0.98rem', lineHeight: 1.35, color: 'var(--text-primary)' }}>{title(p)}</span>
                         </div>
                         <span style={{ background: lvl.color, color: '#fff', fontSize: '0.66rem', fontWeight: 700, padding: '0.18rem 0.55rem', borderRadius: 4, letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>
-                          {(k === 'hi' ? lvl.hi : p.alertlevel).toUpperCase()}
+                          {(lvl[k] || p.alertlevel).toUpperCase()}
                         </span>
                       </div>
                       <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', margin: 0 }}>
-                        {type[k]} · {c.since} {fmt(p.fromdate)}
+                        {type[k] || type.en} · {c.since} {fmt(p.fromdate)}
                       </p>
                       {expanded === i && (
                         <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--expanded-border)' }}>
